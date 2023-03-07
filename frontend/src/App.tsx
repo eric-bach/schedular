@@ -11,6 +11,10 @@ import Grid from '@mui/material/Unstable_Grid2';
 import Typography from '@mui/material/Typography';
 import Button from '@mui/material/Button';
 
+import { API, graphqlOperation } from 'aws-amplify';
+import { GET_ACCOUNTS } from './graphql/queries';
+import { GraphQLQuery } from '@aws-amplify/api';
+
 import aws_exports from './aws-exports';
 
 import '@aws-amplify/ui-react/styles.css';
@@ -24,7 +28,18 @@ function App() {
   const today = dayjs();
   const oneMonth = dayjs().add(1, 'month');
 
+  const getAccounts = async () => {
+    console.log('GETTING ACCOUNTS');
+    const accounts = await API.graphql<GraphQLQuery<string>>(
+      // TODO Replace userId
+      graphqlOperation(GET_ACCOUNTS, { userId: 'email@gmail.com' })
+    );
+    console.log('FOUND ACCOUNTS: ', accounts);
+  };
+
   useEffect(() => {
+    getAccounts();
+
     setTimeslot(null);
     console.log('Selected Date: ', date);
   }, [date]);
