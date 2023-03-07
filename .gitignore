@@ -4,14 +4,15 @@
 node_modules
 /client/build
 **/dist/
+/.pnp
+.pnp.js
+
+# production
+/build
 
 # CDK asset staging directory
 .cdk.staging
 cdk.out
-
-# Files to convert to TypeScript
-!/client/src/client.js
-!/client/src/utils/Session.js
 
 # Exclude configuration files (provided with *.example files)
 .env*
@@ -22,5 +23,18 @@ aws-exports.js
 !jest.config.js
 !.env.example
 
+# testing
+/coverage
 cypress.*.json
 **/cypress/videos/
+
+# misc
+.DS_Store
+.env.local
+.env.development.local
+.env.test.local
+.env.production.local
+
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
