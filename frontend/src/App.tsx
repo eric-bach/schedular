@@ -32,7 +32,7 @@ function App() {
     console.log('GETTING ACCOUNTS');
     const accounts = await API.graphql<GraphQLQuery<string>>(
       // TODO Replace userId
-      graphqlOperation(GET_ACCOUNTS, { userId: 'email@gmail.com' })
+      graphqlOperation(GET_ACCOUNTS, { userId: 'ebach83@gmail.com' })
     );
     console.log('FOUND ACCOUNTS: ', accounts);
   };

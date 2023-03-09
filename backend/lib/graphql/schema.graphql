@@ -1,0 +1,50 @@
+type Data @model @aws_cognito_user_pools {
+  pk: String
+  sk: String
+  createdAt: AWSDateTime
+  updatedAt: AWSDateTime
+  type: String
+  duration: Int
+  status: String
+  customer: String
+  firstName: String
+  lastName: String
+  email: String
+  phone: Int
+}
+
+input LastEvaluatedKey {
+  userId: ID
+  sk: String
+}
+
+type AppointmentViewModel {
+  pk: String
+  sk: String
+  createdAt: AWSDateTime
+  updatedAt: AWSDateTime
+  type: String
+  duration: Int
+  status: String
+  customer: String
+}
+
+# GraphQL actions
+type Query {
+  getAvailableAppointments(
+    date: String!
+    lastEvaluatedKey: LastEvaluatedKey
+  ): [AppointmentViewModel]
+    @aws_cognito_user_pools(cognito_groups: ["Users", "Admins"])
+  getScheduledAppointments(
+    date: String!
+    lastEvaluatedKey: LastEvaluatedKey
+  ): [AppointmentViewModel] @aws_cognito_user_pools(cognito_groups: ["Admins"])
+}
+
+# type Mutation {}
+
+schema {
+  query: Query
+  #mutation: Mutation
+}
