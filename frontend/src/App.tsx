@@ -20,21 +20,48 @@ import '@aws-amplify/ui-react/styles.css';
 
 Amplify.configure(aws_exports);
 
+type AppointmentsViewModel = {
+  items: [AppointmentItemViewModel];
+};
+type AppointmentItemViewModel = {
+  pk: string;
+  sk: string;
+  duration: number;
+  status: string;
+  type: string;
+};
+type LastEvaluatedKeyViewModel = {
+  pk: string;
+  sk: string;
+};
+type AppointmentViewModel = {
+  getAvailableAppointments: AppointmentsViewModel;
+  lastEvaluatedKey: LastEvaluatedKeyViewModel;
+};
+
 function App() {
   const [date, setDate] = React.useState<Dayjs | null>(null);
   const [timeslot, setTimeslot] = React.useState<string | null>(null);
+  const [availableAppts, setAppts] = React.useState<[AppointmentItemViewModel | undefined]>();
+  const [numAppts, setNumAppts] = React.useState<number>(0);
 
   const today = dayjs();
   const oneMonth = dayjs().add(1, 'month');
 
   const getAppointments = async (date: Dayjs | null) => {
     console.log('GETTING APPOINTMENTS FOR ', dayjs(date).format('YYYY-MM-DD'));
-    const appointments = await API.graphql<GraphQLQuery<string>>(
+    const appointments = await API.graphql<GraphQLQuery<AppointmentViewModel>>(
       graphqlOperation(GET_APPOINTMENTS, {
         date: dayjs(date).format('YYYY-MM-DD'),
       })
     );
     console.log('FOUND APPOINTMENTS: ', appointments);
+
+    console.log(appointments.data?.getAvailableAppointments?.items);
+    setAppts(appointments.data?.getAvailableAppointments?.items);
+    setNumAppts(appointments.data?.getAvailableAppointments?.items.length ?? 0);
+
+    return appointments.data?.getAvailableAppointments?.items;
   };
 
   useEffect(() => {
@@ -46,9 +73,10 @@ function App() {
     // Reset timeslow
     setTimeslot(null);
 
-    console.log('Selected Date: ', date);
     setDate(date);
-    await getAppointments(date);
+    let appts = await getAppointments(date);
+    console.log('AVAILABLE APPOINTMENTS: ', appts);
+    console.log('AVAILABLE APPOINTMENTS: ', appts?.length);
   }
 
   function timeSelected(time: string) {
@@ -98,44 +126,29 @@ function App() {
                 >
                   Available Times:
                 </Typography>
-                <Button
-                  variant='contained'
-                  sx={{ width: '174px' }}
-                  onClick={(e) => {
-                    //@ts-ignore
-                    timeSelected(e.target.textContent);
-                  }}
-                >
-                  9:00 AM - 10:00 AM
-                </Button>
-                <Button
-                  variant='contained'
-                  sx={{ width: '174px' }}
-                  onClick={(e) => {
-                    //@ts-ignore
-                    timeSelected(e.target.textContent);
-                  }}
-                >
-                  11:00 AM - 12:00 PM
-                </Button>
-                <Button
-                  variant='contained'
-                  sx={{ width: '174px' }}
-                  onClick={(e) => {
-                    //@ts-ignore
-                    timeSelected(e.target.textContent);
-                  }}
-                >
-                  1:00 PM - 2:00 PM
-                </Button>
+                {numAppts < 1 && <Typography>No times available today 😢</Typography>}
+                {availableAppts?.map((m) => {
+                  return (
+                    <Button
+                      key={m?.sk}
+                      variant='contained'
+                      sx={{ width: '174px' }}
+                      onClick={(e) => {
+                        //@ts-ignore
+                        timeSelected(e.target.textContent);
+                      }}
+                    >
+                      {m?.sk.substring(11, 16)} ({m?.duration} mins)
+                    </Button>
+                  );
+                })}
               </Stack>
 
               {timeslot && (
                 <>
                   <Stack alignItems='flex-start'>
                     <Typography sx={{ mt: 4 }}>
-                      {dayjs(date).format('MMM DD, YYYY')} from{' '}
-                      {timeslot.toString()}
+                      {dayjs(date).format('MMM DD, YYYY')} from {timeslot.toString()}
                     </Typography>
                     <Button
                       variant='contained'
