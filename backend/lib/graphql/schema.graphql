@@ -14,7 +14,12 @@ type Data @model @aws_cognito_user_pools {
 }
 
 input LastEvaluatedKey {
-  userId: ID
+  pk: ID
+  sk: String
+}
+
+type LastEvaluatedKeyViewModel {
+  pk: ID
   sk: String
 }
 
@@ -29,17 +34,22 @@ type AppointmentViewModel {
   customer: String
 }
 
+type GetAppointmentsResponse {
+  items: [AppointmentViewModel]
+  lastEvaluatedKey: LastEvaluatedKeyViewModel
+}
+
 # GraphQL actions
 type Query {
   getAvailableAppointments(
     date: String!
     lastEvaluatedKey: LastEvaluatedKey
-  ): [AppointmentViewModel]
+  ): GetAppointmentsResponse
     @aws_cognito_user_pools(cognito_groups: ["Users", "Admins"])
   getScheduledAppointments(
     date: String!
     lastEvaluatedKey: LastEvaluatedKey
-  ): [AppointmentViewModel] @aws_cognito_user_pools(cognito_groups: ["Admins"])
+  ): GetAppointmentsResponse @aws_cognito_user_pools(cognito_groups: ["Admins"])
 }
 
 # type Mutation {}
