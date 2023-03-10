@@ -1,6 +1,9 @@
 import React, { useEffect } from 'react';
 import { Amplify } from 'aws-amplify';
 import { withAuthenticator } from '@aws-amplify/ui-react';
+import { API, graphqlOperation } from 'aws-amplify';
+import { GraphQLQuery } from '@aws-amplify/api';
+
 import dayjs, { Dayjs } from 'dayjs';
 import { AdapterDayjs } from '@mui/x-date-pickers/AdapterDayjs';
 import { LocalizationProvider } from '@mui/x-date-pickers/LocalizationProvider';
@@ -11,12 +14,8 @@ import Grid from '@mui/material/Unstable_Grid2';
 import Typography from '@mui/material/Typography';
 import Button from '@mui/material/Button';
 
-import { API, graphqlOperation } from 'aws-amplify';
-import { GET_ACCOUNTS } from './graphql/queries';
-import { GraphQLQuery } from '@aws-amplify/api';
-
 import aws_exports from './aws-exports';
-
+import { GET_APPOINTMENTS } from './graphql/queries';
 import '@aws-amplify/ui-react/styles.css';
 
 Amplify.configure(aws_exports);
@@ -28,25 +27,33 @@ function App() {
   const today = dayjs();
   const oneMonth = dayjs().add(1, 'month');
 
-  const getAccounts = async () => {
-    console.log('GETTING ACCOUNTS');
-    const accounts = await API.graphql<GraphQLQuery<string>>(
-      // TODO Replace userId
-      graphqlOperation(GET_ACCOUNTS, { userId: 'ebach83@gmail.com' })
+  const getAppointments = async (date: Dayjs | null) => {
+    console.log('GETTING APPOINTMENTS FOR ', dayjs(date).format('YYYY-MM-DD'));
+    const appointments = await API.graphql<GraphQLQuery<string>>(
+      graphqlOperation(GET_APPOINTMENTS, {
+        date: dayjs(date).format('YYYY-MM-DD'),
+      })
     );
-    console.log('FOUND ACCOUNTS: ', accounts);
+    console.log('FOUND APPOINTMENTS: ', appointments);
   };
 
   useEffect(() => {
-    getAccounts();
+    // TODO TEST ONLY - Remove this later
+    //getAppointments(today);
+  }, []);
 
+  async function dateSelected(date: Dayjs | null) {
+    // Reset timeslow
     setTimeslot(null);
-    console.log('Selected Date: ', date);
-  }, [date]);
 
-  function buttonClicked(timeslot: string) {
-    console.log('Selected Timeslot: ', timeslot);
-    setTimeslot(timeslot);
+    console.log('Selected Date: ', date);
+    setDate(date);
+    await getAppointments(date);
+  }
+
+  function timeSelected(time: string) {
+    console.log('Selected Time: ', time);
+    setTimeslot(time);
   }
 
   return (
@@ -73,7 +80,7 @@ function App() {
               value={date}
               minDate={today}
               maxDate={oneMonth}
-              onChange={(newValue) => setDate(newValue)}
+              onChange={(newValue) => dateSelected(newValue)}
             />
           </LocalizationProvider>
         </Grid>
@@ -96,7 +103,7 @@ function App() {
                   sx={{ width: '174px' }}
                   onClick={(e) => {
                     //@ts-ignore
-                    buttonClicked(e.target.textContent);
+                    timeSelected(e.target.textContent);
                   }}
                 >
                   9:00 AM - 10:00 AM
@@ -106,7 +113,7 @@ function App() {
                   sx={{ width: '174px' }}
                   onClick={(e) => {
                     //@ts-ignore
-                    buttonClicked(e.target.textContent);
+                    timeSelected(e.target.textContent);
                   }}
                 >
                   11:00 AM - 12:00 PM
@@ -116,7 +123,7 @@ function App() {
                   sx={{ width: '174px' }}
                   onClick={(e) => {
                     //@ts-ignore
-                    buttonClicked(e.target.textContent);
+                    timeSelected(e.target.textContent);
                   }}
                 >
                   1:00 PM - 2:00 PM
@@ -135,7 +142,7 @@ function App() {
                       color='success'
                       onClick={(e) => {
                         //@ts-ignore
-                        buttonClicked(e.target.textContent);
+                        timeSelected(e.target.textContent);
                       }}
                     >
                       Confirm Appointment
