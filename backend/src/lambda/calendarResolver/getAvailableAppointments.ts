@@ -1,13 +1,9 @@
 import { QueryCommand, QueryCommandInput } from '@aws-sdk/client-dynamodb';
 import { marshall, unmarshall } from '@aws-sdk/util-dynamodb';
-
 import { LastEvaluatedKey } from '../types/AppSync';
 import dynamoDbCommand from '../helpers/dynamoDbCommand';
 
-async function getAvailableAppointments(
-  date: string,
-  lastEvaluatedKey: LastEvaluatedKey
-) {
+async function getAvailableAppointments(date: string, lastEvaluatedKey: LastEvaluatedKey) {
   console.debug('🕧 getAvailableAppointments Initialized');
 
   let queryCommandInput: QueryCommandInput;
@@ -23,9 +19,7 @@ async function getAvailableAppointments(
       ':v3': { S: 'open' },
     },
   };
-  lastEvaluatedKey
-    ? (queryCommandInput.ExclusiveStartKey = marshall(lastEvaluatedKey))
-    : lastEvaluatedKey;
+  lastEvaluatedKey ? (queryCommandInput.ExclusiveStartKey = marshall(lastEvaluatedKey)) : lastEvaluatedKey;
 
   let results: any = [];
   let lastEvalKey;

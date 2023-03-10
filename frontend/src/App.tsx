@@ -55,7 +55,7 @@ function App() {
         date: dayjs(date).format('YYYY-MM-DD'),
       })
     );
-    console.log('FOUND APPOINTMENTS:  ', appointments);
+    console.log('FOUND APPOINTMENTS: ', appointments);
 
     console.log(appointments.data?.getAvailableAppointments?.items);
     setAppts(appointments.data?.getAvailableAppointments?.items);
