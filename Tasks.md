@@ -1,10 +1,11 @@
 # Tasks
 
 - [x] Build API to book appointment
-- [] Add NavBar
+- [x] Add Authenticated NavBar
+- [] Hookup frontend to booking API
+- Email user confirmed appointment
 
 # Later
 
-- Email user confirmed appointment
 - Rename repo
 - Setup CICD stack
