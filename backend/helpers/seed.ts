@@ -13,7 +13,7 @@ import * as fs from 'fs';
 async function seed() {
   try {
     // Get DynamoDB table name
-    const tableName = await getTableName('advent-dev');
+    const tableName = await getTableName('advent-database-dev');
     console.log('✅ Seed table: ', tableName);
 
     // Read items to see from data/seeds.json
