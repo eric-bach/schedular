@@ -1,6 +1,5 @@
 import { QueryCommand, QueryCommandInput } from '@aws-sdk/client-dynamodb';
 import { marshall, unmarshall } from '@aws-sdk/util-dynamodb';
-
 import { LastEvaluatedKey } from '../types/AppSync';
 import dynamoDbCommand from '../helpers/dynamoDbCommand';
 
@@ -12,8 +11,7 @@ async function getAvailableAppointments(
 
   let queryCommandInput: QueryCommandInput;
   queryCommandInput = {
-    // TODO Set Table name
-    TableName: 'myapp-Data', //process.env.DATA_TABLE_NAME,
+    TableName: process.env.DATA_TABLE_NAME,
     KeyConditionExpression: 'pk = :v1 AND begins_with(sk, :v2)',
     FilterExpression: '#s = :v3',
     ExpressionAttributeNames: { '#s': 'status' },
