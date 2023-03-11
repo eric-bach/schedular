@@ -15,6 +15,7 @@ import Typography from '@mui/material/Typography';
 import Button from '@mui/material/Button';
 
 import aws_exports from './aws-exports';
+import Loading from './components/Loading';
 import { GET_APPOINTMENTS, BOOK_APPOINTMENT } from './graphql/queries';
 import '@aws-amplify/ui-react/styles.css';
 
@@ -54,11 +55,13 @@ function Booking() {
   const [availableAppts, setAppts] = React.useState<[AppointmentItemViewModel | undefined]>();
   const [numAppts, setNumAppts] = React.useState<number>(0);
   const [customer, setCustomer] = React.useState<string | null>(null);
+  const [isLoading, setLoading] = React.useState<boolean>(false);
 
   const today = dayjs();
   const oneMonth = dayjs().add(1, 'month');
 
   const getAppointments = async (date: Dayjs | null) => {
+    setLoading(true);
     console.log('GETTING APPOINTMENTS FOR ', dayjs(date).format('YYYY-MM-DD'));
     const appointments = await API.graphql<GraphQLQuery<AppointmentViewModel>>(
       graphqlOperation(GET_APPOINTMENTS, {
@@ -71,12 +74,12 @@ function Booking() {
     setAppts(appointments.data?.getAvailableAppointments?.items);
     setNumAppts(appointments.data?.getAvailableAppointments?.items.length ?? 0);
 
+    setLoading(false);
+
     return appointments.data?.getAvailableAppointments?.items;
   };
 
   useEffect(() => {
-    // TODO TEST ONLY - Remove this later
-    //getAppointments(today);
     Auth.currentAuthenticatedUser().then((user) => {
       console.log('Authenticated User: ', user);
       console.log('Authenticated User Attributes: ', user.attributes);
@@ -87,6 +90,7 @@ function Booking() {
   async function dateSelected(date: Dayjs | null) {
     // Reset timeslow
     setTimeslot(null);
+    setTimeslotText(null);
 
     setDate(date);
     let appts = await getAppointments(date);
@@ -113,6 +117,8 @@ function Booking() {
     const result = await API.graphql<GraphQLQuery<BookAppointmentViewModel>>(graphqlOperation(BOOK_APPOINTMENT, { input: input }));
 
     console.log('Booked: ', result.data?.bookAppointment);
+
+    // TODO Navigate to confirmation page and send email
   }
 
   return (
@@ -120,17 +126,17 @@ function Booking() {
       <Grid
         container
         spacing={2}
-        sx={{
-          '--Grid-borderWidth': '1px',
-          borderTop: 'var(--Grid-borderWidth) solid',
-          borderLeft: 'var(--Grid-borderWidth) solid',
-          borderColor: 'divider',
-          '& > div': {
-            borderRight: 'var(--Grid-borderWidth) solid',
-            borderBottom: 'var(--Grid-borderWidth) solid',
-            borderColor: 'divider',
-          },
-        }}
+        // sx={{
+        //   '--Grid-borderWidth': '1px',
+        //   borderTop: 'var(--Grid-borderWidth) solid',
+        //   borderLeft: 'var(--Grid-borderWidth) solid',
+        //   borderColor: 'divider',
+        //   '& > div': {
+        //     borderRight: 'var(--Grid-borderWidth) solid',
+        //     borderBottom: 'var(--Grid-borderWidth) solid',
+        //     borderColor: 'divider',
+        //   },
+        // }}
       >
         <Grid xs={3} />
         <Grid xs={3}>
@@ -139,7 +145,8 @@ function Booking() {
           </LocalizationProvider>
         </Grid>
         <Grid xs={3}>
-          {date && (
+          {isLoading && <Loading />}
+          {date && !isLoading && (
             <>
               <Stack spacing={2} alignItems='flex-start'>
                 <Typography variant='subtitle1' fontWeight='bold' align='left' color='textPrimary' gutterBottom sx={{ mt: 2 }}>
