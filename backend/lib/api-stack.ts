@@ -56,6 +56,13 @@ export class ApiStack extends Stack {
     calendarResolverFunction.addToRolePolicy(
       new PolicyStatement({
         effect: Effect.ALLOW,
+        actions: ['dynamodb:PutItem', 'dynamodb:UpdateItem'],
+        resources: [dataTable.tableArn],
+      })
+    );
+    calendarResolverFunction.addToRolePolicy(
+      new PolicyStatement({
+        effect: Effect.ALLOW,
         actions: ['dynamodb:Query'],
         resources: [dataTable.tableArn, dataTable.tableArn + '/index/customer-gsi'],
       })
@@ -70,6 +77,10 @@ export class ApiStack extends Stack {
     calendarResolverDataSource.createResolver('GetScheduledAppointmentsResolver', {
       typeName: 'Query',
       fieldName: 'getScheduledAppointments',
+    });
+    calendarResolverDataSource.createResolver('BookAppointmentResolver', {
+      typeName: 'Mutation',
+      fieldName: 'bookAppointment',
     });
   }
 }

@@ -1,6 +1,12 @@
 export type LastEvaluatedKey = {
-  userId: string;
+  pk: string;
   sk: string;
+};
+
+export type BookingInput = {
+  pk: string;
+  sk: string;
+  customer: string;
 };
 
 export type AppSyncEvent = {
@@ -10,6 +16,8 @@ export type AppSyncEvent = {
   arguments: {
     date: string;
     lastEvaluatedKey: LastEvaluatedKey;
+
+    bookingInput: BookingInput;
   };
   identity: {
     username: string;

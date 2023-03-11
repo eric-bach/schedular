@@ -104,26 +104,14 @@ function App() {
         <Grid xs={3} />
         <Grid xs={3}>
           <LocalizationProvider dateAdapter={AdapterDayjs}>
-            <DateCalendar
-              value={date}
-              minDate={today}
-              maxDate={oneMonth}
-              onChange={(newValue) => dateSelected(newValue)}
-            />
+            <DateCalendar value={date} minDate={today} maxDate={oneMonth} onChange={(newValue) => dateSelected(newValue)} />
           </LocalizationProvider>
         </Grid>
         <Grid xs={3}>
           {date && (
             <>
               <Stack spacing={2} alignItems='flex-start'>
-                <Typography
-                  variant='subtitle1'
-                  fontWeight='bold'
-                  align='left'
-                  color='textPrimary'
-                  gutterBottom
-                  sx={{ mt: 2 }}
-                >
+                <Typography variant='subtitle1' fontWeight='bold' align='left' color='textPrimary' gutterBottom sx={{ mt: 2 }}>
                   Available Times:
                 </Typography>
                 {numAppts < 1 && <Typography>No times available today 😢</Typography>}
@@ -172,4 +160,35 @@ function App() {
   );
 }
 
-export default withAuthenticator(App);
+export default withAuthenticator(App, {
+  signUpAttributes: ['phone_number', 'given_name', 'family_name'],
+  formFields: {
+    signUp: {
+      given_name: {
+        label: 'First Name:',
+        placeholder: 'Enter your first name',
+        order: 1,
+      },
+      family_name: {
+        label: 'Last Name:',
+        placeholder: 'Enter your last name',
+        order: 2,
+      },
+      phone_number: {
+        order: 3,
+      },
+      username: {
+        label: 'Email:',
+        placeholder: 'Enter your email',
+
+        order: 4,
+      },
+      password: {
+        order: 5,
+      },
+      confirm_password: {
+        order: 6,
+      },
+    },
+  },
+});
