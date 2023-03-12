@@ -2,12 +2,12 @@ import { Stack, Duration, RemovalPolicy, CfnOutput } from 'aws-cdk-lib';
 import { Construct } from 'constructs';
 import { UserPool, CfnUserPoolGroup, UserPoolClient, AccountRecovery, UserPoolDomain } from 'aws-cdk-lib/aws-cognito';
 
-import { AdventBaseStackProps } from './types/AdventStackProps';
+import { SchedularBaseStackProps } from './types/SchedularStackProps';
 
 export class AuthStack extends Stack {
   public userPoolId: string;
 
-  constructor(scope: Construct, id: string, props: AdventBaseStackProps) {
+  constructor(scope: Construct, id: string, props: SchedularBaseStackProps) {
     super(scope, id, props);
 
     // Cognito user pool

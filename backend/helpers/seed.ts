@@ -1,19 +1,12 @@
-import {
-  DynamoDBClient,
-  PutItemCommand,
-  PutItemCommandInput,
-} from '@aws-sdk/client-dynamodb';
-import {
-  CloudFormationClient,
-  DescribeStacksCommand,
-} from '@aws-sdk/client-cloudformation';
+import { DynamoDBClient, PutItemCommand, PutItemCommandInput } from '@aws-sdk/client-dynamodb';
+import { CloudFormationClient, DescribeStacksCommand } from '@aws-sdk/client-cloudformation';
 import { marshall } from '@aws-sdk/util-dynamodb';
 import * as fs from 'fs';
 
 async function seed() {
   try {
     // Get DynamoDB table name
-    const tableName = await getTableName('advent-database-dev');
+    const tableName = await getTableName('schedular-database-dev');
     console.log('✅ Seed table: ', tableName);
 
     // Read items to see from data/seeds.json
@@ -58,7 +51,7 @@ function getSeedData(file: string) {
 }
 
 async function getTableName(stackName: string): Promise<string> {
-  var tableName: string = 'advent-dev-Data';
+  var tableName: string = 'schedular-dev-Data';
 
   const client = new CloudFormationClient({});
   const command = new DescribeStacksCommand({ StackName: stackName });

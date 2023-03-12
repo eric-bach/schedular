@@ -1,4 +1,4 @@
-import { Stack, Duration } from 'aws-cdk-lib';
+import { Stack, Duration, CfnOutput } from 'aws-cdk-lib';
 import { Construct } from 'constructs';
 import { UserPool } from 'aws-cdk-lib/aws-cognito';
 import { Table } from 'aws-cdk-lib/aws-dynamodb';
@@ -9,12 +9,12 @@ import { Effect, PolicyStatement } from 'aws-cdk-lib/aws-iam';
 
 const dotenv = require('dotenv');
 import * as path from 'path';
-import { AdventApiStackProps } from './types/AdventStackProps';
+import { SchedularApiStackProps } from './types/SchedularStackProps';
 
 dotenv.config();
 
 export class ApiStack extends Stack {
-  constructor(scope: Construct, id: string, props: AdventApiStackProps) {
+  constructor(scope: Construct, id: string, props: SchedularApiStackProps) {
     super(scope, id, props);
 
     const REGION = Stack.of(this).region;
@@ -23,7 +23,7 @@ export class ApiStack extends Stack {
 
     // AppSync API
     const api = new GraphqlApi(this, `${props.appName}Api`, {
-      name: `${props.appName}-api`,
+      name: `${props.appName}-${props.envName}-api`,
       logConfig: {
         fieldLogLevel: FieldLogLevel.ALL,
       },
@@ -40,7 +40,7 @@ export class ApiStack extends Stack {
 
     // Resolver for Calendar
     const calendarResolverFunction = new NodejsFunction(this, 'CalendarResolver', {
-      functionName: `${props.appName}-CalendarResolver`,
+      functionName: `${props.appName}-${props.envName}-CalendarResolver`,
       runtime: Runtime.NODEJS_14_X,
       handler: 'handler',
       entry: path.resolve(__dirname, '../src/lambda/calendarResolver/main.ts'),
@@ -81,6 +81,15 @@ export class ApiStack extends Stack {
     calendarResolverDataSource.createResolver('BookAppointmentResolver', {
       typeName: 'Mutation',
       fieldName: 'bookAppointment',
+    });
+
+    /***
+     *** Outputs
+     ***/
+
+    new CfnOutput(this, 'AppSyncGraphqlEndpoint', {
+      value: api.graphqlUrl,
+      exportName: `${props.appName}-${props.envName}-graphqlUrl`,
     });
   }
 }
