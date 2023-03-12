@@ -1,9 +1,9 @@
 {
-  "name": "advent",
+  "name": "schedular",
   "version": "0.1.0",
-  "repository": "https://github.com/eric-bach/advent",
+  "repository": "https://github.com/eric-bach/schedular",
   "bin": {
-    "advent": "bin/advent.js"
+    "schedular": "bin/schedular.js"
   },
   "scripts": {
     "build": "tsc",

@@ -1,7 +1,7 @@
 import { Stack, RemovalPolicy, CfnOutput } from 'aws-cdk-lib';
 import { Construct } from 'constructs';
 import { Table, BillingMode, AttributeType } from 'aws-cdk-lib/aws-dynamodb';
-import { AdventBaseStackProps } from './types/AdventStackProps';
+import { SchedularBaseStackProps } from './types/SchedularStackProps';
 
 const dotenv = require('dotenv');
 dotenv.config();
@@ -9,7 +9,7 @@ dotenv.config();
 export class DatabaseStack extends Stack {
   public dataTableArn: string;
 
-  constructor(scope: Construct, id: string, props: AdventBaseStackProps) {
+  constructor(scope: Construct, id: string, props: SchedularBaseStackProps) {
     super(scope, id, props);
 
     const dataTable = new Table(this, 'Data', {
