@@ -17,7 +17,9 @@ export const GET_APPOINTMENTS = `query GetAppointments($date: String!, $lastEval
 
 export const BOOK_APPOINTMENT = `mutation BookAppointment($input: BookingInput!) {
   bookAppointment(bookingInput: $input) {
-    pk
-    sk
+    httpStatusCode
+    requestId
+    attempts
+    totalRetryDelay
   }
 }`;

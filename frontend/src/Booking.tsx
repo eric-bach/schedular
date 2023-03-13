@@ -40,12 +40,11 @@ type AppointmentViewModel = {
   lastEvaluatedKey: LastEvaluatedKeyViewModel;
 };
 
-type BookAppointmentItemViewModel = {
-  pk: string;
-  sk: string;
-};
 type BookAppointmentViewModel = {
-  bookAppointment: BookAppointmentItemViewModel;
+  httpStatusCode: number;
+  requestId: string;
+  attempts: number;
+  totalRetryDelay: number;
 };
 
 function Booking() {
@@ -116,7 +115,8 @@ function Booking() {
 
     const result = await API.graphql<GraphQLQuery<BookAppointmentViewModel>>(graphqlOperation(BOOK_APPOINTMENT, { input: input }));
 
-    console.log('Booked: ', result.data?.bookAppointment);
+    // TODO Fix this
+    console.log('Booked: ', result);
 
     // TODO Navigate to confirmation page and send email
   }
