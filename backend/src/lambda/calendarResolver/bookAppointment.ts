@@ -26,21 +26,21 @@ async function bookAppointment(input: BookingInput) {
           ExpressionAttributeNames: {
             '#status': 'status',
           },
+          ReturnValuesOnConditionCheckFailure: 'ALL_OLD',
         },
       },
     ],
-    ReturnItemCollectionMetrics: 'SIZE',
   };
 
   var updateResult = await dynamoDbCommand(new TransactWriteItemsCommand(transactWriteItemsCommand));
 
   if (updateResult.$metadata.httpStatusCode === 200) {
     console.log(`✅ Reserved Appointment: {result: ${JSON.stringify(updateResult)}}}`);
-    return updateResult.$metadata;
+  } else {
+    console.log(`🛑 Could not reserve Appointment`);
   }
 
-  console.log(`🛑 Could not reserve Appointment`);
-  return {};
+  return updateResult.$metadata;
 }
 
 export default bookAppointment;

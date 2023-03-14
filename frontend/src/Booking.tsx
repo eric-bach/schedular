@@ -1,10 +1,13 @@
 import React, { useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { Amplify, Auth } from 'aws-amplify';
 import { withAuthenticator } from '@aws-amplify/ui-react';
 import { API, graphqlOperation } from 'aws-amplify';
 import { GraphQLQuery } from '@aws-amplify/api';
 
 import dayjs, { Dayjs } from 'dayjs';
+import Alert from '@mui/material/Alert';
+import AlertTitle from '@mui/material/AlertTitle';
 import { AdapterDayjs } from '@mui/x-date-pickers/AdapterDayjs';
 import { LocalizationProvider } from '@mui/x-date-pickers/LocalizationProvider';
 import { DateCalendar } from '@mui/x-date-pickers';
@@ -40,11 +43,14 @@ type AppointmentViewModel = {
   lastEvaluatedKey: LastEvaluatedKeyViewModel;
 };
 
-type BookAppointmentViewModel = {
+type BookAppointmentItemViewModel = {
   httpStatusCode: number;
   requestId: string;
   attempts: number;
   totalRetryDelay: number;
+};
+type BookAppointmentViewModel = {
+  bookAppointment: BookAppointmentItemViewModel;
 };
 
 function Booking() {
@@ -55,7 +61,9 @@ function Booking() {
   const [numAppts, setNumAppts] = React.useState<number>(0);
   const [customer, setCustomer] = React.useState<string | null>(null);
   const [isLoading, setLoading] = React.useState<boolean>(false);
+  const [isError, setError] = React.useState<boolean>(false);
 
+  const navigate = useNavigate();
   const today = dayjs();
   const oneMonth = dayjs().add(1, 'month');
 
@@ -90,11 +98,11 @@ function Booking() {
     // Reset timeslow
     setTimeslot(null);
     setTimeslotText(null);
+    setError(false);
 
     setDate(date);
     let appts = await getAppointments(date);
     console.log('AVAILABLE APPOINTMENTS: ', appts);
-    console.log('AVAILABLE APPOINTMENTS: ', appts?.length);
   }
 
   function timeSelected(target: any) {
@@ -115,10 +123,19 @@ function Booking() {
 
     const result = await API.graphql<GraphQLQuery<BookAppointmentViewModel>>(graphqlOperation(BOOK_APPOINTMENT, { input: input }));
 
-    // TODO Fix this
-    console.log('Booked: ', result);
+    console.log('Booked: ', result.data?.bookAppointment);
 
-    // TODO Navigate to confirmation page and send email
+    if (result.data?.bookAppointment.httpStatusCode === 200) {
+      // TODO Navigate to confirmation page instead of home and send email
+      navigate('/');
+    } else {
+      await dateSelected(date);
+      setError(true);
+    }
+  }
+
+  function dismissError() {
+    setError(false);
   }
 
   return (
@@ -138,6 +155,21 @@ function Booking() {
         //   },
         // }}
       >
+        <Grid xs={3} />
+        <Grid xs={6}>
+          {isError && (
+            <Alert
+              severity='error'
+              onClose={() => {
+                dismissError();
+              }}
+            >
+              <AlertTitle>Error</AlertTitle>
+              Could not book appointment, the time may no longer be available. Please try again.
+            </Alert>
+          )}
+        </Grid>
+        <Grid xs={3} />
         <Grid xs={3} />
         <Grid xs={3}>
           <LocalizationProvider dateAdapter={AdapterDayjs}>
