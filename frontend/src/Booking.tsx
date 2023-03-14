@@ -140,21 +140,7 @@ function Booking() {
 
   return (
     <Box sx={{ flexGrow: 1, mt: 5 }}>
-      <Grid
-        container
-        spacing={2}
-        // sx={{
-        //   '--Grid-borderWidth': '1px',
-        //   borderTop: 'var(--Grid-borderWidth) solid',
-        //   borderLeft: 'var(--Grid-borderWidth) solid',
-        //   borderColor: 'divider',
-        //   '& > div': {
-        //     borderRight: 'var(--Grid-borderWidth) solid',
-        //     borderBottom: 'var(--Grid-borderWidth) solid',
-        //     borderColor: 'divider',
-        //   },
-        // }}
-      >
+      <Grid container spacing={2}>
         <Grid xs={3} />
         <Grid xs={6}>
           {isError && (
@@ -170,6 +156,7 @@ function Booking() {
           )}
         </Grid>
         <Grid xs={3} />
+
         <Grid xs={3} />
         <Grid xs={3}>
           <LocalizationProvider dateAdapter={AdapterDayjs}>

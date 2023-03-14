@@ -13,10 +13,7 @@ async function dynamoDbCommand(command: any) {
     console.log(`🔔 DynamoDB result:\n${JSON.stringify(result)}`);
   } catch (error: any) {
     console.error(`🛑 Error with DynamoDB command:\n`, error);
-    console.error(`🛑 Error with DynamoDB command:\n`, error.$metadata);
-    console.error(`🛑 Error with DynamoDB command:\n`, error.CancellationReasons);
-
-    return error;
+    result = error;
   }
 
   return result;

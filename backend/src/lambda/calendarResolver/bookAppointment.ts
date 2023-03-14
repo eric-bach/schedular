@@ -15,13 +15,13 @@ async function bookAppointment(input: BookingInput) {
             pk: input.pk,
             sk: input.sk,
           }),
-          ConditionExpression: '#status = :openStatus',
-          UpdateExpression: 'SET customer=:customer, #status=:status, updatedAt=:updatedAt',
+          ConditionExpression: '#status = :available AND attribute_not_exists(customer)',
+          UpdateExpression: 'SET customer = :customer, #status = :status, updatedAt = :updatedAt',
           ExpressionAttributeValues: marshall({
             ':customer': input.customer,
+            ':available': 'open',
             ':status': 'booked',
             ':updatedAt': new Date().toISOString(),
-            ':openStatus': 'open',
           }),
           ExpressionAttributeNames: {
             '#status': 'status',
