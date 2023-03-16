@@ -4,6 +4,7 @@
 - [x] Add Authenticated NavBar
 - [x] Hookup frontend to booking API
 - [x] Rename repo
+- [x] Change seeder to be dynamic
 - [] Build confirmation page
 - [] Email user confirmed appointment
 - [] Build page to list upcoming/past appointments

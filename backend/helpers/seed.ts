@@ -1,6 +1,7 @@
 import { DynamoDBClient, PutItemCommand, PutItemCommandInput } from '@aws-sdk/client-dynamodb';
 import { CloudFormationClient, DescribeStacksCommand } from '@aws-sdk/client-cloudformation';
 import { marshall } from '@aws-sdk/util-dynamodb';
+import dayjs from 'dayjs';
 import * as fs from 'fs';
 
 async function seed() {
@@ -10,7 +11,9 @@ async function seed() {
     console.log('✅ Seed table: ', tableName);
 
     // Read items to see from data/seeds.json
-    const data = getSeedData('./data/seeds.json');
+    //const data = getSeedData('./data/seeds.json');
+    // Generate random seed data
+    const data = generateRandomSeedData();
     console.log('✅ Seed data: ', data);
 
     console.log('\n🚀 Starting to seed table...');
@@ -19,6 +22,8 @@ async function seed() {
     data.map(async (item: any) => {
       await seedItem(tableName, item);
     });
+
+    generateRandomSeedData();
   } catch (error) {
     console.error('🛑 Error seeding database\n', error);
     process.exit(-1);
@@ -48,6 +53,17 @@ function getSeedData(file: string) {
     console.error('🛑 Error reading seed file\n', err);
     return;
   }
+}
+
+function generateRandomSeedData() {
+  const data = [];
+  for (var d = dayjs(); d < dayjs().add(1, 'month'); d = dayjs(d).add(1, 'day')) {
+    for (var h = 8; h < 16; h++) {
+      let sk = dayjs(d).set('hour', h).set('minute', 0).set('second', 0).set('millisecond', 0);
+      data.push({ pk: 'appt', sk: sk.toISOString(), duration: 60, status: 'open', type: 'massage' });
+    }
+  }
+  return data;
 }
 
 async function getTableName(stackName: string): Promise<string> {
