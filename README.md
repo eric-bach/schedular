@@ -120,3 +120,22 @@ The Schedular application consists of the CDK backend and React frontend, each o
    REACT_APP_APPSYNC_ENDPOINT - AWS AppSync GraphQL endpoint URL
    REACT_APP_APPSYNC_REGION - AWS AppSync region
    ```
+
+# Seed Data
+
+## Seed Test Data
+
+To seed test data
+
+1. Edit `backend\helpers\seed.ts` with environment name and AWS profile name
+
+   ```
+   var env: string = 'dev';
+   var profile: string = 'default';
+   ```
+
+2. Run npm to seed data
+
+   ```
+   $ npm run seed dev PROFILE_NAME
+   ```
