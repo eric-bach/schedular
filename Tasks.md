@@ -5,6 +5,7 @@
 - [x] Hookup frontend to booking API
 - [x] Rename repo
 - [x] Change seeder to be dynamic
+- [] Build types for Booking.tsx
 - [] Build confirmation page
 - [] Email user confirmed appointment
 - [] Build page to list upcoming/past appointments
