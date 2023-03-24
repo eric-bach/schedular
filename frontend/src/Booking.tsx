@@ -140,9 +140,24 @@ function Booking() {
 
   return (
     <Box sx={{ flexGrow: 1, mt: 5 }}>
-      <Grid container spacing={2}>
-        <Grid xs={3} />
-        <Grid xs={6}>
+      <Grid
+        container
+        spacing={{ xs: 2, sm: 3, md: 3, lg: 3 }}
+        columns={{ xs: 4, sm: 8, md: 12, lg: 12 }}
+        sx={{
+          '--Grid-borderWidth': '1px',
+          borderTop: 'var(--Grid-borderWidth) solid',
+          borderLeft: 'var(--Grid-borderWidth) solid',
+          borderColor: 'divider',
+          '& > div': {
+            borderRight: 'var(--Grid-borderWidth) solid',
+            borderBottom: 'var(--Grid-borderWidth) solid',
+            borderColor: 'divider',
+          },
+        }}
+      >
+        <Grid xs={0} sm={0} md={3} />
+        <Grid xs={12} sm={12} md={6}>
           {isError && (
             <Alert
               severity='error'
@@ -155,15 +170,15 @@ function Booking() {
             </Alert>
           )}
         </Grid>
-        <Grid xs={3} />
+        <Grid xs={0} sm={0} md={3} />
 
-        <Grid xs={3} />
-        <Grid xs={3}>
+        <Grid xs={0} sm={0} md={0} lg={3} />
+        <Grid xs={6} sm={6} md={6} lg={3}>
           <LocalizationProvider dateAdapter={AdapterDayjs}>
             <DateCalendar value={date} minDate={today} maxDate={oneMonth} onChange={(newValue) => dateSelected(newValue)} />
           </LocalizationProvider>
         </Grid>
-        <Grid xs={3}>
+        <Grid xs={6} sm={6} md={6} lg={3}>
           {isLoading && <Loading />}
           {date && !isLoading && (
             <>
@@ -204,7 +219,7 @@ function Booking() {
             </>
           )}
         </Grid>
-        <Grid xs={3} />
+        <Grid xs={0} sm={0} md={0} lg={3} />
       </Grid>
     </Box>
   );

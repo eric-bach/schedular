@@ -72,7 +72,7 @@ function Header() {
   useEffect(() => {
     isAuthenticated();
     console.log('IsAuthenticated: ', authenticated);
-  }, []);
+  }, [authenticated]);
 
   return (
     <AppBar position='static'>
