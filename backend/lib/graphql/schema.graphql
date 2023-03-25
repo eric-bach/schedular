@@ -61,7 +61,7 @@ type Query {
 }
 
 type Mutation {
-  bookAppointment(bookingInput: BookingInput): TransactWriteItemsCommandOutput @aws_cognito_user_pools(cognito_groups: ["Users"])
+  bookAppointment(bookingInput: BookingInput): TransactWriteItemsCommandOutput @aws_cognito_user_pools(cognito_groups: ["Users", "Admins"])
 }
 
 schema {

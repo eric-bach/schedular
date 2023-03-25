@@ -17,47 +17,19 @@ import Grid from '@mui/material/Unstable_Grid2';
 import Typography from '@mui/material/Typography';
 import Button from '@mui/material/Button';
 
-import aws_exports from './aws-exports';
-import Loading from './components/Loading';
-import { GET_APPOINTMENTS, BOOK_APPOINTMENT } from './graphql/queries';
+import aws_exports from '../../aws-exports';
+import Loading from '../../components/Loading';
+import { GET_APPOINTMENTS, BOOK_APPOINTMENT } from '../../graphql/queries';
+import { GetAppointmentsResponse, AppointmentItem, BookingRequest } from './Types';
 import '@aws-amplify/ui-react/styles.css';
 
 Amplify.configure(aws_exports);
-
-type AppointmentsViewModel = {
-  items: [AppointmentItemViewModel];
-};
-type AppointmentItemViewModel = {
-  pk: string;
-  sk: string;
-  duration: number;
-  status: string;
-  type: string;
-};
-type LastEvaluatedKeyViewModel = {
-  pk: string;
-  sk: string;
-};
-type AppointmentViewModel = {
-  getAvailableAppointments: AppointmentsViewModel;
-  lastEvaluatedKey: LastEvaluatedKeyViewModel;
-};
-
-type BookAppointmentItemViewModel = {
-  httpStatusCode: number;
-  requestId: string;
-  attempts: number;
-  totalRetryDelay: number;
-};
-type BookAppointmentViewModel = {
-  bookAppointment: BookAppointmentItemViewModel;
-};
 
 function Booking() {
   const [date, setDate] = React.useState<Dayjs | null>(null);
   const [timeslot, setTimeslot] = React.useState<string | null>(null);
   const [timeslotText, setTimeslotText] = React.useState<string | null>(null);
-  const [availableAppts, setAppts] = React.useState<[AppointmentItemViewModel | undefined]>();
+  const [availableAppts, setAppts] = React.useState<[AppointmentItem | undefined]>();
   const [numAppts, setNumAppts] = React.useState<number>(0);
   const [customer, setCustomer] = React.useState<string | null>(null);
   const [isLoading, setLoading] = React.useState<boolean>(false);
@@ -70,7 +42,7 @@ function Booking() {
   const getAppointments = async (date: Dayjs | null) => {
     setLoading(true);
     console.log('GETTING APPOINTMENTS FOR ', dayjs(date).format('YYYY-MM-DD'));
-    const appointments = await API.graphql<GraphQLQuery<AppointmentViewModel>>(
+    const appointments = await API.graphql<GraphQLQuery<GetAppointmentsResponse>>(
       graphqlOperation(GET_APPOINTMENTS, {
         date: dayjs(date).format('YYYY-MM-DD'),
       })
@@ -121,7 +93,7 @@ function Booking() {
       customer: customer,
     };
 
-    const result = await API.graphql<GraphQLQuery<BookAppointmentViewModel>>(graphqlOperation(BOOK_APPOINTMENT, { input: input }));
+    const result = await API.graphql<GraphQLQuery<BookingRequest>>(graphqlOperation(BOOK_APPOINTMENT, { input: input }));
 
     console.log('Booked: ', result.data?.bookAppointment);
 
