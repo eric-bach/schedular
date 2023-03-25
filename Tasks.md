@@ -1,16 +1,20 @@
+# Tech
+
+- [] Build types for Booking.tsx
+
 # User
 
-- [x] Build API to book appointment
-- [x] Add Authenticated NavBar
-- [x] Hookup frontend to booking API
-- [x] Rename repo
-- [x] Change seeder to be dynamic
-- [] Build types for Booking.tsx
-- [] Build confirmation page
-- [] Email user confirmed appointment
-- [] Build page to list upcoming/past appointments
+- [x] As a user I want to be able to sign up
+- [x] As a user I want to be able to book an appointment
+- [] As a user I want a confirmation of a booked appointment
+- [] As a user I want to receive a confirmation email for an appointment
+- [] As a user I want to see my past/upcoming appointments
+- [] As a user I want the ability to cancel an appointment
+- [] As a user I want to receive notification email of an upcoming appointment
 
 # Admin
 
-- [] Build out admin page to list all today's appointments
-- [] Build page to set availability
+- [] As a massage therapist I want to be able to see all my daily appointments
+- [] As a massage therapist I want to be able to set my availability
+- [] As a massage therapist I want to require a phone consultation before a massage booking
+- [] As a massage therapist I want to be able to see and manage a users bookings
