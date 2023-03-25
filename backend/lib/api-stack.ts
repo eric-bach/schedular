@@ -67,6 +67,14 @@ export class ApiStack extends Stack {
         resources: [dataTable.tableArn, dataTable.tableArn + '/index/customer-gsi'],
       })
     );
+    // Add persmission to send email
+    calendarResolverFunction.addToRolePolicy(
+      new PolicyStatement({
+        effect: Effect.ALLOW,
+        actions: ['ses:SendRawEmail'],
+        resources: ['*'],
+      })
+    );
     // Set the new Lambda function as a data source for the AppSync API
     const calendarResolverDataSource = api.addLambdaDataSource('calendarDataSource', calendarResolverFunction);
     // Resolvers
