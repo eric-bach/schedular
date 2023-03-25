@@ -1,6 +1,6 @@
 # Tech
 
-- [] Build types for Booking.tsx
+- [x] Clean up types for Booking.tsx
 
 # User
 
