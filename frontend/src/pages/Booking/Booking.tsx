@@ -98,7 +98,7 @@ function Booking() {
     console.log('Booked: ', result.data?.bookAppointment);
 
     if (result.data?.bookAppointment.httpStatusCode === 200) {
-      navigate(`/confirmation/${result.data.bookAppointment.confirmationId}`);
+      navigate(`/confirmation/${result.data.bookAppointment.confirmationId}`, { state: { customer: customer, timeslot: timeslot } });
     } else {
       await dateSelected(date);
       setError(true);
