@@ -7,7 +7,10 @@
 - [x] As a user I want to be able to sign up
 - [x] As a user I want to be able to book an appointment
 - [] As a user I want a confirmation of a booked appointment
+  - Clean up confirmation page layout, include more fields from backend
 - [] As a user I want to receive a confirmation email for an appointment
+  - Test email is sent out
+  - Move email sending to asynchronous event (EB->SQS->Lambda)
 - [] As a user I want to see my past/upcoming appointments
 - [] As a user I want the ability to cancel an appointment
 - [] As a user I want to receive notification email of an upcoming appointment

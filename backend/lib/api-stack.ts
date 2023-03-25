@@ -6,6 +6,7 @@ import { AuthorizationType, FieldLogLevel, GraphqlApi, SchemaFile } from 'aws-cd
 import { NodejsFunction } from 'aws-cdk-lib/aws-lambda-nodejs';
 import { Runtime } from 'aws-cdk-lib/aws-lambda';
 import { Effect, PolicyStatement } from 'aws-cdk-lib/aws-iam';
+import { EmailIdentity } from 'aws-cdk-lib/aws-ses';
 
 const dotenv = require('dotenv');
 import * as path from 'path';
@@ -20,6 +21,11 @@ export class ApiStack extends Stack {
     const REGION = Stack.of(this).region;
     const userPool = UserPool.fromUserPoolId(this, 'userPool', props.params.userPoolId);
     const dataTable = Table.fromTableArn(this, 'table', props.params.dataTableArn);
+
+    // SES
+    const emailIdentity = new EmailIdentity(this, 'Identity', {
+      identity: { value: process.env.SENDER_EMAIL || 'info@example.com' },
+    });
 
     // AppSync API
     const api = new GraphqlApi(this, `${props.appName}Api`, {
@@ -94,6 +100,11 @@ export class ApiStack extends Stack {
     /***
      *** Outputs
      ***/
+
+    new CfnOutput(this, 'VerifiedEmailIdentity', {
+      value: emailIdentity.emailIdentityName,
+      exportName: `${props.appName}-${props.envName}-emailIdentity`,
+    });
 
     new CfnOutput(this, 'AppSyncGraphqlEndpoint', {
       value: api.graphqlUrl,
