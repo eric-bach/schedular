@@ -1,10 +1,13 @@
 import React, { useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { Amplify, Auth } from 'aws-amplify';
 import { withAuthenticator } from '@aws-amplify/ui-react';
 import { API, graphqlOperation } from 'aws-amplify';
 import { GraphQLQuery } from '@aws-amplify/api';
 
 import dayjs, { Dayjs } from 'dayjs';
+import Alert from '@mui/material/Alert';
+import AlertTitle from '@mui/material/AlertTitle';
 import { AdapterDayjs } from '@mui/x-date-pickers/AdapterDayjs';
 import { LocalizationProvider } from '@mui/x-date-pickers/LocalizationProvider';
 import { DateCalendar } from '@mui/x-date-pickers';
@@ -41,8 +44,10 @@ type AppointmentViewModel = {
 };
 
 type BookAppointmentItemViewModel = {
-  pk: string;
-  sk: string;
+  httpStatusCode: number;
+  requestId: string;
+  attempts: number;
+  totalRetryDelay: number;
 };
 type BookAppointmentViewModel = {
   bookAppointment: BookAppointmentItemViewModel;
@@ -56,7 +61,9 @@ function Booking() {
   const [numAppts, setNumAppts] = React.useState<number>(0);
   const [customer, setCustomer] = React.useState<string | null>(null);
   const [isLoading, setLoading] = React.useState<boolean>(false);
+  const [isError, setError] = React.useState<boolean>(false);
 
+  const navigate = useNavigate();
   const today = dayjs();
   const oneMonth = dayjs().add(1, 'month');
 
@@ -91,11 +98,11 @@ function Booking() {
     // Reset timeslow
     setTimeslot(null);
     setTimeslotText(null);
+    setError(false);
 
     setDate(date);
     let appts = await getAppointments(date);
     console.log('AVAILABLE APPOINTMENTS: ', appts);
-    console.log('AVAILABLE APPOINTMENTS: ', appts?.length);
   }
 
   function timeSelected(target: any) {
@@ -118,33 +125,60 @@ function Booking() {
 
     console.log('Booked: ', result.data?.bookAppointment);
 
-    // TODO Navigate to confirmation page and send email
+    if (result.data?.bookAppointment.httpStatusCode === 200) {
+      // TODO Navigate to confirmation page instead of home and send email
+      navigate('/');
+    } else {
+      await dateSelected(date);
+      setError(true);
+    }
+  }
+
+  function dismissError() {
+    setError(false);
   }
 
   return (
     <Box sx={{ flexGrow: 1, mt: 5 }}>
       <Grid
         container
-        spacing={2}
-        // sx={{
-        //   '--Grid-borderWidth': '1px',
-        //   borderTop: 'var(--Grid-borderWidth) solid',
-        //   borderLeft: 'var(--Grid-borderWidth) solid',
-        //   borderColor: 'divider',
-        //   '& > div': {
-        //     borderRight: 'var(--Grid-borderWidth) solid',
-        //     borderBottom: 'var(--Grid-borderWidth) solid',
-        //     borderColor: 'divider',
-        //   },
-        // }}
+        spacing={{ xs: 2, sm: 3, md: 3, lg: 3 }}
+        columns={{ xs: 4, sm: 8, md: 12, lg: 12 }}
+        sx={{
+          '--Grid-borderWidth': '1px',
+          borderTop: 'var(--Grid-borderWidth) solid',
+          borderLeft: 'var(--Grid-borderWidth) solid',
+          borderColor: 'divider',
+          '& > div': {
+            borderRight: 'var(--Grid-borderWidth) solid',
+            borderBottom: 'var(--Grid-borderWidth) solid',
+            borderColor: 'divider',
+          },
+        }}
       >
-        <Grid xs={3} />
-        <Grid xs={3}>
+        <Grid xs={0} sm={0} md={3} />
+        <Grid xs={12} sm={12} md={6}>
+          {isError && (
+            <Alert
+              severity='error'
+              onClose={() => {
+                dismissError();
+              }}
+            >
+              <AlertTitle>Error</AlertTitle>
+              Could not book appointment, the time may no longer be available. Please try again.
+            </Alert>
+          )}
+        </Grid>
+        <Grid xs={0} sm={0} md={3} />
+
+        <Grid xs={0} sm={0} md={0} lg={3} />
+        <Grid xs={6} sm={6} md={6} lg={3}>
           <LocalizationProvider dateAdapter={AdapterDayjs}>
             <DateCalendar value={date} minDate={today} maxDate={oneMonth} onChange={(newValue) => dateSelected(newValue)} />
           </LocalizationProvider>
         </Grid>
-        <Grid xs={3}>
+        <Grid xs={6} sm={6} md={6} lg={3}>
           {isLoading && <Loading />}
           {date && !isLoading && (
             <>
@@ -185,7 +219,7 @@ function Booking() {
             </>
           )}
         </Grid>
-        <Grid xs={3} />
+        <Grid xs={0} sm={0} md={0} lg={3} />
       </Grid>
     </Box>
   );

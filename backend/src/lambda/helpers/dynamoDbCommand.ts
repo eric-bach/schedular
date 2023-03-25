@@ -11,8 +11,9 @@ async function dynamoDbCommand(command: any) {
     result = await client.send(command);
 
     console.log(`🔔 DynamoDB result:\n${JSON.stringify(result)}`);
-  } catch (error) {
+  } catch (error: any) {
     console.error(`🛑 Error with DynamoDB command:\n`, error);
+    result = error;
   }
 
   return result;
