@@ -20,7 +20,7 @@ import Button from '@mui/material/Button';
 import aws_exports from '../../aws-exports';
 import Loading from '../../components/Loading';
 import { GET_APPOINTMENTS, BOOK_APPOINTMENT } from '../../graphql/queries';
-import { GetAppointmentsResponse, AppointmentItem, BookingRequest } from './Types';
+import { GetAppointmentsResponse, AppointmentItem, AppointmentBookingResponse } from './Types';
 import '@aws-amplify/ui-react/styles.css';
 
 Amplify.configure(aws_exports);
@@ -93,13 +93,12 @@ function Booking() {
       customer: customer,
     };
 
-    const result = await API.graphql<GraphQLQuery<BookingRequest>>(graphqlOperation(BOOK_APPOINTMENT, { input: input }));
+    const result = await API.graphql<GraphQLQuery<AppointmentBookingResponse>>(graphqlOperation(BOOK_APPOINTMENT, { input: input }));
 
     console.log('Booked: ', result.data?.bookAppointment);
 
     if (result.data?.bookAppointment.httpStatusCode === 200) {
-      // TODO Navigate to confirmation page instead of home and send email
-      navigate('/');
+      navigate(`/confirmation/${result.data.bookAppointment.confirmationId}`);
     } else {
       await dateSelected(date);
       setError(true);

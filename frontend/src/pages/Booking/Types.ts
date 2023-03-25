@@ -18,11 +18,12 @@ export type GetAppointmentsResponse = {
   lastEvaluatedKey: Base;
 };
 
-export type BookingRequest = {
+export type AppointmentBookingResponse = {
   bookAppointment: {
     httpStatusCode: number;
     requestId: string;
     attempts: number;
     totalRetryDelay: number;
+    confirmationId: string;
   };
 };

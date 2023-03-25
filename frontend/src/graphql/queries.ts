@@ -21,5 +21,6 @@ export const BOOK_APPOINTMENT = `mutation BookAppointment($input: BookingInput!)
     requestId
     attempts
     totalRetryDelay
+    confirmationId
   }
 }`;

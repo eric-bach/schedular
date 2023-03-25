@@ -50,6 +50,7 @@ type TransactWriteItemsCommandOutput {
   requestId: String
   attempts: Int
   totalRetryDelay: Int
+  confirmationId: String
 }
 
 # GraphQL actions
