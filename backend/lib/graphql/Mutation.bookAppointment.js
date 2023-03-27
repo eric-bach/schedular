@@ -36,5 +36,9 @@ export function request(ctx) {
 
 export function response(ctx) {
   console.log('🔔 BookAppointment Response: ', ctx);
-  return { ...ctx.result, error: ctx.error };
+
+  if (ctx.error) {
+    util.error(ctx.error.message, ctx.error.type, ctx.result);
+  }
+  return ctx.result;
 }

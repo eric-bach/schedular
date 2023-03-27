@@ -45,11 +45,6 @@ type GetAppointmentsResponse {
   lastEvaluatedKey: LastEvaluatedKeyViewModel
 }
 
-type ErrorResponse {
-  type: String
-  message: String
-}
-
 type BookAppointmentResponse {
   pk: ID
   sk: String
@@ -57,7 +52,6 @@ type BookAppointmentResponse {
   status: String
   customer: String
   updatedAt: AWSDateTime
-  error: ErrorResponse
 }
 
 # GraphQL actions

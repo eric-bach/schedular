@@ -1,4 +1,4 @@
-import { Stack, Duration, CfnOutput } from 'aws-cdk-lib';
+import { Stack, CfnOutput } from 'aws-cdk-lib';
 import { Construct } from 'constructs';
 import { UserPool } from 'aws-cdk-lib/aws-cognito';
 import { Table } from 'aws-cdk-lib/aws-dynamodb';
@@ -10,13 +10,10 @@ import {
   FunctionRuntime,
   GraphqlApi,
   InlineCode,
-  MappingTemplate,
   Resolver,
   SchemaFile,
 } from 'aws-cdk-lib/aws-appsync';
-import { NodejsFunction } from 'aws-cdk-lib/aws-lambda-nodejs';
-import { Runtime } from 'aws-cdk-lib/aws-lambda';
-import { Effect, PolicyStatement } from 'aws-cdk-lib/aws-iam';
+import { EventBus } from 'aws-cdk-lib/aws-events';
 import { EmailIdentity } from 'aws-cdk-lib/aws-ses';
 
 const dotenv = require('dotenv');
@@ -38,6 +35,11 @@ export class ApiStack extends Stack {
       identity: { value: process.env.SENDER_EMAIL || 'info@example.com' },
     });
 
+    // Event Bridge
+    const eventBus = new EventBus(this, 'EventBus', {
+      eventBusName: `${props.appName}-bus-${props.envName}`,
+    });
+
     // AppSync API
     const api = new GraphqlApi(this, `${props.appName}Api`, {
       name: `${props.appName}-${props.envName}-api`,
@@ -55,29 +57,47 @@ export class ApiStack extends Stack {
       },
     });
 
-    // AppSync DynamoDB DataSource
-    const dataSource = api.addDynamoDbDataSource(`${props.appName}-${props.envName}-table`, dataTable);
+    // AppSync DataSources
+    const dynamoDbDataSource = api.addDynamoDbDataSource(`${props.appName}-${props.envName}-table`, dataTable);
+    const httpDataSource = api.addHttpDataSource(
+      `${props.appName}-${props.envName}-events`,
+      'https://events.' + this.region + '.amazonaws.com/',
+      {
+        authorizationConfig: {
+          signingRegion: this.region,
+          signingServiceName: 'events',
+        },
+      }
+    );
+    eventBus.grantPutEventsTo(httpDataSource.grantPrincipal);
 
     // AppSync JS Resolvers
     const getAvailableAppointmentsFunc = new AppsyncFunction(this, 'getAvailableAppointmentsFunction', {
       name: 'getAvailableAppointmentsFunction',
       api: api,
-      dataSource: dataSource,
+      dataSource: dynamoDbDataSource,
       code: Code.fromAsset(path.join(__dirname, '/graphql/Query.getAvailableAppointments.js')),
       runtime: FunctionRuntime.JS_1_0_0,
     });
     const getAppointmentsFunc = new AppsyncFunction(this, 'getAppointmentsFunction', {
       name: 'getAppointmentsFunction',
       api: api,
-      dataSource: dataSource,
+      dataSource: dynamoDbDataSource,
       code: Code.fromAsset(path.join(__dirname, '/graphql/Query.getAppointments.js')),
       runtime: FunctionRuntime.JS_1_0_0,
     });
     const bookAppointmentFunc = new AppsyncFunction(this, 'bookAppointmentFunction', {
       name: 'bookAppointmentFunction',
       api: api,
-      dataSource: dataSource,
+      dataSource: dynamoDbDataSource,
       code: Code.fromAsset(path.join(__dirname, '/graphql/Mutation.bookAppointment.js')),
+      runtime: FunctionRuntime.JS_1_0_0,
+    });
+    const emailFunc = new AppsyncFunction(this, 'emailFunc', {
+      name: 'emailFunc',
+      api: api,
+      dataSource: httpDataSource,
+      code: Code.fromAsset(path.join(__dirname, '/graphql/email.js')),
       runtime: FunctionRuntime.JS_1_0_0,
     });
 
@@ -116,7 +136,7 @@ export class ApiStack extends Stack {
       typeName: 'Mutation',
       fieldName: 'bookAppointment',
       runtime: FunctionRuntime.JS_1_0_0,
-      pipelineConfig: [bookAppointmentFunc],
+      pipelineConfig: [bookAppointmentFunc, emailFunc],
       code: passthrough,
     });
 
