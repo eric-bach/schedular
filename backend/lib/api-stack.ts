@@ -2,7 +2,18 @@ import { Stack, Duration, CfnOutput } from 'aws-cdk-lib';
 import { Construct } from 'constructs';
 import { UserPool } from 'aws-cdk-lib/aws-cognito';
 import { Table } from 'aws-cdk-lib/aws-dynamodb';
-import { AuthorizationType, FieldLogLevel, GraphqlApi, SchemaFile } from 'aws-cdk-lib/aws-appsync';
+import {
+  AppsyncFunction,
+  AuthorizationType,
+  Code,
+  FieldLogLevel,
+  FunctionRuntime,
+  GraphqlApi,
+  InlineCode,
+  MappingTemplate,
+  Resolver,
+  SchemaFile,
+} from 'aws-cdk-lib/aws-appsync';
 import { NodejsFunction } from 'aws-cdk-lib/aws-lambda-nodejs';
 import { Runtime } from 'aws-cdk-lib/aws-lambda';
 import { Effect, PolicyStatement } from 'aws-cdk-lib/aws-iam';
@@ -44,58 +55,123 @@ export class ApiStack extends Stack {
       },
     });
 
-    // Resolver for Calendar
-    const calendarResolverFunction = new NodejsFunction(this, 'CalendarResolver', {
-      functionName: `${props.appName}-${props.envName}-CalendarResolver`,
-      runtime: Runtime.NODEJS_14_X,
-      handler: 'handler',
-      entry: path.resolve(__dirname, '../src/lambda/calendarResolver/main.ts'),
-      memorySize: 512,
-      timeout: Duration.seconds(10),
-      environment: {
-        DATA_TABLE_NAME: dataTable.tableName,
-        REGION: REGION,
-      },
-      //deadLetterQueue: commandHandlerQueue,
+    // AppSync DynamoDB DataSource
+    const dataSource = api.addDynamoDbDataSource(`${props.appName}-${props.envName}-table`, dataTable);
+
+    // AppSync JS Resolvers
+    const getAvailableAppointmentsFunc = new AppsyncFunction(this, 'getAvailableAppointmentsFunction', {
+      name: 'getAvailableAppointmentsFunction',
+      api: api,
+      dataSource: dataSource,
+      code: Code.fromAsset(path.join(__dirname, '/graphql/Query.getAvailableAppointments.js')),
+      runtime: FunctionRuntime.JS_1_0_0,
     });
-    // Add permissions to DynamoDB table
-    calendarResolverFunction.addToRolePolicy(
-      new PolicyStatement({
-        effect: Effect.ALLOW,
-        actions: ['dynamodb:PutItem', 'dynamodb:UpdateItem'],
-        resources: [dataTable.tableArn],
-      })
-    );
-    calendarResolverFunction.addToRolePolicy(
-      new PolicyStatement({
-        effect: Effect.ALLOW,
-        actions: ['dynamodb:Query'],
-        resources: [dataTable.tableArn, dataTable.tableArn + '/index/customer-gsi'],
-      })
-    );
-    // Add persmission to send email
-    calendarResolverFunction.addToRolePolicy(
-      new PolicyStatement({
-        effect: Effect.ALLOW,
-        actions: ['ses:SendRawEmail'],
-        resources: ['*'],
-      })
-    );
-    // Set the new Lambda function as a data source for the AppSync API
-    const calendarResolverDataSource = api.addLambdaDataSource('calendarDataSource', calendarResolverFunction);
-    // Resolvers
-    calendarResolverDataSource.createResolver('GetAvailableAppointmentsResolver', {
+    const getAppointmentsFunc = new AppsyncFunction(this, 'getAppointmentsFunction', {
+      name: 'getAppointmentsFunction',
+      api: api,
+      dataSource: dataSource,
+      code: Code.fromAsset(path.join(__dirname, '/graphql/Query.getAppointments.js')),
+      runtime: FunctionRuntime.JS_1_0_0,
+    });
+    const bookAppointmentFunc = new AppsyncFunction(this, 'bookAppointmentFunction', {
+      name: 'bookAppointmentFunction',
+      api: api,
+      dataSource: dataSource,
+      code: Code.fromAsset(path.join(__dirname, '/graphql/Mutation.bookAppointment.js')),
+      runtime: FunctionRuntime.JS_1_0_0,
+    });
+
+    const passthrough = InlineCode.fromInline(`
+        // The before step
+        export function request(...args) {
+          console.log("Args: ", args);
+          return {}
+        }
+
+        // The after step
+        export function response(ctx) {
+          console.log("Resp: ", ctx.prev.result);
+          return ctx.prev.result
+        }
+    `);
+
+    const getAvailableAppointmentsResolver = new Resolver(this, 'getAvailableAppointmentsResolver', {
+      api: api,
       typeName: 'Query',
       fieldName: 'getAvailableAppointments',
+      runtime: FunctionRuntime.JS_1_0_0,
+      pipelineConfig: [getAvailableAppointmentsFunc],
+      code: passthrough,
     });
-    calendarResolverDataSource.createResolver('GetScheduledAppointmentsResolver', {
+    const getAppointmentsResolver = new Resolver(this, 'getAppointmentsResolver', {
+      api: api,
       typeName: 'Query',
-      fieldName: 'getScheduledAppointments',
+      fieldName: 'getAppointments',
+      runtime: FunctionRuntime.JS_1_0_0,
+      pipelineConfig: [getAppointmentsFunc],
+      code: passthrough,
     });
-    calendarResolverDataSource.createResolver('BookAppointmentResolver', {
+    const bookAppopintmentResolver = new Resolver(this, 'bookAppointmentResolver', {
+      api: api,
       typeName: 'Mutation',
       fieldName: 'bookAppointment',
+      runtime: FunctionRuntime.JS_1_0_0,
+      pipelineConfig: [bookAppointmentFunc],
+      code: passthrough,
     });
+
+    // // Resolver for Calendar
+    // const calendarResolverFunction = new NodejsFunction(this, 'CalendarResolver', {
+    //   functionName: `${props.appName}-${props.envName}-CalendarResolver`,
+    //   runtime: Runtime.NODEJS_14_X,
+    //   handler: 'handler',
+    //   entry: path.resolve(__dirname, '../src/lambda/calendarResolver/main.ts'),
+    //   memorySize: 512,
+    //   timeout: Duration.seconds(10),
+    //   environment: {
+    //     DATA_TABLE_NAME: dataTable.tableName,
+    //     REGION: REGION,
+    //   },
+    //   //deadLetterQueue: commandHandlerQueue,
+    // });
+    // // Add permissions to DynamoDB table
+    // calendarResolverFunction.addToRolePolicy(
+    //   new PolicyStatement({
+    //     effect: Effect.ALLOW,
+    //     actions: ['dynamodb:PutItem', 'dynamodb:UpdateItem'],
+    //     resources: [dataTable.tableArn],
+    //   })
+    // );
+    // calendarResolverFunction.addToRolePolicy(
+    //   new PolicyStatement({
+    //     effect: Effect.ALLOW,
+    //     actions: ['dynamodb:Query'],
+    //     resources: [dataTable.tableArn, dataTable.tableArn + '/index/customer-gsi'],
+    //   })
+    // );
+    // // Add persmission to send email
+    // calendarResolverFunction.addToRolePolicy(
+    //   new PolicyStatement({
+    //     effect: Effect.ALLOW,
+    //     actions: ['ses:SendRawEmail'],
+    //     resources: ['*'],
+    //   })
+    // );
+    // // Set the new Lambda function as a data source for the AppSync API
+    // const calendarResolverDataSource = api.addLambdaDataSource('calendarDataSource', calendarResolverFunction);
+    // // Resolvers
+    // calendarResolverDataSource.createResolver('GetAvailableAppointmentsResolver', {
+    //   typeName: 'Query',
+    //   fieldName: 'getAvailableAppointments',
+    // });
+    // calendarResolverDataSource.createResolver('GetScheduledAppointmentsResolver', {
+    //   typeName: 'Query',
+    //   fieldName: 'getScheduledAppointments',
+    // });
+    // calendarResolverDataSource.createResolver('BookAppointmentResolver', {
+    //   typeName: 'Mutation',
+    //   fieldName: 'bookAppointment',
+    // });
 
     /***
      *** Outputs

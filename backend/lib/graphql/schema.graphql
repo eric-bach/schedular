@@ -57,7 +57,7 @@ type TransactWriteItemsCommandOutput {
 type Query {
   getAvailableAppointments(date: String!, lastEvaluatedKey: LastEvaluatedKey): GetAppointmentsResponse
     @aws_cognito_user_pools(cognito_groups: ["Users", "Admins"])
-  getScheduledAppointments(date: String!, lastEvaluatedKey: LastEvaluatedKey): GetAppointmentsResponse
+  getAppointments(date: String!, lastEvaluatedKey: LastEvaluatedKey): GetAppointmentsResponse
     @aws_cognito_user_pools(cognito_groups: ["Admins"])
 }
 
