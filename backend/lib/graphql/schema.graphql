@@ -45,12 +45,19 @@ type GetAppointmentsResponse {
   lastEvaluatedKey: LastEvaluatedKeyViewModel
 }
 
-type TransactWriteItemsCommandOutput {
-  httpStatusCode: Int
-  requestId: String
-  attempts: Int
-  totalRetryDelay: Int
+type ErrorResponse {
+  type: String
+  message: String
+}
+
+type BookAppointmentResponse {
+  pk: ID
+  sk: String
   confirmationId: String
+  status: String
+  customer: String
+  updatedAt: AWSDateTime
+  error: ErrorResponse
 }
 
 # GraphQL actions
@@ -62,7 +69,7 @@ type Query {
 }
 
 type Mutation {
-  bookAppointment(bookingInput: BookingInput): TransactWriteItemsCommandOutput @aws_cognito_user_pools(cognito_groups: ["Users", "Admins"])
+  bookAppointment(bookingInput: BookingInput): BookAppointmentResponse @aws_cognito_user_pools(cognito_groups: ["Users", "Admins"])
 }
 
 schema {

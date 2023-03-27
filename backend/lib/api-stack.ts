@@ -84,13 +84,13 @@ export class ApiStack extends Stack {
     const passthrough = InlineCode.fromInline(`
         // The before step
         export function request(...args) {
-          console.log("Args: ", args);
+          console.log("ℹ️ Request: ", args);
           return {}
         }
 
         // The after step
         export function response(ctx) {
-          console.log("Resp: ", ctx.prev.result);
+          console.log("✅ Response: ", ctx.prev.result);
           return ctx.prev.result
         }
     `);
