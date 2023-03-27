@@ -19,6 +19,8 @@ import { EmailIdentity } from 'aws-cdk-lib/aws-ses';
 const dotenv = require('dotenv');
 import * as path from 'path';
 import { SchedularApiStackProps } from './types/SchedularStackProps';
+import { NodejsFunction } from 'aws-cdk-lib/aws-lambda-nodejs';
+import { Runtime } from 'aws-cdk-lib/aws-lambda';
 
 dotenv.config();
 
@@ -33,11 +35,6 @@ export class ApiStack extends Stack {
     // SES
     const emailIdentity = new EmailIdentity(this, 'Identity', {
       identity: { value: process.env.SENDER_EMAIL || 'info@example.com' },
-    });
-
-    // Event Bridge
-    const eventBus = new EventBus(this, 'EventBus', {
-      eventBusName: `${props.appName}-bus-${props.envName}`,
     });
 
     // AppSync API
@@ -57,19 +54,17 @@ export class ApiStack extends Stack {
       },
     });
 
+    // Lambda
+    const lambdaFunction = new NodejsFunction(this, 'resolver', {
+      functionName: 'test',
+      runtime: Runtime.NODEJS_16_X,
+      handler: 'handler',
+      entry: 'src/lambda/test/main.ts',
+    });
+
     // AppSync DataSources
     const dynamoDbDataSource = api.addDynamoDbDataSource(`${props.appName}-${props.envName}-table`, dataTable);
-    const httpDataSource = api.addHttpDataSource(
-      `${props.appName}-${props.envName}-events`,
-      'https://events.' + this.region + '.amazonaws.com/',
-      {
-        authorizationConfig: {
-          signingRegion: this.region,
-          signingServiceName: 'events',
-        },
-      }
-    );
-    eventBus.grantPutEventsTo(httpDataSource.grantPrincipal);
+    const lambdaDataSource = api.addLambdaDataSource(`${props.appName}-${props.envName}-function`, lambdaFunction);
 
     // AppSync JS Resolvers
     const getAvailableAppointmentsFunc = new AppsyncFunction(this, 'getAvailableAppointmentsFunction', {
@@ -96,7 +91,7 @@ export class ApiStack extends Stack {
     const emailFunc = new AppsyncFunction(this, 'emailFunc', {
       name: 'emailFunc',
       api: api,
-      dataSource: httpDataSource,
+      dataSource: lambdaDataSource,
       code: Code.fromAsset(path.join(__dirname, '/graphql/email.js')),
       runtime: FunctionRuntime.JS_1_0_0,
     });
