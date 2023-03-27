@@ -1,6 +1,9 @@
 # Tech
 
 - [x] Clean up types for Booking.tsx
+- [] Switch to AppSync JS Resolvers
+  - Works for Queries
+  - Mutations (requires dynamic tableName may still require Lambda Function)
 
 # User
 
