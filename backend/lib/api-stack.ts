@@ -134,7 +134,37 @@ export class ApiStack extends Stack {
       name: 'sqsEmailFunc',
       api: api,
       dataSource: httpDataSource,
-      code: Code.fromAsset(path.join(__dirname, '/graphql/Sqs.EmailNotification.js')),
+      //code: Code.fromAsset(path.join(__dirname, '/graphql/Sqs.EmailNotification.js')),
+      // Have to use inline code to set dynamic resourcePath
+      code: Code.fromInline(`
+        import { util } from '@aws-appsync/utils';
+        
+        export function request(ctx) {
+          console.log('🔔 REQUEST: ', ctx);
+        
+          const message = util.urlEncode(ctx.prev.result);
+          return {
+            version: '2018-05-29',
+            method: 'POST',
+            params: {
+              body: \`Action=SendMessage&MessageBody=$\{message\}&Version=2012-11-05\`,
+              headers: {
+                'Content-Type': 'application/x-www-form-urlencoded',
+              },
+            },
+            resourcePath: '/${this.account}/${queue.queueName}/',
+          };
+        }
+        
+        export function response(ctx) {
+          console.log('🔔 RESPONSE: ', ctx);
+        
+          if (ctx.error) {
+            util.error(ctx.error.message, ctx.error.type, ctx.result);
+          }
+          return ctx.prev.result;
+        }
+      `),
       runtime: FunctionRuntime.JS_1_0_0,
     });
 
