@@ -6,8 +6,6 @@ import { util } from '@aws-appsync/utils';
 export function request(ctx) {
   console.log('🔔 REQUEST: ', ctx);
 
-  // TODO Use AppSync to SQS (to Lambda)
-
   return {
     operation: 'Invoke',
     payload: { event: 'AppointmentBooked', data: ctx.prev.result },

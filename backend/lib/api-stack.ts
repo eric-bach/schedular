@@ -1,4 +1,4 @@
-import { Stack, CfnOutput } from 'aws-cdk-lib';
+import { Stack, CfnOutput, Duration } from 'aws-cdk-lib';
 import { Construct } from 'constructs';
 import { UserPool } from 'aws-cdk-lib/aws-cognito';
 import { Table } from 'aws-cdk-lib/aws-dynamodb';
@@ -20,7 +20,9 @@ const dotenv = require('dotenv');
 import * as path from 'path';
 import { SchedularApiStackProps } from './types/SchedularStackProps';
 import { NodejsFunction } from 'aws-cdk-lib/aws-lambda-nodejs';
-import { Runtime } from 'aws-cdk-lib/aws-lambda';
+import { EventSourceMapping, Runtime } from 'aws-cdk-lib/aws-lambda';
+import { Queue } from 'aws-cdk-lib/aws-sqs';
+import { ManagedPolicy, Role, ServicePrincipal } from 'aws-cdk-lib/aws-iam';
 
 dotenv.config();
 
@@ -35,6 +37,11 @@ export class ApiStack extends Stack {
     // SES
     const emailIdentity = new EmailIdentity(this, 'Identity', {
       identity: { value: process.env.SENDER_EMAIL || 'info@example.com' },
+    });
+
+    // SQS
+    const queue = new Queue(this, `${props.appName}-${props.envName}-queue`, {
+      queueName: `${props.appName}-${props.envName}-queue`,
     });
 
     // AppSync API
@@ -55,16 +62,44 @@ export class ApiStack extends Stack {
     });
 
     // Lambda
-    const lambdaFunction = new NodejsFunction(this, 'resolver', {
-      functionName: 'test',
+    const lambdaFunction = new NodejsFunction(this, 'test-resolver', {
+      functionName: `${props.appName}-${props.envName}-test-resolver`,
       runtime: Runtime.NODEJS_16_X,
       handler: 'handler',
-      entry: 'src/lambda/test/main.ts',
+      entry: 'src/lambda/testResolver/main.ts',
+    });
+
+    const queueConsumerFunction = new NodejsFunction(this, 'QueueConsumerFunction', {
+      functionName: `${props.appName}-${props.envName}-queue-consumer`,
+      runtime: Runtime.NODEJS_16_X,
+      handler: 'handler',
+      entry: 'src/lambda/queueConsumer/main.ts',
+      timeout: Duration.seconds(15),
+      memorySize: 256,
+      role: new Role(this, 'QueueConsumerFunctionRole', {
+        assumedBy: new ServicePrincipal('lambda.amazonaws.com'),
+        managedPolicies: [
+          ManagedPolicy.fromAwsManagedPolicyName('service-role/AWSLambdaSQSQueueExecutionRole'),
+          ManagedPolicy.fromAwsManagedPolicyName('service-role/AWSLambdaBasicExecutionRole'),
+        ],
+      }),
+    });
+    const eventSourceMapping = new EventSourceMapping(this, 'QueueConsumerFunctionMySQSEvent', {
+      target: queueConsumerFunction,
+      batchSize: 10,
+      eventSourceArn: queue.queueArn,
     });
 
     // AppSync DataSources
     const dynamoDbDataSource = api.addDynamoDbDataSource(`${props.appName}-${props.envName}-table`, dataTable);
     const lambdaDataSource = api.addLambdaDataSource(`${props.appName}-${props.envName}-function`, lambdaFunction);
+    const httpDataSource = api.addHttpDataSource(`${props.appName}-${props.envName}-endpoint`, `https://sqs.${this.region}.amazonaws.com`, {
+      authorizationConfig: {
+        signingRegion: this.region,
+        signingServiceName: 'sqs',
+      },
+    });
+    queue.grantSendMessages(httpDataSource.grantPrincipal);
 
     // AppSync JS Resolvers
     const getAvailableAppointmentsFunc = new AppsyncFunction(this, 'getAvailableAppointmentsFunction', {
@@ -92,7 +127,14 @@ export class ApiStack extends Stack {
       name: 'emailFunc',
       api: api,
       dataSource: lambdaDataSource,
-      code: Code.fromAsset(path.join(__dirname, '/graphql/email.js')),
+      code: Code.fromAsset(path.join(__dirname, '/graphql/Lambda.EmailNotification.js')),
+      runtime: FunctionRuntime.JS_1_0_0,
+    });
+    const sqsEmailFunc = new AppsyncFunction(this, 'sqsEmailFunc', {
+      name: 'sqsEmailFunc',
+      api: api,
+      dataSource: httpDataSource,
+      code: Code.fromAsset(path.join(__dirname, '/graphql/Sqs.EmailNotification.js')),
       runtime: FunctionRuntime.JS_1_0_0,
     });
 
@@ -131,7 +173,8 @@ export class ApiStack extends Stack {
       typeName: 'Mutation',
       fieldName: 'bookAppointment',
       runtime: FunctionRuntime.JS_1_0_0,
-      pipelineConfig: [bookAppointmentFunc, emailFunc],
+      // TODO Change this
+      pipelineConfig: [bookAppointmentFunc, sqsEmailFunc],
       code: passthrough,
     });
 
