@@ -14,14 +14,14 @@ import {
   SchemaFile,
 } from 'aws-cdk-lib/aws-appsync';
 import { EmailIdentity } from 'aws-cdk-lib/aws-ses';
+import { NodejsFunction } from 'aws-cdk-lib/aws-lambda-nodejs';
+import { EventSourceMapping, Runtime } from 'aws-cdk-lib/aws-lambda';
+import { Queue } from 'aws-cdk-lib/aws-sqs';
+import { Effect, ManagedPolicy, PolicyStatement, Role, ServicePrincipal } from 'aws-cdk-lib/aws-iam';
 
 const dotenv = require('dotenv');
 import * as path from 'path';
 import { SchedularApiStackProps } from './types/SchedularStackProps';
-import { NodejsFunction } from 'aws-cdk-lib/aws-lambda-nodejs';
-import { EventSourceMapping, Runtime } from 'aws-cdk-lib/aws-lambda';
-import { Queue } from 'aws-cdk-lib/aws-sqs';
-import { ManagedPolicy, Role, ServicePrincipal } from 'aws-cdk-lib/aws-iam';
 
 dotenv.config();
 
@@ -53,8 +53,8 @@ export class ApiStack extends Stack {
       role: new Role(this, 'QueueConsumerFunctionRole', {
         assumedBy: new ServicePrincipal('lambda.amazonaws.com'),
         managedPolicies: [
-          ManagedPolicy.fromAwsManagedPolicyName('service-role/AWSLambdaSQSQueueExecutionRole'),
           ManagedPolicy.fromAwsManagedPolicyName('service-role/AWSLambdaBasicExecutionRole'),
+          ManagedPolicy.fromAwsManagedPolicyName('service-role/AWSLambdaSQSQueueExecutionRole'),
         ],
       }),
     });
@@ -63,6 +63,14 @@ export class ApiStack extends Stack {
       batchSize: 10,
       eventSourceArn: queue.queueArn,
     });
+    // Add permission send email
+    queueConsumerFunction.addToRolePolicy(
+      new PolicyStatement({
+        effect: Effect.ALLOW,
+        actions: ['ses:SendEmail'],
+        resources: [`arn:aws:ses:${this.region}:${this.account}:identity/*`],
+      })
+    );
 
     // AppSync API
     const api = new GraphqlApi(this, `${props.appName}Api`, {
