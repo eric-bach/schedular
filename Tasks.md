@@ -1,9 +1,9 @@
 # Tech
 
 - [x] Clean up types for Booking.tsx
-- [] Switch to AppSync JS Resolvers
-  - Works for Queries
-  - Mutations (requires dynamic tableName may still require Lambda Function)
+- [x] Switch to AppSync JS Resolvers
+  - Send email from Lambda resolver
+  - Save additional fields in booking (email, name, phone)
 
 # User
 

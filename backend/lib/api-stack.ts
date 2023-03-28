@@ -13,7 +13,6 @@ import {
   Resolver,
   SchemaFile,
 } from 'aws-cdk-lib/aws-appsync';
-import { EventBus } from 'aws-cdk-lib/aws-events';
 import { EmailIdentity } from 'aws-cdk-lib/aws-ses';
 
 const dotenv = require('dotenv');
@@ -30,7 +29,6 @@ export class ApiStack extends Stack {
   constructor(scope: Construct, id: string, props: SchedularApiStackProps) {
     super(scope, id, props);
 
-    const REGION = Stack.of(this).region;
     const userPool = UserPool.fromUserPoolId(this, 'userPool', props.params.userPoolId);
     const dataTable = Table.fromTableArn(this, 'table', props.params.dataTableArn);
 
@@ -42,6 +40,28 @@ export class ApiStack extends Stack {
     // SQS
     const queue = new Queue(this, `${props.appName}-${props.envName}-queue`, {
       queueName: `${props.appName}-${props.envName}-queue`,
+    });
+
+    // Lambda
+    const queueConsumerFunction = new NodejsFunction(this, 'QueueConsumerFunction', {
+      functionName: `${props.appName}-${props.envName}-queue-consumer`,
+      runtime: Runtime.NODEJS_16_X,
+      handler: 'handler',
+      entry: 'src/lambda/queueConsumer/main.ts',
+      timeout: Duration.seconds(10),
+      memorySize: 256,
+      role: new Role(this, 'QueueConsumerFunctionRole', {
+        assumedBy: new ServicePrincipal('lambda.amazonaws.com'),
+        managedPolicies: [
+          ManagedPolicy.fromAwsManagedPolicyName('service-role/AWSLambdaSQSQueueExecutionRole'),
+          ManagedPolicy.fromAwsManagedPolicyName('service-role/AWSLambdaBasicExecutionRole'),
+        ],
+      }),
+    });
+    const eventSourceMapping = new EventSourceMapping(this, 'QueueConsumerFunctionMySQSEvent', {
+      target: queueConsumerFunction,
+      batchSize: 10,
+      eventSourceArn: queue.queueArn,
     });
 
     // AppSync API
@@ -61,44 +81,15 @@ export class ApiStack extends Stack {
       },
     });
 
-    // Lambda
-    const lambdaFunction = new NodejsFunction(this, 'test-resolver', {
-      functionName: `${props.appName}-${props.envName}-test-resolver`,
-      runtime: Runtime.NODEJS_16_X,
-      handler: 'handler',
-      entry: 'src/lambda/testResolver/main.ts',
-    });
-
-    const queueConsumerFunction = new NodejsFunction(this, 'QueueConsumerFunction', {
-      functionName: `${props.appName}-${props.envName}-queue-consumer`,
-      runtime: Runtime.NODEJS_16_X,
-      handler: 'handler',
-      entry: 'src/lambda/queueConsumer/main.ts',
-      timeout: Duration.seconds(15),
-      memorySize: 256,
-      role: new Role(this, 'QueueConsumerFunctionRole', {
-        assumedBy: new ServicePrincipal('lambda.amazonaws.com'),
-        managedPolicies: [
-          ManagedPolicy.fromAwsManagedPolicyName('service-role/AWSLambdaSQSQueueExecutionRole'),
-          ManagedPolicy.fromAwsManagedPolicyName('service-role/AWSLambdaBasicExecutionRole'),
-        ],
-      }),
-    });
-    const eventSourceMapping = new EventSourceMapping(this, 'QueueConsumerFunctionMySQSEvent', {
-      target: queueConsumerFunction,
-      batchSize: 10,
-      eventSourceArn: queue.queueArn,
-    });
-
     // AppSync DataSources
     const dynamoDbDataSource = api.addDynamoDbDataSource(`${props.appName}-${props.envName}-table`, dataTable);
-    const lambdaDataSource = api.addLambdaDataSource(`${props.appName}-${props.envName}-function`, lambdaFunction);
     const httpDataSource = api.addHttpDataSource(`${props.appName}-${props.envName}-endpoint`, `https://sqs.${this.region}.amazonaws.com`, {
       authorizationConfig: {
         signingRegion: this.region,
         signingServiceName: 'sqs',
       },
     });
+
     queue.grantSendMessages(httpDataSource.grantPrincipal);
 
     // AppSync JS Resolvers
@@ -123,18 +114,10 @@ export class ApiStack extends Stack {
       code: Code.fromAsset(path.join(__dirname, '/graphql/Mutation.bookAppointment.js')),
       runtime: FunctionRuntime.JS_1_0_0,
     });
-    const emailFunc = new AppsyncFunction(this, 'emailFunc', {
-      name: 'emailFunc',
-      api: api,
-      dataSource: lambdaDataSource,
-      code: Code.fromAsset(path.join(__dirname, '/graphql/Lambda.EmailNotification.js')),
-      runtime: FunctionRuntime.JS_1_0_0,
-    });
     const sqsEmailFunc = new AppsyncFunction(this, 'sqsEmailFunc', {
       name: 'sqsEmailFunc',
       api: api,
       dataSource: httpDataSource,
-      //code: Code.fromAsset(path.join(__dirname, '/graphql/Sqs.EmailNotification.js')),
       // Have to use inline code to set dynamic resourcePath
       code: Code.fromInline(`
         import { util } from '@aws-appsync/utils';
@@ -203,7 +186,6 @@ export class ApiStack extends Stack {
       typeName: 'Mutation',
       fieldName: 'bookAppointment',
       runtime: FunctionRuntime.JS_1_0_0,
-      // TODO Change this
       pipelineConfig: [bookAppointmentFunc, sqsEmailFunc],
       code: passthrough,
     });
