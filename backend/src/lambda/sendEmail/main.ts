@@ -34,6 +34,7 @@ exports.handler = async (event: any) => {
   const input: SendEmailCommandInput = {
     Source: process.env.SENDER_EMAIL,
     // TODO Change to user email
+    //Destination: { ToAddresses: [${message.customerEmail}] },
     Destination: { ToAddresses: ['bach.eric@gmail.com'] },
     Message: {
       Subject: {
@@ -43,7 +44,7 @@ exports.handler = async (event: any) => {
       Body: {
         Text: {
           Charset: 'UTF-8',
-          Data: `This is to confirm your appointment for ${message.customer} on ${message.sk}\nConfirmation Id: ${message.confirmationId}`,
+          Data: `This is to confirm your appointment for ${message.customerName} on ${message.sk}\nConfirmation Id: ${message.confirmationId}`,
         },
       },
     },

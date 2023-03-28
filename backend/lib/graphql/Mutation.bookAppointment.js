@@ -1,7 +1,6 @@
 import { util } from '@aws-appsync/utils';
 
 export function request(ctx) {
-  //console.log('TABLE NAME: ', process.env.DATA_TABLE_NAME);
   console.log('🔔 BookAppointment Request: ', ctx);
 
   return {
@@ -11,24 +10,27 @@ export function request(ctx) {
       sk: util.dynamodb.toDynamoDB(ctx.args.bookingInput.sk),
     },
     update: {
-      expression: 'SET customer = :customer, #status = :booked, confirmationId = :confirmationId, updatedAt = :updatedAt',
+      expression:
+        'SET #status = :booked, confirmationId = :confirmationId, customerName = :customerName, customerEmail = :customerEmail, customerPhone = :customerPhone, updatedAt = :updatedAt',
       expressionNames: {
         '#status': 'status',
       },
       expressionValues: {
-        ':customer': util.dynamodb.toDynamoDB(ctx.args.bookingInput.customer),
+        ':customerName': util.dynamodb.toDynamoDB(ctx.args.bookingInput.customer.name),
+        ':customerEmail': util.dynamodb.toDynamoDB(ctx.args.bookingInput.customer.email),
+        ':customerPhone': util.dynamodb.toDynamoDB(ctx.args.bookingInput.customer.phone),
         ':booked': util.dynamodb.toDynamoDB('booked'),
         ':confirmationId': util.dynamodb.toDynamoDB(util.autoId()),
         ':updatedAt': util.dynamodb.toDynamoDB(util.time.nowISO8601()),
       },
     },
     condition: {
-      expression: '#status = :available AND attribute_not_exists(customer)',
+      expression: '#status = :available AND attribute_not_exists(confirmationId)',
       expressionNames: {
         '#status': 'status',
       },
       expressionValues: {
-        ':available': util.dynamodb.toDynamoDB('open'),
+        ':available': util.dynamodb.toDynamoDB('available'),
       },
     },
   };

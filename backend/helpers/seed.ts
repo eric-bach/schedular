@@ -68,7 +68,7 @@ function generateRandomSeedData() {
       if (rand % 2 === 1) continue;
 
       let sk = dayjs(d).set('hour', h).set('minute', 0).set('second', 0).set('millisecond', 0).toISOString();
-      data.push({ pk: 'appt', sk: sk, duration: 60, status: 'open', type: 'massage' });
+      data.push({ pk: 'appt', sk: sk, duration: 60, status: 'available', type: 'massage' });
     }
   }
 

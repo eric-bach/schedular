@@ -17,7 +17,7 @@ export function request(ctx) {
         '#status': 'status',
       },
       expressionValues: {
-        ':s': util.dynamodb.toDynamoDB('open'),
+        ':s': util.dynamodb.toDynamoDB('available'),
       },
     },
   };

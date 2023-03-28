@@ -17,7 +17,13 @@ export default function Confirmation() {
         Appointment successfully booked
       </Alert>
       <Typography variant='h5' component='h5'>
-        Email: {state.customer}
+        Name: {state.customer.name}
+      </Typography>
+      <Typography variant='h5' component='h5'>
+        Email: {state.customer.email}
+      </Typography>
+      <Typography variant='h5' component='h5'>
+        Phone: {state.customer.phone}
       </Typography>
       <Typography variant='h5' component='h5'>
         Appointment Date: {state.timeslot}

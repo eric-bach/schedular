@@ -13,10 +13,16 @@ type Data @model @aws_cognito_user_pools {
   phone: Int
 }
 
+input CustomerInput {
+  name: String
+  email: String
+  phone: String
+}
+
 input BookingInput {
   pk: String!
   sk: String!
-  customer: String!
+  customer: CustomerInput!
 }
 
 input LastEvaluatedKey {
@@ -50,7 +56,9 @@ type BookAppointmentResponse {
   sk: String
   confirmationId: String
   status: String
-  customer: String
+  customerName: String
+  customerEmail: String
+  customerPhone: String
   updatedAt: AWSDateTime
 }
 

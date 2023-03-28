@@ -25,13 +25,19 @@ import '@aws-amplify/ui-react/styles.css';
 
 Amplify.configure(aws_exports);
 
+type Customer = {
+  name: string;
+  email: string;
+  phone: string;
+};
+
 function Booking() {
   const [date, setDate] = React.useState<Dayjs | null>(null);
   const [timeslot, setTimeslot] = React.useState<string | null>(null);
   const [timeslotText, setTimeslotText] = React.useState<string | null>(null);
   const [availableAppts, setAppts] = React.useState<[AppointmentItem | undefined]>();
   const [numAppts, setNumAppts] = React.useState<number>(0);
-  const [customer, setCustomer] = React.useState<string | null>(null);
+  const [customer, setCustomer] = React.useState<Customer | null>(null);
   const [isLoading, setLoading] = React.useState<boolean>(false);
   const [isError, setError] = React.useState<boolean>(false);
 
@@ -62,7 +68,7 @@ function Booking() {
     Auth.currentAuthenticatedUser().then((user) => {
       console.log('Authenticated User: ', user);
       console.log('Authenticated User Attributes: ', user.attributes);
-      setCustomer(user.attributes.email);
+      setCustomer({ name: user.attributes.name, email: user.attributes.email, phone: user.attributes.phone });
     });
   }, []);
 
@@ -90,7 +96,11 @@ function Booking() {
     const input = {
       pk: 'appt',
       sk: timeslot,
-      customer: customer,
+      customer: {
+        name: customer?.name,
+        email: customer?.email,
+        phoen: customer?.phone,
+      },
     };
 
     const result = await API.graphql<GraphQLQuery<AppointmentBookingResponse>>(graphqlOperation(BOOK_APPOINTMENT, { input: input }));
