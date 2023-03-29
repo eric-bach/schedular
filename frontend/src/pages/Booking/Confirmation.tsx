@@ -4,6 +4,16 @@ import Container from '@mui/material/Container';
 import Alert from '@mui/material/Alert';
 import AlertTitle from '@mui/material/AlertTitle';
 import Typography from '@mui/material/Typography';
+import Chip from '@mui/material/Chip';
+
+function formatTime(timeString: string) {
+  return new Date('1970-01-01T' + timeString + 'Z').toLocaleTimeString('en-US', {
+    timeZone: 'UTC',
+    hour12: true,
+    hour: 'numeric',
+    minute: 'numeric',
+  });
+}
 
 export default function Confirmation() {
   const { id: confirmationId } = useParams();
@@ -16,26 +26,34 @@ export default function Confirmation() {
     <Container maxWidth='lg' sx={{ mt: 5 }}>
       <Alert severity='success' sx={{ mb: 2 }}>
         <AlertTitle>Success</AlertTitle>
-        Appointment successfully booked
+        Your appointment has been successfully booked
       </Alert>
-      <Typography variant='h5' component='h5'>
-        Name: {state.customer.name}
+
+      <Typography variant='h4' component='h4' gutterBottom>
+        Appointment Details <Chip label='booked' color='success' />
       </Typography>
-      <Typography variant='h5' component='h5'>
-        Email: {state.customer.email}
+
+      <Typography variant='h6' gutterBottom>
+        Client Information:
       </Typography>
-      <Typography variant='h5' component='h5'>
-        Phone: {state.customer.phone}
+      <Typography variant='body1'>{state.customer.name}</Typography>
+      <Typography variant='body1'>{state.customer.email}</Typography>
+      <Typography variant='body1' gutterBottom>
+        {state.customer.phone}
       </Typography>
-      <Typography variant='h5' component='h5'>
-        Appointment Date: {date} at {time}
+
+      <Typography variant='h6' gutterBottom>
+        Appointment Information:
       </Typography>
-      <Typography variant='h5' component='h5'>
-        Massage Therapist:
+      <Typography variant='body1' gutterBottom>
+        Date: {new Date(date).toLocaleDateString('en-US', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' })} at{' '}
+        {formatTime(time)}
       </Typography>
-      <Typography variant='h5' component='h5'>
-        Confirmation Id: {confirmationId}
+
+      <Typography variant='h6' gutterBottom>
+        Booking Reference:
       </Typography>
+      <Typography variant='body1'>Confirmation Id: {confirmationId}</Typography>
     </Container>
   );
 }
