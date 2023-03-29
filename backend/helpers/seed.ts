@@ -20,7 +20,7 @@ async function seed() {
 
     // Generate random seed data
     const data = generateRandomSeedData();
-    console.log('🚀 Seed data: ', data);
+    console.log('🚀 Seed data length: ', data.length);
 
     // Seed each item in table
     console.log('\n🚀 Starting to seed table...');
