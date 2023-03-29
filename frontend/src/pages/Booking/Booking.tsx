@@ -26,6 +26,7 @@ import '@aws-amplify/ui-react/styles.css';
 Amplify.configure(aws_exports);
 
 type Customer = {
+  id: string;
   name: string;
   email: string;
   phone: string;
@@ -68,7 +69,12 @@ function Booking() {
     Auth.currentAuthenticatedUser().then((user) => {
       console.log('Authenticated User: ', user);
       console.log('Authenticated User Attributes: ', user.attributes);
-      setCustomer({ name: user.attributes.name, email: user.attributes.email, phone: user.attributes.phone });
+      setCustomer({
+        id: user.attributes.sub,
+        name: user.attributes.given_name,
+        email: user.attributes.email,
+        phone: user.attributes.phone_number,
+      });
     });
   }, []);
 
@@ -97,9 +103,10 @@ function Booking() {
       pk: 'appt',
       sk: timeslot,
       customer: {
+        id: customer?.id,
         name: customer?.name,
         email: customer?.email,
-        phoen: customer?.phone,
+        phone: customer?.phone,
       },
     };
 
@@ -107,7 +114,7 @@ function Booking() {
 
     console.log('Booked: ', result.data?.bookAppointment);
 
-    if (result.data?.bookAppointment.httpStatusCode === 200) {
+    if (result.data?.bookAppointment.confirmationId) {
       navigate(`/confirmation/${result.data.bookAppointment.confirmationId}`, { state: { customer: customer, timeslot: timeslot } });
     } else {
       await dateSelected(date);

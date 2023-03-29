@@ -11,11 +11,12 @@ export function request(ctx) {
     },
     update: {
       expression:
-        'SET #status = :booked, confirmationId = :confirmationId, customerName = :customerName, customerEmail = :customerEmail, customerPhone = :customerPhone, updatedAt = :updatedAt',
+        'SET #status = :booked, confirmationId = :confirmationId, customerId = :customerId, customerName = :customerName, customerEmail = :customerEmail, customerPhone = :customerPhone, updatedAt = :updatedAt',
       expressionNames: {
         '#status': 'status',
       },
       expressionValues: {
+        ':customerId': util.dynamodb.toDynamoDB(ctx.args.bookingInput.customer.id),
         ':customerName': util.dynamodb.toDynamoDB(ctx.args.bookingInput.customer.name),
         ':customerEmail': util.dynamodb.toDynamoDB(ctx.args.bookingInput.customer.email),
         ':customerPhone': util.dynamodb.toDynamoDB(ctx.args.bookingInput.customer.phone),

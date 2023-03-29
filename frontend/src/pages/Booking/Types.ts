@@ -20,10 +20,12 @@ export type GetAppointmentsResponse = {
 
 export type AppointmentBookingResponse = {
   bookAppointment: {
-    httpStatusCode: number;
-    requestId: string;
-    attempts: number;
-    totalRetryDelay: number;
+    pk: string;
+    sk: string;
     confirmationId: string;
+    status: string;
+    customerName: string;
+    customerEmail: string;
+    customerPhone: string;
   };
 };
