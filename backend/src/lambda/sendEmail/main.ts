@@ -31,6 +31,9 @@ exports.handler = async (event: any) => {
   //   RawMessage: { Data: new TextEncoder().encode(rawMessage.join('\n')) },
   // };
 
+  let date = message.sk.substring(0, 10);
+  let time = message.sk.substring(11, 16);
+
   const input: SendEmailCommandInput = {
     Source: process.env.SENDER_EMAIL,
     // TODO Change to user email
@@ -44,7 +47,7 @@ exports.handler = async (event: any) => {
       Body: {
         Text: {
           Charset: 'UTF-8',
-          Data: `This is to confirm your appointment for ${message.customerName} on ${message.sk}\nConfirmation Id: ${message.confirmationId}`,
+          Data: `This is to confirm your appointment for ${message.customerName} on ${date} at ${time}\nConfirmation Id: ${message.confirmationId}`,
         },
       },
     },

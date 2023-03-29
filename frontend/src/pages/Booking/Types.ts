@@ -6,6 +6,9 @@ export type Base = {
 export type AppointmentItem = {
   pk: string;
   sk: string;
+  date: string;
+  startTime: string;
+  endTime: string;
   duration: number;
   status: string;
   type: string;

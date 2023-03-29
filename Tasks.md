@@ -20,15 +20,34 @@
 - [] As a massage therapist I want to require a phone consultation before a massage booking
 - [] As a massage therapist I want to be able to see and manage a users bookings
 
-mutation MyMutation {
-bookAppointment(bookingInput: {customer: {email: "test@gmail.com", name: "Eric", phone: "456"}, pk: "123", sk: "123"})
-{
-pk
-sk
-confirmationId
-status
-customerName
-customerEmail
-customerPhone
+```
+mutation BookAppointment {
+  bookAppointment(bookingInput: {customer: {email: "test@test.com", name: "Eric", phone: "123"}, pk: "123", sk: "123"})
+  {
+    pk
+    sk
+    confirmationId
+    status
+    customerName
+    customerEmail
+    customerPhone
+  }
 }
+
+
+query GetAvailableAppointments {
+  getAvailableAppointments(date: "2023-03-31")
+  {
+    items {
+      pk
+      sk
+      type
+      date
+      startTime
+      endTime
+      duration
+      status
+    }
+  }
 }
+```

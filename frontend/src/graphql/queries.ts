@@ -4,6 +4,9 @@ export const GET_APPOINTMENTS = `query GetAppointments($date: String!, $lastEval
       pk
       sk
       type
+      date
+      startTime
+      endTime
       duration
       status
     }

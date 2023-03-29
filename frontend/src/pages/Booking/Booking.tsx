@@ -54,9 +54,6 @@ function Booking() {
         date: dayjs(date).format('YYYY-MM-DD'),
       })
     );
-    console.log('FOUND APPOINTMENTS: ', appointments);
-
-    console.log(appointments.data?.getAvailableAppointments?.items);
     setAppts(appointments.data?.getAvailableAppointments?.items);
     setNumAppts(appointments.data?.getAvailableAppointments?.items.length ?? 0);
 
@@ -79,7 +76,7 @@ function Booking() {
   }, []);
 
   async function dateSelected(date: Dayjs | null) {
-    // Reset timeslow
+    // Reset timeslot
     setTimeslot(null);
     setTimeslotText(null);
     setError(false);
@@ -90,6 +87,7 @@ function Booking() {
   }
 
   function timeSelected(target: any) {
+    console.log('sdfgsdjkhfhjgksdf: ', target);
     console.log('Selected sk: ', target.id);
     console.log('Selected Time: ', target.textContent);
     setTimeslot(target.id);
@@ -186,7 +184,7 @@ function Booking() {
                       }}
                       id={m?.sk}
                     >
-                      {m?.sk.substring(11, 16)} ({m?.duration} mins)
+                      {m?.startTime} - {m?.endTime}
                     </Button>
                   );
                 })}

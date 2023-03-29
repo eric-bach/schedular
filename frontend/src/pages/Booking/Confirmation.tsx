@@ -8,7 +8,9 @@ import Typography from '@mui/material/Typography';
 export default function Confirmation() {
   const { id: confirmationId } = useParams();
   const { state } = useLocation();
-  console.log(state);
+
+  let date = state.timeslot.substring(0, 10);
+  let time = state.timeslot.substring(11, 16);
 
   return (
     <Container maxWidth='lg' sx={{ mt: 5 }}>
@@ -26,7 +28,7 @@ export default function Confirmation() {
         Phone: {state.customer.phone}
       </Typography>
       <Typography variant='h5' component='h5'>
-        Appointment Date: {state.timeslot}
+        Appointment Date: {date} at {time}
       </Typography>
       <Typography variant='h5' component='h5'>
         Massage Therapist:

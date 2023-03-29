@@ -42,9 +42,11 @@ type AppointmentViewModel {
   createdAt: AWSDateTime
   updatedAt: AWSDateTime
   type: String
+  date: AWSDate
+  startTime: String
+  endTime: String
   duration: Int
   status: String
-  customer: String
 }
 
 type GetAppointmentsResponse {
