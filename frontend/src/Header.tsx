@@ -42,7 +42,11 @@ function Header() {
 
     console.debug('Clicked ', e.target.textContent);
 
-    if (e.target.textContent === 'Book Appointment') {
+    if (e.target.textContent === 'Services') {
+      navigate('/services');
+    } else if (e.target.textContent === 'Pricing') {
+      navigate('/pricing');
+    } else if (e.target.textContent === 'Book Appointment') {
       navigate('/booking');
     }
   };
@@ -51,9 +55,14 @@ function Header() {
     setAnchorElUser(null);
 
     console.debug('Clicked ', e.target.textContent);
-    if (e.target.textContent === 'Logout') {
+    if (e.target.textContent === 'Profile') {
+      navigate('/user/profile');
+    } else if (e.target.textContent === 'Appointments') {
+      navigate('/user/appointments');
+    } else if (e.target.textContent === 'Logout') {
       Auth.signOut();
-      // TODO Bug: Doesn't refresh page on sign out
+
+      // TODO Bug: Doesn't remove avatar after signOut
       navigate('/');
     }
   };
