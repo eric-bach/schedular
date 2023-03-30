@@ -18,13 +18,17 @@ import AdbIcon from '@mui/icons-material/Adb';
 import { Amplify, Auth } from 'aws-amplify';
 import aws_exports from './aws-exports';
 
+import { useUser } from './Contexts/AuthContext';
+
 Amplify.configure(aws_exports);
 
 const pages = ['Services', 'Pricing', 'Book Appointment'];
 const settings = ['Profile', 'Appointments', 'Logout'];
 
 function Header() {
-  const [authenticated, setAuthenticated] = React.useState<boolean>(false);
+  const { user }: any = useUser();
+  console.log('USER:', user);
+
   const [anchorElNav, setAnchorElNav] = React.useState<null | HTMLElement>(null);
   const [anchorElUser, setAnchorElUser] = React.useState<null | HTMLElement>(null);
 
@@ -51,14 +55,6 @@ function Header() {
     }
   };
 
-  async function signOut() {
-    try {
-      await Auth.signOut();
-    } catch (error) {
-      console.log('error signing out: ', error);
-    }
-  }
-
   const handleCloseUserMenu = (e: any) => {
     setAnchorElUser(null);
 
@@ -68,34 +64,11 @@ function Header() {
     } else if (e.target.textContent === 'Appointments') {
       navigate('/user/appointments');
     } else if (e.target.textContent === 'Logout') {
-      signOut()
-        .then(() => {
-          setAuthenticated(false);
-        })
-        .catch((err) => {
-          console.log(err);
-        });
-
-      navigate('/');
+      Auth.signOut().then(() => {
+        navigate('/');
+      });
     }
   };
-
-  // const isAuthenticated = async (): Promise<boolean> => {
-  //   Auth.currentAuthenticatedUser()
-  //     .then((user) => {
-  //       setAuthenticated(true);
-  //       return true;
-  //     })
-  //     .catch((err) => {});
-
-  //   setAuthenticated(false);
-  //   return false;
-  // };
-
-  // useEffect(() => {
-  //   isAuthenticated();
-  //   console.log('IsAuthenticated: ', authenticated);
-  // }, [authenticated]);
 
   return (
     <AppBar position='static'>
@@ -183,37 +156,37 @@ function Header() {
             ))}
           </Box>
 
-          {/* {user && ( */}
-          <Box sx={{ flexGrow: 0 }}>
-            <Tooltip title='Open settings'>
-              <IconButton onClick={handleOpenUserMenu} sx={{ p: 0 }}>
-                <Avatar src='/broken-image.jpg' />
-              </IconButton>
-            </Tooltip>
-            <Menu
-              sx={{ mt: '45px' }}
-              id='menu-appbar'
-              anchorEl={anchorElUser}
-              anchorOrigin={{
-                vertical: 'top',
-                horizontal: 'right',
-              }}
-              keepMounted
-              transformOrigin={{
-                vertical: 'top',
-                horizontal: 'right',
-              }}
-              open={Boolean(anchorElUser)}
-              onClose={(e) => handleCloseUserMenu(e)}
-            >
-              {settings.map((setting) => (
-                <MenuItem key={setting} onClick={(e) => handleCloseUserMenu(e)}>
-                  <Typography textAlign='center'>{setting}</Typography>
-                </MenuItem>
-              ))}
-            </Menu>
-          </Box>
-          {/* )} */}
+          {user.username && (
+            <Box sx={{ flexGrow: 0 }}>
+              <Tooltip title='Open settings'>
+                <IconButton onClick={handleOpenUserMenu} sx={{ p: 0 }}>
+                  <Avatar src='/broken-image.jpg' />
+                </IconButton>
+              </Tooltip>
+              <Menu
+                sx={{ mt: '45px' }}
+                id='menu-appbar'
+                anchorEl={anchorElUser}
+                anchorOrigin={{
+                  vertical: 'top',
+                  horizontal: 'right',
+                }}
+                keepMounted
+                transformOrigin={{
+                  vertical: 'top',
+                  horizontal: 'right',
+                }}
+                open={Boolean(anchorElUser)}
+                onClose={(e) => handleCloseUserMenu(e)}
+              >
+                {settings.map((setting) => (
+                  <MenuItem key={setting} onClick={(e) => handleCloseUserMenu(e)}>
+                    <Typography textAlign='center'>{setting}</Typography>
+                  </MenuItem>
+                ))}
+              </Menu>
+            </Box>
+          )}
         </Toolbar>
       </Container>
     </AppBar>
