@@ -64,8 +64,8 @@ function Booking() {
 
   useEffect(() => {
     Auth.currentAuthenticatedUser().then((user) => {
-      console.log('Authenticated User: ', user);
-      console.log('Authenticated User Attributes: ', user.attributes);
+      // console.log('Authenticated User: ', user);
+      // console.log('Authenticated User Attributes: ', user.attributes);
       setCustomer({
         id: user.attributes.sub,
         name: user.attributes.given_name,
@@ -87,7 +87,6 @@ function Booking() {
   }
 
   function timeSelected(target: any) {
-    console.log('sdfgsdjkhfhjgksdf: ', target);
     console.log('Selected sk: ', target.id);
     console.log('Selected Time: ', target.textContent);
     setTimeslot(target.id);

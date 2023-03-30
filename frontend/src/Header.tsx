@@ -1,4 +1,4 @@
-import React, { useEffect } from 'react';
+import React, { useContext, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 
 import AppBar from '@mui/material/AppBar';
@@ -51,6 +51,14 @@ function Header() {
     }
   };
 
+  async function signOut() {
+    try {
+      await Auth.signOut();
+    } catch (error) {
+      console.log('error signing out: ', error);
+    }
+  }
+
   const handleCloseUserMenu = (e: any) => {
     setAnchorElUser(null);
 
@@ -60,28 +68,34 @@ function Header() {
     } else if (e.target.textContent === 'Appointments') {
       navigate('/user/appointments');
     } else if (e.target.textContent === 'Logout') {
-      Auth.signOut();
+      signOut()
+        .then(() => {
+          setAuthenticated(false);
+        })
+        .catch((err) => {
+          console.log(err);
+        });
 
-      // TODO Bug: Doesn't remove avatar after signOut
       navigate('/');
     }
   };
 
-  const isAuthenticated = async (): Promise<boolean> => {
-    Auth.currentAuthenticatedUser()
-      .then((user) => {
-        setAuthenticated(true);
-        return true;
-      })
-      .catch((err) => {});
-    setAuthenticated(false);
-    return false;
-  };
+  // const isAuthenticated = async (): Promise<boolean> => {
+  //   Auth.currentAuthenticatedUser()
+  //     .then((user) => {
+  //       setAuthenticated(true);
+  //       return true;
+  //     })
+  //     .catch((err) => {});
 
-  useEffect(() => {
-    isAuthenticated();
-    console.log('IsAuthenticated: ', authenticated);
-  }, [authenticated]);
+  //   setAuthenticated(false);
+  //   return false;
+  // };
+
+  // useEffect(() => {
+  //   isAuthenticated();
+  //   console.log('IsAuthenticated: ', authenticated);
+  // }, [authenticated]);
 
   return (
     <AppBar position='static'>
@@ -169,37 +183,37 @@ function Header() {
             ))}
           </Box>
 
-          {authenticated && (
-            <Box sx={{ flexGrow: 0 }}>
-              <Tooltip title='Open settings'>
-                <IconButton onClick={handleOpenUserMenu} sx={{ p: 0 }}>
-                  <Avatar src='/broken-image.jpg' />
-                </IconButton>
-              </Tooltip>
-              <Menu
-                sx={{ mt: '45px' }}
-                id='menu-appbar'
-                anchorEl={anchorElUser}
-                anchorOrigin={{
-                  vertical: 'top',
-                  horizontal: 'right',
-                }}
-                keepMounted
-                transformOrigin={{
-                  vertical: 'top',
-                  horizontal: 'right',
-                }}
-                open={Boolean(anchorElUser)}
-                onClose={(e) => handleCloseUserMenu(e)}
-              >
-                {settings.map((setting) => (
-                  <MenuItem key={setting} onClick={(e) => handleCloseUserMenu(e)}>
-                    <Typography textAlign='center'>{setting}</Typography>
-                  </MenuItem>
-                ))}
-              </Menu>
-            </Box>
-          )}
+          {/* {user && ( */}
+          <Box sx={{ flexGrow: 0 }}>
+            <Tooltip title='Open settings'>
+              <IconButton onClick={handleOpenUserMenu} sx={{ p: 0 }}>
+                <Avatar src='/broken-image.jpg' />
+              </IconButton>
+            </Tooltip>
+            <Menu
+              sx={{ mt: '45px' }}
+              id='menu-appbar'
+              anchorEl={anchorElUser}
+              anchorOrigin={{
+                vertical: 'top',
+                horizontal: 'right',
+              }}
+              keepMounted
+              transformOrigin={{
+                vertical: 'top',
+                horizontal: 'right',
+              }}
+              open={Boolean(anchorElUser)}
+              onClose={(e) => handleCloseUserMenu(e)}
+            >
+              {settings.map((setting) => (
+                <MenuItem key={setting} onClick={(e) => handleCloseUserMenu(e)}>
+                  <Typography textAlign='center'>{setting}</Typography>
+                </MenuItem>
+              ))}
+            </Menu>
+          </Box>
+          {/* )} */}
         </Toolbar>
       </Container>
     </AppBar>
