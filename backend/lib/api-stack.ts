@@ -134,10 +134,10 @@ export class ApiStack extends Stack {
       // Have to use inline code to set dynamic resourcePath
       code: Code.fromInline(`
         import { util } from '@aws-appsync/utils';
-        
+
         export function request(ctx) {
           console.log('🔔 REQUEST: ', ctx);
-        
+
           const message = util.urlEncode(ctx.prev.result);
           return {
             version: '2018-05-29',
@@ -151,10 +151,10 @@ export class ApiStack extends Stack {
             resourcePath: '/${this.account}/${emailQueue.queueName}/',
           };
         }
-        
+
         export function response(ctx) {
           console.log('🔔 RESPONSE: ', ctx);
-        
+
           if (ctx.error) {
             util.error(ctx.error.message, ctx.error.type, ctx.result);
           }

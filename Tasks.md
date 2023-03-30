@@ -2,7 +2,7 @@
 
 - [x] Clean up types for Booking.tsx
 - [x] Switch to AppSync JS Resolvers
-- [] SignIn/SignOut does not toggle Avatar properly
+- [x] SignIn/SignOut does not toggle Avatar properly
 
 # User
 
