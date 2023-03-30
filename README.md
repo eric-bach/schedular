@@ -42,6 +42,7 @@ This quick start guide describes how to get the application running. An `AWS acc
 
 4.  Copy the `./backend/.env.example` file to `./backend/.env` and fill in the parameter values (if the app has not been deployed to AWS yet, the ARN will be empty for now):
 
+    - `SENDER_EMAIL` - Email address for where notifications are sent from
     - `CERTIFICATE_ARN` - ARN to ACM Certificate for CloudFront Distribution
 
 5.  Copy the `./frontend/src/aws-exports.js.example` file to `./frontend/src/aws-exports.js` and fill in the parameter values from the CDK stack outputs in step 2:

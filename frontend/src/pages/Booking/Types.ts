@@ -6,6 +6,9 @@ export type Base = {
 export type AppointmentItem = {
   pk: string;
   sk: string;
+  date: string;
+  startTime: string;
+  endTime: string;
   duration: number;
   status: string;
   type: string;
@@ -18,11 +21,14 @@ export type GetAppointmentsResponse = {
   lastEvaluatedKey: Base;
 };
 
-export type BookingRequest = {
+export type AppointmentBookingResponse = {
   bookAppointment: {
-    httpStatusCode: number;
-    requestId: string;
-    attempts: number;
-    totalRetryDelay: number;
+    pk: string;
+    sk: string;
+    confirmationId: string;
+    status: string;
+    customerName: string;
+    customerEmail: string;
+    customerPhone: string;
   };
 };

@@ -1,4 +1,4 @@
-import React, { useEffect } from 'react';
+import React, { useContext, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 
 import AppBar from '@mui/material/AppBar';
@@ -18,13 +18,17 @@ import AdbIcon from '@mui/icons-material/Adb';
 import { Amplify, Auth } from 'aws-amplify';
 import aws_exports from './aws-exports';
 
+import { useUser } from './Contexts/AuthContext';
+
 Amplify.configure(aws_exports);
 
 const pages = ['Services', 'Pricing', 'Book Appointment'];
 const settings = ['Profile', 'Appointments', 'Logout'];
 
 function Header() {
-  const [authenticated, setAuthenticated] = React.useState<boolean>(false);
+  const { user }: any = useUser();
+  console.log('USER:', user);
+
   const [anchorElNav, setAnchorElNav] = React.useState<null | HTMLElement>(null);
   const [anchorElUser, setAnchorElUser] = React.useState<null | HTMLElement>(null);
 
@@ -42,7 +46,11 @@ function Header() {
 
     console.debug('Clicked ', e.target.textContent);
 
-    if (e.target.textContent === 'Book Appointment') {
+    if (e.target.textContent === 'Services') {
+      navigate('/services');
+    } else if (e.target.textContent === 'Pricing') {
+      navigate('/pricing');
+    } else if (e.target.textContent === 'Book Appointment') {
       navigate('/booking');
     }
   };
@@ -51,28 +59,16 @@ function Header() {
     setAnchorElUser(null);
 
     console.debug('Clicked ', e.target.textContent);
-    if (e.target.textContent === 'Logout') {
-      Auth.signOut();
-      // TODO Bug: Doesn't refresh page on sign out
-      navigate('/');
+    if (e.target.textContent === 'Profile') {
+      navigate('/user/profile');
+    } else if (e.target.textContent === 'Appointments') {
+      navigate('/user/appointments');
+    } else if (e.target.textContent === 'Logout') {
+      Auth.signOut().then(() => {
+        navigate('/');
+      });
     }
   };
-
-  const isAuthenticated = async (): Promise<boolean> => {
-    Auth.currentAuthenticatedUser()
-      .then((user) => {
-        setAuthenticated(true);
-        return true;
-      })
-      .catch((err) => {});
-    setAuthenticated(false);
-    return false;
-  };
-
-  useEffect(() => {
-    isAuthenticated();
-    console.log('IsAuthenticated: ', authenticated);
-  }, [authenticated]);
 
   return (
     <AppBar position='static'>
@@ -160,7 +156,7 @@ function Header() {
             ))}
           </Box>
 
-          {authenticated && (
+          {user.username && (
             <Box sx={{ flexGrow: 0 }}>
               <Tooltip title='Open settings'>
                 <IconButton onClick={handleOpenUserMenu} sx={{ p: 0 }}>

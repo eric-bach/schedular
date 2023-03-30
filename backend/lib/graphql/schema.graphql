@@ -13,10 +13,17 @@ type Data @model @aws_cognito_user_pools {
   phone: Int
 }
 
+input CustomerInput {
+  id: String
+  name: String
+  email: String
+  phone: String
+}
+
 input BookingInput {
   pk: String!
   sk: String!
-  customer: String!
+  customer: CustomerInput!
 }
 
 input LastEvaluatedKey {
@@ -35,9 +42,11 @@ type AppointmentViewModel {
   createdAt: AWSDateTime
   updatedAt: AWSDateTime
   type: String
+  date: AWSDate
+  startTime: String
+  endTime: String
   duration: Int
   status: String
-  customer: String
 }
 
 type GetAppointmentsResponse {
@@ -45,23 +54,27 @@ type GetAppointmentsResponse {
   lastEvaluatedKey: LastEvaluatedKeyViewModel
 }
 
-type TransactWriteItemsCommandOutput {
-  httpStatusCode: Int
-  requestId: String
-  attempts: Int
-  totalRetryDelay: Int
+type BookAppointmentResponse {
+  pk: ID
+  sk: String
+  confirmationId: String
+  status: String
+  customerName: String
+  customerEmail: String
+  customerPhone: String
+  updatedAt: AWSDateTime
 }
 
 # GraphQL actions
 type Query {
   getAvailableAppointments(date: String!, lastEvaluatedKey: LastEvaluatedKey): GetAppointmentsResponse
     @aws_cognito_user_pools(cognito_groups: ["Users", "Admins"])
-  getScheduledAppointments(date: String!, lastEvaluatedKey: LastEvaluatedKey): GetAppointmentsResponse
+  getAppointments(date: String!, lastEvaluatedKey: LastEvaluatedKey): GetAppointmentsResponse
     @aws_cognito_user_pools(cognito_groups: ["Admins"])
 }
 
 type Mutation {
-  bookAppointment(bookingInput: BookingInput): TransactWriteItemsCommandOutput @aws_cognito_user_pools(cognito_groups: ["Users", "Admins"])
+  bookAppointment(bookingInput: BookingInput): BookAppointmentResponse @aws_cognito_user_pools(cognito_groups: ["Users", "Admins"])
 }
 
 schema {

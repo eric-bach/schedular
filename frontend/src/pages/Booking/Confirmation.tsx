@@ -1,0 +1,59 @@
+import React from 'react';
+import { useLocation, useParams } from 'react-router-dom';
+import Container from '@mui/material/Container';
+import Alert from '@mui/material/Alert';
+import AlertTitle from '@mui/material/AlertTitle';
+import Typography from '@mui/material/Typography';
+import Chip from '@mui/material/Chip';
+
+function formatTime(timeString: string) {
+  return new Date('1970-01-01T' + timeString + 'Z').toLocaleTimeString('en-US', {
+    timeZone: 'UTC',
+    hour12: true,
+    hour: 'numeric',
+    minute: 'numeric',
+  });
+}
+
+export default function Confirmation() {
+  const { id: confirmationId } = useParams();
+  const { state } = useLocation();
+
+  let date = state.timeslot.substring(0, 10);
+  let time = state.timeslot.substring(11, 16);
+
+  return (
+    <Container maxWidth='lg' sx={{ mt: 5 }}>
+      <Alert severity='success' sx={{ mb: 2 }}>
+        <AlertTitle>Success</AlertTitle>
+        Your appointment has been successfully booked
+      </Alert>
+
+      <Typography variant='h4' component='h4' gutterBottom>
+        Appointment Details <Chip label='booked' color='success' />
+      </Typography>
+
+      <Typography variant='h6' gutterBottom>
+        Client Information:
+      </Typography>
+      <Typography variant='body1'>{state.customer.name}</Typography>
+      <Typography variant='body1'>{state.customer.email}</Typography>
+      <Typography variant='body1' gutterBottom>
+        {state.customer.phone}
+      </Typography>
+
+      <Typography variant='h6' gutterBottom>
+        Appointment Information:
+      </Typography>
+      <Typography variant='body1' gutterBottom>
+        Date: {new Date(date).toLocaleDateString('en-US', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' })} at{' '}
+        {formatTime(time)}
+      </Typography>
+
+      <Typography variant='h6' gutterBottom>
+        Booking Reference:
+      </Typography>
+      <Typography variant='body1'>Confirmation Id: {confirmationId}</Typography>
+    </Container>
+  );
+}

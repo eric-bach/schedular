@@ -1,11 +1,23 @@
-import { Stack, Duration, CfnOutput } from 'aws-cdk-lib';
+import { Stack, CfnOutput, Duration } from 'aws-cdk-lib';
 import { Construct } from 'constructs';
 import { UserPool } from 'aws-cdk-lib/aws-cognito';
 import { Table } from 'aws-cdk-lib/aws-dynamodb';
-import { AuthorizationType, FieldLogLevel, GraphqlApi, SchemaFile } from 'aws-cdk-lib/aws-appsync';
+import {
+  AppsyncFunction,
+  AuthorizationType,
+  Code,
+  FieldLogLevel,
+  FunctionRuntime,
+  GraphqlApi,
+  InlineCode,
+  Resolver,
+  SchemaFile,
+} from 'aws-cdk-lib/aws-appsync';
+import { EmailIdentity } from 'aws-cdk-lib/aws-ses';
 import { NodejsFunction } from 'aws-cdk-lib/aws-lambda-nodejs';
-import { Runtime } from 'aws-cdk-lib/aws-lambda';
-import { Effect, PolicyStatement } from 'aws-cdk-lib/aws-iam';
+import { EventSourceMapping, Runtime } from 'aws-cdk-lib/aws-lambda';
+import { Queue } from 'aws-cdk-lib/aws-sqs';
+import { Effect, ManagedPolicy, PolicyStatement, Role, ServicePrincipal } from 'aws-cdk-lib/aws-iam';
 
 const dotenv = require('dotenv');
 import * as path from 'path';
@@ -17,9 +29,53 @@ export class ApiStack extends Stack {
   constructor(scope: Construct, id: string, props: SchedularApiStackProps) {
     super(scope, id, props);
 
-    const REGION = Stack.of(this).region;
     const userPool = UserPool.fromUserPoolId(this, 'userPool', props.params.userPoolId);
     const dataTable = Table.fromTableArn(this, 'table', props.params.dataTableArn);
+
+    // SES
+    const emailIdentity = new EmailIdentity(this, 'Identity', {
+      identity: { value: process.env.SENDER_EMAIL || 'info@example.com' },
+    });
+
+    // SQS
+    const emailQueue = new Queue(this, `${props.appName}-${props.envName}-emailDelivery`, {
+      queueName: `${props.appName}-${props.envName}-emailDelivery`,
+    });
+
+    // Lambda
+    const sendEmailFunction = new NodejsFunction(this, 'SendEmailFunction', {
+      functionName: `${props.appName}-${props.envName}-send-email`,
+      runtime: Runtime.NODEJS_16_X,
+      handler: 'handler',
+      entry: 'src/lambda/sendEmail/main.ts',
+      environment: {
+        SENDER_EMAIL: process.env.SENDER_EMAIL || 'info@example.com',
+      },
+      timeout: Duration.seconds(10),
+      memorySize: 256,
+      role: new Role(this, 'SendEmailConsumerRole', {
+        assumedBy: new ServicePrincipal('lambda.amazonaws.com'),
+        managedPolicies: [
+          ManagedPolicy.fromAwsManagedPolicyName('service-role/AWSLambdaBasicExecutionRole'),
+          ManagedPolicy.fromAwsManagedPolicyName('service-role/AWSLambdaSQSQueueExecutionRole'),
+        ],
+      }),
+    });
+    // Add permission send email
+    sendEmailFunction.addToRolePolicy(
+      new PolicyStatement({
+        effect: Effect.ALLOW,
+        actions: ['ses:SendEmail'],
+        resources: [`arn:aws:ses:${this.region}:${this.account}:identity/*`],
+      })
+    );
+
+    // Event Source Mapping to SQS
+    new EventSourceMapping(this, 'SendEmailSQSEvent', {
+      target: sendEmailFunction,
+      batchSize: 10,
+      eventSourceArn: emailQueue.queueArn,
+    });
 
     // AppSync API
     const api = new GraphqlApi(this, `${props.appName}Api`, {
@@ -38,54 +94,133 @@ export class ApiStack extends Stack {
       },
     });
 
-    // Resolver for Calendar
-    const calendarResolverFunction = new NodejsFunction(this, 'CalendarResolver', {
-      functionName: `${props.appName}-${props.envName}-CalendarResolver`,
-      runtime: Runtime.NODEJS_14_X,
-      handler: 'handler',
-      entry: path.resolve(__dirname, '../src/lambda/calendarResolver/main.ts'),
-      memorySize: 512,
-      timeout: Duration.seconds(10),
-      environment: {
-        DATA_TABLE_NAME: dataTable.tableName,
-        REGION: REGION,
+    // AppSync DataSources
+    const dynamoDbDataSource = api.addDynamoDbDataSource(`${props.appName}-${props.envName}-table`, dataTable);
+    const httpDataSource = api.addHttpDataSource(`${props.appName}-${props.envName}-endpoint`, `https://sqs.${this.region}.amazonaws.com`, {
+      authorizationConfig: {
+        signingRegion: this.region,
+        signingServiceName: 'sqs',
       },
-      //deadLetterQueue: commandHandlerQueue,
     });
-    // Add permissions to DynamoDB table
-    calendarResolverFunction.addToRolePolicy(
-      new PolicyStatement({
-        effect: Effect.ALLOW,
-        actions: ['dynamodb:PutItem', 'dynamodb:UpdateItem'],
-        resources: [dataTable.tableArn],
-      })
-    );
-    calendarResolverFunction.addToRolePolicy(
-      new PolicyStatement({
-        effect: Effect.ALLOW,
-        actions: ['dynamodb:Query'],
-        resources: [dataTable.tableArn, dataTable.tableArn + '/index/customer-gsi'],
-      })
-    );
-    // Set the new Lambda function as a data source for the AppSync API
-    const calendarResolverDataSource = api.addLambdaDataSource('calendarDataSource', calendarResolverFunction);
-    // Resolvers
-    calendarResolverDataSource.createResolver('GetAvailableAppointmentsResolver', {
+
+    emailQueue.grantSendMessages(httpDataSource.grantPrincipal);
+
+    // AppSync JS Resolvers
+    const getAvailableAppointmentsFunc = new AppsyncFunction(this, 'getAvailableAppointmentsFunction', {
+      name: 'getAvailableAppointmentsFunction',
+      api: api,
+      dataSource: dynamoDbDataSource,
+      code: Code.fromAsset(path.join(__dirname, '/graphql/Query.getAvailableAppointments.js')),
+      runtime: FunctionRuntime.JS_1_0_0,
+    });
+    const getAppointmentsFunction = new AppsyncFunction(this, 'getAppointmentsFunction', {
+      name: 'getAppointmentsFunction',
+      api: api,
+      dataSource: dynamoDbDataSource,
+      code: Code.fromAsset(path.join(__dirname, '/graphql/Query.getAppointments.js')),
+      runtime: FunctionRuntime.JS_1_0_0,
+    });
+    const bookAppointmentFunction = new AppsyncFunction(this, 'bookAppointmentFunction', {
+      name: 'bookAppointmentFunction',
+      api: api,
+      dataSource: dynamoDbDataSource,
+      code: Code.fromAsset(path.join(__dirname, '/graphql/Mutation.bookAppointment.js')),
+      runtime: FunctionRuntime.JS_1_0_0,
+    });
+    const sqsSendEMailFunction = new AppsyncFunction(this, 'SqsSendEmailFunction', {
+      name: 'sqsSendEmail',
+      api: api,
+      dataSource: httpDataSource,
+      // Have to use inline code to set dynamic resourcePath
+      code: Code.fromInline(`
+        import { util } from '@aws-appsync/utils';
+
+        export function request(ctx) {
+          console.log('🔔 REQUEST: ', ctx);
+
+          const message = util.urlEncode(ctx.prev.result);
+          return {
+            version: '2018-05-29',
+            method: 'POST',
+            params: {
+              body: \`Action=SendMessage&MessageBody=$\{message\}&Version=2012-11-05\`,
+              headers: {
+                'Content-Type': 'application/x-www-form-urlencoded',
+              },
+            },
+            resourcePath: '/${this.account}/${emailQueue.queueName}/',
+          };
+        }
+
+        export function response(ctx) {
+          console.log('🔔 RESPONSE: ', ctx);
+
+          if (ctx.error) {
+            util.error(ctx.error.message, ctx.error.type, ctx.result);
+          }
+          return ctx.prev.result;
+        }
+      `),
+      runtime: FunctionRuntime.JS_1_0_0,
+    });
+
+    const passthrough = InlineCode.fromInline(`
+        // The before step
+        export function request(...args) {
+          console.log("ℹ️ Request: ", args);
+          return {}
+        }
+
+        // The after step
+        export function response(ctx) {
+          console.log("✅ Response: ", ctx.prev.result);
+          return ctx.prev.result
+        }
+    `);
+
+    const getAvailableAppointmentsResolver = new Resolver(this, 'getAvailableAppointmentsResolver', {
+      api: api,
       typeName: 'Query',
       fieldName: 'getAvailableAppointments',
+      runtime: FunctionRuntime.JS_1_0_0,
+      pipelineConfig: [getAvailableAppointmentsFunc],
+      code: passthrough,
     });
-    calendarResolverDataSource.createResolver('GetScheduledAppointmentsResolver', {
+    const getAppointmentsResolver = new Resolver(this, 'getAppointmentsResolver', {
+      api: api,
       typeName: 'Query',
-      fieldName: 'getScheduledAppointments',
+      fieldName: 'getAppointments',
+      runtime: FunctionRuntime.JS_1_0_0,
+      pipelineConfig: [getAppointmentsFunction],
+      code: passthrough,
     });
-    calendarResolverDataSource.createResolver('BookAppointmentResolver', {
+    const bookAppopintmentResolver = new Resolver(this, 'bookAppointmentResolver', {
+      api: api,
       typeName: 'Mutation',
       fieldName: 'bookAppointment',
+      runtime: FunctionRuntime.JS_1_0_0,
+      pipelineConfig: [bookAppointmentFunction, sqsSendEMailFunction],
+      code: passthrough,
     });
 
     /***
      *** Outputs
      ***/
+
+    new CfnOutput(this, 'VerifiedEmailIdentity', {
+      value: emailIdentity.emailIdentityName,
+      exportName: `${props.appName}-${props.envName}-emailIdentity`,
+    });
+
+    new CfnOutput(this, 'EmailQueueArn', {
+      value: emailQueue.queueArn,
+      exportName: `${props.appName}-${props.envName}-emailQueueArn`,
+    });
+
+    new CfnOutput(this, 'SendEmailFunctionArn', {
+      value: sendEmailFunction.functionArn,
+      exportName: `${props.appName}-${props.envName}-sendEmailFunctionArn`,
+    });
 
     new CfnOutput(this, 'AppSyncGraphqlEndpoint', {
       value: api.graphqlUrl,

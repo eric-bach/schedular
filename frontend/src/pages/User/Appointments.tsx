@@ -1,0 +1,10 @@
+import React from 'react';
+import Container from '@mui/material/Container';
+
+export default function Appointments() {
+  return (
+    <Container maxWidth='lg' sx={{ mt: 5 }}>
+      Appointments
+    </Container>
+  );
+}

@@ -20,7 +20,7 @@ async function seed() {
 
     // Generate random seed data
     const data = generateRandomSeedData();
-    console.log('🚀 Seed data: ', data);
+    console.log('🚀 Seed data length: ', data.length);
 
     // Seed each item in table
     console.log('\n🚀 Starting to seed table...');
@@ -43,7 +43,6 @@ function getParams() {
 }
 
 async function seedItem(tableName: string, item: any) {
-  item.sk = item.sk + new Date().toISOString();
   item.createdAt = new Date().toISOString();
   item.updatedAt = new Date().toISOString();
 
@@ -67,13 +66,32 @@ function generateRandomSeedData() {
       let rand = Math.floor(Math.random() * 2);
       if (rand % 2 === 1) continue;
 
+      const duration = 60;
       let sk = dayjs(d).set('hour', h).set('minute', 0).set('second', 0).set('millisecond', 0).toISOString();
-      data.push({ pk: 'appt', sk: sk, duration: 60, status: 'open', type: 'massage' });
+
+      let date = sk.substring(0, 10);
+      let startTime = sk.substring(11, 16);
+      let endTime = calculateEndTime(startTime, duration);
+
+      data.push({ pk: 'appt', sk, date, startTime, endTime, duration, status: 'available', type: 'massage' });
     }
   }
 
   return data;
 }
+
+const calculateEndTime = (startTime: string, duration: number) => {
+  let [hr, min] = startTime.split(':');
+  duration += parseInt(hr) * 60 + parseInt(min);
+  hr = Math.floor(duration / 60).toString();
+  min = (duration % 60).toString();
+
+  return `${addLeadingZeros(hr)}:${addLeadingZeros(min)}`;
+};
+
+const addLeadingZeros = (value: string) => {
+  return parseInt(value) < 10 ? `0${value}` : value;
+};
 
 async function getTableName(): Promise<string> {
   var tableName: string = `${appName}-${env}-Data`;

@@ -20,10 +20,17 @@ import Button from '@mui/material/Button';
 import aws_exports from '../../aws-exports';
 import Loading from '../../components/Loading';
 import { GET_APPOINTMENTS, BOOK_APPOINTMENT } from '../../graphql/queries';
-import { GetAppointmentsResponse, AppointmentItem, BookingRequest } from './Types';
+import { GetAppointmentsResponse, AppointmentItem, AppointmentBookingResponse } from './Types';
 import '@aws-amplify/ui-react/styles.css';
 
 Amplify.configure(aws_exports);
+
+type Customer = {
+  id: string;
+  name: string;
+  email: string;
+  phone: string;
+};
 
 function Booking() {
   const [date, setDate] = React.useState<Dayjs | null>(null);
@@ -31,7 +38,7 @@ function Booking() {
   const [timeslotText, setTimeslotText] = React.useState<string | null>(null);
   const [availableAppts, setAppts] = React.useState<[AppointmentItem | undefined]>();
   const [numAppts, setNumAppts] = React.useState<number>(0);
-  const [customer, setCustomer] = React.useState<string | null>(null);
+  const [customer, setCustomer] = React.useState<Customer | null>(null);
   const [isLoading, setLoading] = React.useState<boolean>(false);
   const [isError, setError] = React.useState<boolean>(false);
 
@@ -47,9 +54,6 @@ function Booking() {
         date: dayjs(date).format('YYYY-MM-DD'),
       })
     );
-    console.log('FOUND APPOINTMENTS: ', appointments);
-
-    console.log(appointments.data?.getAvailableAppointments?.items);
     setAppts(appointments.data?.getAvailableAppointments?.items);
     setNumAppts(appointments.data?.getAvailableAppointments?.items.length ?? 0);
 
@@ -60,14 +64,19 @@ function Booking() {
 
   useEffect(() => {
     Auth.currentAuthenticatedUser().then((user) => {
-      console.log('Authenticated User: ', user);
-      console.log('Authenticated User Attributes: ', user.attributes);
-      setCustomer(user.attributes.email);
+      // console.log('Authenticated User: ', user);
+      // console.log('Authenticated User Attributes: ', user.attributes);
+      setCustomer({
+        id: user.attributes.sub,
+        name: user.attributes.given_name,
+        email: user.attributes.email,
+        phone: user.attributes.phone_number,
+      });
     });
   }, []);
 
   async function dateSelected(date: Dayjs | null) {
-    // Reset timeslow
+    // Reset timeslot
     setTimeslot(null);
     setTimeslotText(null);
     setError(false);
@@ -90,20 +99,33 @@ function Booking() {
     const input = {
       pk: 'appt',
       sk: timeslot,
-      customer: customer,
+      customer: {
+        id: customer?.id,
+        name: customer?.name,
+        email: customer?.email,
+        phone: customer?.phone,
+      },
     };
 
-    const result = await API.graphql<GraphQLQuery<BookingRequest>>(graphqlOperation(BOOK_APPOINTMENT, { input: input }));
+    const result = await API.graphql<GraphQLQuery<AppointmentBookingResponse>>(graphqlOperation(BOOK_APPOINTMENT, { input: input }));
 
     console.log('Booked: ', result.data?.bookAppointment);
 
-    if (result.data?.bookAppointment.httpStatusCode === 200) {
-      // TODO Navigate to confirmation page instead of home and send email
-      navigate('/');
+    if (result.data?.bookAppointment.confirmationId) {
+      navigate(`/confirmation/${result.data.bookAppointment.confirmationId}`, { state: { customer: customer, timeslot: timeslot } });
     } else {
       await dateSelected(date);
       setError(true);
     }
+  }
+
+  function formatTime(timeString: string) {
+    return new Date('1970-01-01T' + timeString + 'Z').toLocaleTimeString('en-US', {
+      timeZone: 'UTC',
+      hour12: true,
+      hour: 'numeric',
+      minute: 'numeric',
+    });
   }
 
   function dismissError() {
@@ -170,7 +192,7 @@ function Booking() {
                       }}
                       id={m?.sk}
                     >
-                      {m?.sk.substring(11, 16)} ({m?.duration} mins)
+                      {formatTime(m?.startTime!)} - {formatTime(m?.endTime!)}
                     </Button>
                   );
                 })}

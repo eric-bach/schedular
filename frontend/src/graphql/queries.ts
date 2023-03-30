@@ -4,6 +4,9 @@ export const GET_APPOINTMENTS = `query GetAppointments($date: String!, $lastEval
       pk
       sk
       type
+      date
+      startTime
+      endTime
       duration
       status
     }
@@ -17,9 +20,12 @@ export const GET_APPOINTMENTS = `query GetAppointments($date: String!, $lastEval
 
 export const BOOK_APPOINTMENT = `mutation BookAppointment($input: BookingInput!) {
   bookAppointment(bookingInput: $input) {
-    httpStatusCode
-    requestId
-    attempts
-    totalRetryDelay
+    pk
+    sk
+    confirmationId
+    status
+    customerName
+    customerEmail
+    customerPhone
   }
 }`;

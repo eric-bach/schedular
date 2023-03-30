@@ -8,6 +8,9 @@ node_modules
 /.pnp
 .pnp.js
 
+# Include AppSync JS Resolvers
+!**/graphql/*.js
+
 # production
 /build
 

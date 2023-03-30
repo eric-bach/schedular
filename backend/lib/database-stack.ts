@@ -27,9 +27,9 @@ export class DatabaseStack extends Stack {
     });
     // GSIs for Data Table
     dataTable.addGlobalSecondaryIndex({
-      indexName: 'customer-gsi',
+      indexName: 'customerId-gsi',
       partitionKey: {
-        name: 'customer',
+        name: 'customerId',
         type: AttributeType.STRING,
       },
       sortKey: {
