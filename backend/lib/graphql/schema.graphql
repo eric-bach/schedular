@@ -66,6 +66,24 @@ type GetAppointmentsResponse {
   lastEvaluatedKey: LastEvaluatedKeyViewModel
 }
 
+type CustomerAppointmentViewModel {
+  pk: String
+  sk: String
+  createdAt: AWSDateTime
+  updatedAt: AWSDateTime
+  type: String
+  appointmentDetails: AppointmentDetailsViewModel
+  customerId: String
+  customerDetails: CustomerViewModel
+  status: String
+  confirmationId: String
+}
+
+type GetCustomerAppointmentsResponse {
+  items: [CustomerAppointmentViewModel]
+  lastEvaluatedKey: LastEvaluatedKeyViewModel
+}
+
 type BookAppointmentResponse {
   pk: ID
   sk: String
@@ -84,7 +102,7 @@ type Query {
   getAppointments(date: String!, lastEvaluatedKey: LastEvaluatedKey): GetAppointmentsResponse
     @aws_cognito_user_pools(cognito_groups: ["Admins"])
 
-  getCustomerAppointments(customerId: String!, lastEvaluatedKey: LastEvaluatedKey): GetAppointmentsResponse
+  getCustomerAppointments(customerId: String!, date: String!, lastEvaluatedKey: LastEvaluatedKey): GetCustomerAppointmentsResponse
     @aws_cognito_user_pools(cognito_groups: ["Users", "Admins"])
 }
 

@@ -4,6 +4,8 @@
 - [x] Switch to AppSync JS Resolvers
 - [x] SignIn/SignOut does not toggle Avatar properly
 - [x] Save object (Customer, Date/Time) in DynamoDB
+- [] Build out a proper Appointment Confirmation email template
+- [] Verify email domain to remove spoofing warning
 
 # User
 
@@ -12,6 +14,9 @@
 - [x] As a user I want a confirmation of a booked appointment
 - [x] As a user I want to receive a confirmation email for an appointment
 - [] As a user I want to see my past/upcoming appointments
+  - [x] Build API
+  - [] Build frontend views
+  - [] Hookup to API
 - [] As a user I want the ability to cancel an appointment
 - [] As a user I want to receive notification email of an upcoming appointment
 
@@ -28,7 +33,6 @@ mutation BookAppointment {
   {
     pk
     sk
-    type
     status
     appointmentDetails {
       date
@@ -63,6 +67,32 @@ query GetAvailableAppointments {
         duration
       }
       confirmationId
+    }
+  }
+}
+
+query GetCustomerAppointments {
+  getCustomerAppointments(customerId: "79aea011-a655-447a-92d4-1d17be6d0ea4", date: "2023-03-30")
+  {
+    items {
+      pk
+      sk
+      type
+      status
+      appointmentDetails {
+        date
+        startTime
+        endTime
+        duration
+      }
+      confirmationId
+      customerId
+      customerDetails
+      {
+        name
+        email
+        phone
+      }
     }
   }
 }

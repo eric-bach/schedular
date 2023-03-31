@@ -6,6 +6,7 @@ import {
   AppsyncFunction,
   AuthorizationType,
   Code,
+  DynamoDbDataSource,
   FieldLogLevel,
   FunctionRuntime,
   GraphqlApi,
@@ -17,7 +18,7 @@ import { EmailIdentity } from 'aws-cdk-lib/aws-ses';
 import { NodejsFunction } from 'aws-cdk-lib/aws-lambda-nodejs';
 import { EventSourceMapping, Runtime } from 'aws-cdk-lib/aws-lambda';
 import { Queue } from 'aws-cdk-lib/aws-sqs';
-import { Effect, ManagedPolicy, PolicyStatement, Role, ServicePrincipal } from 'aws-cdk-lib/aws-iam';
+import { Effect, ManagedPolicy, PolicyDocument, PolicyStatement, Role, ServicePrincipal } from 'aws-cdk-lib/aws-iam';
 
 const dotenv = require('dotenv');
 import * as path from 'path';
@@ -94,9 +95,46 @@ export class ApiStack extends Stack {
       },
     });
 
+    // Update AppSync API role to allow access to LSI/GSIs
+    const dynamoDbDataSourceRole = new Role(this, `${props.appName}ApiServiceRole`, {
+      assumedBy: new ServicePrincipal('appsync.amazonaws.com'),
+      roleName: `${props.appName}-dynamoDb-service-role-2-${props.envName}`,
+      inlinePolicies: {
+        name: new PolicyDocument({
+          statements: [
+            new PolicyStatement({
+              effect: Effect.ALLOW,
+              actions: [
+                'dynamodb:BatchGetItem',
+                'dynamodb:BatchWriteItem',
+                'dynamodb:ConditionCheckItem',
+                'dynamodb:DeleteItem',
+                'dynamodb:DescribeTable',
+                'dynamodb:GetItem',
+                'dynamodb:GetRecords',
+                'dynamodb:GetShardIterator',
+                'dynamodb:PutItem',
+                'dynamodb:Query',
+                'dynamodb:Scan',
+                'dynamodb:UpdateItem',
+              ],
+              resources: [dataTable.tableArn + '/*'],
+            }),
+          ],
+        }),
+      },
+    });
+
     // AppSync DataSources
-    const dynamoDbDataSource = api.addDynamoDbDataSource(`${props.appName}-${props.envName}-table`, dataTable);
-    const httpDataSource = api.addHttpDataSource(`${props.appName}-${props.envName}-endpoint`, `https://sqs.${this.region}.amazonaws.com`, {
+    const dynamoDbDataSource = new DynamoDbDataSource(this, `${props.appName}ApiDynamoDBDataSource`, {
+      api: api,
+      table: dataTable,
+      description: 'DynamoDbDataSource',
+      name: `${props.appName}-table-${props.envName}`,
+      serviceRole: dynamoDbDataSourceRole,
+    });
+    const httpDataSource = api.addHttpDataSource(`${props.appName}-endpoint-${props.envName}`, `https://sqs.${this.region}.amazonaws.com`, {
+      name: `${props.appName}ApiHttpDataSource`,
       authorizationConfig: {
         signingRegion: this.region,
         signingServiceName: 'sqs',
@@ -118,6 +156,13 @@ export class ApiStack extends Stack {
       api: api,
       dataSource: dynamoDbDataSource,
       code: Code.fromAsset(path.join(__dirname, '/graphql/Query.getAppointments.js')),
+      runtime: FunctionRuntime.JS_1_0_0,
+    });
+    const getCustomerAppointmentsFunction = new AppsyncFunction(this, 'getCustomerAppointmentsFunction', {
+      name: 'getCustomerAppointmentsFunction',
+      api: api,
+      dataSource: dynamoDbDataSource,
+      code: Code.fromAsset(path.join(__dirname, '/graphql/Query.getCustomerAppointments.js')),
       runtime: FunctionRuntime.JS_1_0_0,
     });
     const bookAppointmentFunction = new AppsyncFunction(this, 'bookAppointmentFunction', {
@@ -192,6 +237,14 @@ export class ApiStack extends Stack {
       fieldName: 'getAppointments',
       runtime: FunctionRuntime.JS_1_0_0,
       pipelineConfig: [getAppointmentsFunction],
+      code: passthrough,
+    });
+    const getCustomerAppointmentsResolver = new Resolver(this, 'getCustomerAppointmentsResolver', {
+      api: api,
+      typeName: 'Query',
+      fieldName: 'getCustomerAppointments',
+      runtime: FunctionRuntime.JS_1_0_0,
+      pipelineConfig: [getCustomerAppointmentsFunction],
       code: passthrough,
     });
     const bookAppopintmentResolver = new Resolver(this, 'bookAppointmentResolver', {
