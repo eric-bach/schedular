@@ -31,9 +31,6 @@ exports.handler = async (event: any) => {
   //   RawMessage: { Data: new TextEncoder().encode(rawMessage.join('\n')) },
   // };
 
-  let date = message.sk.substring(0, 10);
-  let time = message.sk.substring(11, 16);
-
   const input: SendEmailCommandInput = {
     Source: process.env.SENDER_EMAIL,
     // TODO Change to user email
@@ -47,7 +44,7 @@ exports.handler = async (event: any) => {
       Body: {
         Text: {
           Charset: 'UTF-8',
-          Data: `This is to confirm your appointment for ${message.customerName} on ${date} at ${time}\nConfirmation Id: ${message.confirmationId}`,
+          Data: `This is to confirm your appointment for ${message.customerName} on ${message.appointmentDetails.date} from ${message.appointmentDetails.startTime} to ${message.appointmentDetails.endTime}\nConfirmation Id: ${message.confirmationId}`,
         },
       },
     },
@@ -60,11 +57,11 @@ exports.handler = async (event: any) => {
 };
 
 // Takes a SQS urlDecoded string and converts it to proper JSON
-//    Input:  {sk=123, pk=123}
-//    Output: {"sk":"123","pk":"123"}
+//    Input:  {id=123, nestedObject={name=test}}
+//    Output: {"id":"123","nextedObject":{"name":"123"}}
 function parseUrlDecodedString(body: string): string {
-  // Split each key:value pair and remove any parenthesis
-  const commaSplitBody = body.replace(/[\{\}]/g, '').split(',');
+  // Split each key:value pair and remove leading and trailing parenthesis
+  const commaSplitBody = body.substring(1, body.length - 1).split(',');
 
   // Build new JSON string
   let jsonOutput = '{';
@@ -76,17 +73,25 @@ function parseUrlDecodedString(body: string): string {
       if (i % 2 === 0) {
         // Key
         jsonOutput += `"${t.trim()}":`;
+        ++i;
+      } else if (t.startsWith('{')) {
+        // Nested value (start)
+        jsonOutput += `${t.trim().replace(/[\{]/g, '{"')}":`;
+      } else if (t.endsWith('}')) {
+        // Nested value (end)
+        jsonOutput += `"${t.trim().replace(/[\}]/g, '"}')},`;
+        ++i;
       } else {
         // Value
         jsonOutput += `"${t.trim()}",`;
+        ++i;
       }
-
-      ++i;
     });
   });
 
   // Trim last comma and close JSON string
   jsonOutput = jsonOutput.substring(0, jsonOutput.length - 1) + '}';
 
+  console.log('JSON Output ', jsonOutput);
   return jsonOutput;
 }

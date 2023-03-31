@@ -3,6 +3,7 @@
 - [x] Clean up types for Booking.tsx
 - [x] Switch to AppSync JS Resolvers
 - [x] SignIn/SignOut does not toggle Avatar properly
+- [x] Save object (Customer, Date/Time) in DynamoDB
 
 # User
 
@@ -23,15 +24,26 @@
 
 ```
 mutation BookAppointment {
-  bookAppointment(bookingInput: {customer: {email: "test@test.com", name: "Eric", phone: "123"}, pk: "123", sk: "123"})
+  bookAppointment(bookingInput: {customer: {id: "123", email: "test@test.com", name: "Eric", phone: "123"}, pk: "123", sk: "123"})
   {
     pk
     sk
-    confirmationId
+    type
     status
-    customerName
-    customerEmail
-    customerPhone
+    appointmentDetails {
+      date
+      startTime
+      endTime
+      duration
+    }
+    confirmationId
+    customerId
+    customerDetails
+    {
+      name
+      email
+      phone
+    }
   }
 }
 
@@ -43,11 +55,14 @@ query GetAvailableAppointments {
       pk
       sk
       type
-      date
-      startTime
-      endTime
-      duration
       status
+      appointmentDetails {
+        date
+        startTime
+        endTime
+        duration
+      }
+      confirmationId
     }
   }
 }

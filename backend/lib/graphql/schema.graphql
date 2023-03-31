@@ -6,6 +6,7 @@ type Data @model @aws_cognito_user_pools {
   type: String
   duration: Int
   status: String
+  confirmationId: String
   customer: String
   firstName: String
   lastName: String
@@ -36,17 +37,28 @@ type LastEvaluatedKeyViewModel {
   sk: String
 }
 
+type CustomerViewModel {
+  name: String
+  email: String
+  phone: String
+}
+
+type AppointmentDetailsViewModel {
+  date: AWSDate
+  startTime: String
+  endTime: String
+  duration: Int
+}
+
 type AppointmentViewModel {
   pk: String
   sk: String
   createdAt: AWSDateTime
   updatedAt: AWSDateTime
   type: String
-  date: AWSDate
-  startTime: String
-  endTime: String
-  duration: Int
+  appointmentDetails: AppointmentDetailsViewModel
   status: String
+  confirmationId: String
 }
 
 type GetAppointmentsResponse {
@@ -59,9 +71,9 @@ type BookAppointmentResponse {
   sk: String
   confirmationId: String
   status: String
-  customerName: String
-  customerEmail: String
-  customerPhone: String
+  appointmentDetails: AppointmentDetailsViewModel
+  customerId: String
+  customerDetails: CustomerViewModel
   updatedAt: AWSDateTime
 }
 
@@ -71,6 +83,9 @@ type Query {
     @aws_cognito_user_pools(cognito_groups: ["Users", "Admins"])
   getAppointments(date: String!, lastEvaluatedKey: LastEvaluatedKey): GetAppointmentsResponse
     @aws_cognito_user_pools(cognito_groups: ["Admins"])
+
+  getCustomerAppointments(customerId: String!, lastEvaluatedKey: LastEvaluatedKey): GetAppointmentsResponse
+    @aws_cognito_user_pools(cognito_groups: ["Users", "Admins"])
 }
 
 type Mutation {

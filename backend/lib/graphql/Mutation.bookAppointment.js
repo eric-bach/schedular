@@ -11,15 +11,17 @@ export function request(ctx) {
     },
     update: {
       expression:
-        'SET #status = :booked, confirmationId = :confirmationId, customerId = :customerId, customerName = :customerName, customerEmail = :customerEmail, customerPhone = :customerPhone, updatedAt = :updatedAt',
+        'SET #status = :booked, confirmationId = :confirmationId, customerId = :customerId, customerDetails = :customerDetails, updatedAt = :updatedAt',
       expressionNames: {
         '#status': 'status',
       },
       expressionValues: {
+        ':customerDetails': util.dynamodb.toDynamoDB({
+          name: ctx.args.bookingInput.customer.name,
+          email: ctx.args.bookingInput.customer.email,
+          phone: ctx.args.bookingInput.customer.phone,
+        }),
         ':customerId': util.dynamodb.toDynamoDB(ctx.args.bookingInput.customer.id),
-        ':customerName': util.dynamodb.toDynamoDB(ctx.args.bookingInput.customer.name),
-        ':customerEmail': util.dynamodb.toDynamoDB(ctx.args.bookingInput.customer.email),
-        ':customerPhone': util.dynamodb.toDynamoDB(ctx.args.bookingInput.customer.phone),
         ':booked': util.dynamodb.toDynamoDB('booked'),
         ':confirmationId': util.dynamodb.toDynamoDB(util.autoId()),
         ':updatedAt': util.dynamodb.toDynamoDB(util.time.nowISO8601()),

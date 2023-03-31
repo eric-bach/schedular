@@ -6,12 +6,15 @@ export type Base = {
 export type AppointmentItem = {
   pk: string;
   sk: string;
-  date: string;
-  startTime: string;
-  endTime: string;
-  duration: number;
+  appointmentDetails: {
+    date: string;
+    startTime: string;
+    endTime: string;
+    duration: number;
+  };
   status: string;
   type: string;
+  confirmationId: string;
 };
 
 export type GetAppointmentsResponse = {
@@ -27,8 +30,17 @@ export type AppointmentBookingResponse = {
     sk: string;
     confirmationId: string;
     status: string;
-    customerName: string;
-    customerEmail: string;
-    customerPhone: string;
+    appointmentDetails: {
+      date: string;
+      startTime: string;
+      endTime: string;
+      duration: number;
+    };
+    customerId: string;
+    customerDetails: {
+      name: string;
+      email: string;
+      phone: string;
+    };
   };
 };

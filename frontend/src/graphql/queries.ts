@@ -4,11 +4,14 @@ export const GET_APPOINTMENTS = `query GetAppointments($date: String!, $lastEval
       pk
       sk
       type
-      date
-      startTime
-      endTime
-      duration
       status
+      appointmentDetails {
+        date
+        startTime
+        endTime
+        duration
+      }
+      confirmationId    
     }
     lastEvaluatedKey
     {
@@ -22,10 +25,20 @@ export const BOOK_APPOINTMENT = `mutation BookAppointment($input: BookingInput!)
   bookAppointment(bookingInput: $input) {
     pk
     sk
-    confirmationId
     status
-    customerName
-    customerEmail
-    customerPhone
+    appointmentDetails {
+      date
+      startTime
+      endTime
+      duration
+    }
+    confirmationId
+    customerId
+    customerDetails
+    {
+      name
+      email
+      phone
+    }
   }
 }`;

@@ -192,7 +192,7 @@ function Booking() {
                       }}
                       id={m?.sk}
                     >
-                      {formatTime(m?.startTime!)} - {formatTime(m?.endTime!)}
+                      {formatTime(m?.appointmentDetails.startTime!)} - {formatTime(m?.appointmentDetails.endTime!)}
                     </Button>
                   );
                 })}

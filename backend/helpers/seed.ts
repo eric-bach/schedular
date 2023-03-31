@@ -73,7 +73,7 @@ function generateRandomSeedData() {
       let startTime = sk.substring(11, 16);
       let endTime = calculateEndTime(startTime, duration);
 
-      data.push({ pk: 'appt', sk, date, startTime, endTime, duration, status: 'available', type: 'massage' });
+      data.push({ pk: 'appt', sk, appointmentDetails: { date, startTime, endTime, duration }, status: 'available', type: 'massage' });
     }
   }
 
