@@ -1,10 +1,11 @@
 import React from 'react';
-import { useLocation, useParams } from 'react-router-dom';
+import { useLocation, useNavigate, useParams } from 'react-router-dom';
 import Container from '@mui/material/Container';
 import Alert from '@mui/material/Alert';
 import AlertTitle from '@mui/material/AlertTitle';
 import Typography from '@mui/material/Typography';
 import Chip from '@mui/material/Chip';
+import Button from '@mui/material/Button';
 
 function formatTime(timeString: string) {
   return new Date('1970-01-01T' + timeString + 'Z').toLocaleTimeString('en-US', {
@@ -18,6 +19,8 @@ function formatTime(timeString: string) {
 export default function Confirmation() {
   const { id: confirmationId } = useParams();
   const { state } = useLocation();
+
+  const navigate = useNavigate();
 
   let date = state.timeslot.substring(0, 10);
   let time = state.timeslot.substring(11, 16);
@@ -54,6 +57,16 @@ export default function Confirmation() {
         Booking Reference:
       </Typography>
       <Typography variant='body1'>Confirmation Id: {confirmationId}</Typography>
+
+      <Button
+        variant='contained'
+        sx={{ mt: 2 }}
+        onClick={() => {
+          navigate('/user/appointments');
+        }}
+      >
+        See My Appointments
+      </Button>
     </Container>
   );
 }

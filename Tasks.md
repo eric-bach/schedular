@@ -4,6 +4,8 @@
 - [x] Switch to AppSync JS Resolvers
 - [x] SignIn/SignOut does not toggle Avatar properly
 - [x] Save object (Customer, Date/Time) in DynamoDB
+- \*[] withAuthenticator - https://github.com/aws-amplify/amplify-js/issues/2526
+- \*[] clean up frontend types
 - [] Build out a proper Appointment Confirmation email template
 - [] Verify email domain to remove spoofing warning
 
@@ -13,17 +15,14 @@
 - [x] As a user I want to be able to book an appointment
 - [x] As a user I want a confirmation of a booked appointment
 - [x] As a user I want to receive a confirmation email for an appointment
-- [] As a user I want to see my past/upcoming appointments
-  - [x] Build API
-  - [] Build frontend views
-  - [] Hookup to API
+- [x] As a user I want to see my past/upcoming appointments
 - [] As a user I want the ability to cancel an appointment
 - [] As a user I want to receive notification email of an upcoming appointment
 
 # Admin
 
-- [] As a massage therapist I want to be able to see all my daily appointments
-- [] As a massage therapist I want to be able to set my availability
+- \*[] As a massage therapist I want to be able to see all my daily appointments
+- \*[] As a massage therapist I want to be able to set my availability
 - [] As a massage therapist I want to require a phone consultation before a massage booking
 - [] As a massage therapist I want to be able to see and manage a users bookings
 

@@ -4,6 +4,12 @@ import { withAuthenticator } from '@aws-amplify/ui-react';
 import { API, graphqlOperation } from 'aws-amplify';
 import { GraphQLQuery } from '@aws-amplify/api';
 import Container from '@mui/material/Container';
+import List from '@mui/material/List';
+import ListItem from '@mui/material/ListItem';
+import Divider from '@mui/material/Divider';
+import ListItemText from '@mui/material/ListItemText';
+import Typography from '@mui/material/Typography';
+import Loading from '../../components/Loading';
 
 import aws_exports from '../../aws-exports';
 import { GET_CUSTOMER_APPOINTMENTS } from '../../graphql/queries';
@@ -19,6 +25,15 @@ type Customer = {
   email: string;
   phone: string;
 };
+
+function formatTime(timeString: string) {
+  return new Date('1970-01-01T' + timeString + 'Z').toLocaleTimeString('en-US', {
+    timeZone: 'UTC',
+    hour12: true,
+    hour: 'numeric',
+    minute: 'numeric',
+  });
+}
 
 function Appointments() {
   const [customer, setCustomer] = React.useState<Customer | null>(null);
@@ -51,14 +66,50 @@ function Appointments() {
       });
 
       getCustomerAppointments(user.attributes.sub).then((resp) => {
-        console.log(resp);
+        console.log('Appointments ', resp);
       });
     });
   }, []);
 
   return (
     <Container maxWidth='lg' sx={{ mt: 5 }}>
-      Appointments
+      <Typography variant='h5' fontWeight='bold' align='left' color='textPrimary' gutterBottom sx={{ mt: 2 }}>
+        Upcoming Appointments:
+      </Typography>
+
+      {isLoading && <Loading />}
+      {!isLoading && (
+        <List sx={{ bgcolor: 'background.paper' }}>
+          {appointments?.map((appt) => {
+            let heading = `${new Date(appt?.appointmentDetails?.date ?? new Date('1901-01-01')).toLocaleDateString('en-US', {
+              weekday: 'long',
+              year: 'numeric',
+              month: 'long',
+              day: 'numeric',
+            })} at ${formatTime(appt?.appointmentDetails?.startTime ?? '00:00:00')}`;
+
+            return (
+              <div key={appt?.sk}>
+                <ListItem alignItems='flex-start'>
+                  <ListItemText
+                    primary={heading}
+                    secondary={
+                      <React.Fragment>
+                        <Typography sx={{ display: 'inline' }} component='span' variant='body2' color='text.primary'>
+                          {appt?.customerDetails.name}
+                        </Typography>
+                        {' - '}
+                        {appt?.type}
+                      </React.Fragment>
+                    }
+                  />
+                </ListItem>
+                <Divider variant='inset' component='li' />
+              </div>
+            );
+          })}
+        </List>
+      )}
     </Container>
   );
 }
