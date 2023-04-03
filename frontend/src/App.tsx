@@ -1,6 +1,6 @@
 import { Authenticator } from '@aws-amplify/ui-react';
 
-import { RequireAuth } from './RequireAuth';
+import { RequireAuth } from './components/RequireAuth';
 import { Login } from './components/Login';
 import Home from './pages/Home/Home';
 import { Header } from './Header';

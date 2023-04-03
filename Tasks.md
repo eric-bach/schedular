@@ -5,7 +5,6 @@
 - [x] SignIn/SignOut does not toggle Avatar properly
 - [x] Save object (Customer, Date/Time) in DynamoDB
 - [x] withAuthenticator - https://ui.docs.amplify.aws/react/guides/auth-protected
-- \*[] clean up frontend types
 - [] Build out a proper Appointment Confirmation email template
 - [] Verify email domain to remove spoofing warning
 
@@ -15,9 +14,10 @@
 - [x] As a user I want to be able to book an appointment
 - [x] As a user I want a confirmation of a booked appointment
 - [x] As a user I want to receive a confirmation email for an appointment
-- [x] As a user I want to see my past/upcoming appointments
+- [x] As a user I want to see my upcoming appointments
 - [] As a user I want the ability to cancel an appointment
 - [] As a user I want to receive notification email of an upcoming appointment
+- [] As a user I want to see my past appointments
 
 # Admin
 

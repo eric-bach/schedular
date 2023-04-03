@@ -20,7 +20,7 @@ const pages = ['Services', 'Pricing', 'Book Appointment'];
 const settings = ['Profile', 'Appointments', 'Logout'];
 
 export function Header() {
-  const { route, signOut } = useAuthenticator((context) => [context.route, context.signOut]);
+  const { authStatus, signOut } = useAuthenticator((context) => [context.route, context.signOut]);
   const navigate = useNavigate();
 
   const [anchorElNav, setAnchorElNav] = React.useState<null | HTMLElement>(null);
@@ -148,7 +148,7 @@ export function Header() {
               ))}
             </Box>
 
-            {route === 'authenticated' && (
+            {authStatus === 'authenticated' && (
               <Box sx={{ flexGrow: 0 }}>
                 <Tooltip title='Open settings'>
                   <IconButton onClick={handleOpenUserMenu} sx={{ p: 0 }}>
