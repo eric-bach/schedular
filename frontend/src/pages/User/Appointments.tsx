@@ -12,7 +12,7 @@ import Typography from '@mui/material/Typography';
 
 import aws_exports from '../../aws-exports';
 import { GET_CUSTOMER_APPOINTMENTS } from '../../graphql/queries';
-import { GetCustomerAppointmentsResponse, CustomerAppointmentItem } from './Types';
+import { GetCustomerAppointmentsResponse, CustomerAppointmentItem } from './CustomerTypes';
 
 import '@aws-amplify/ui-react/styles.css';
 
