@@ -33,8 +33,8 @@ export class DatabaseStack extends Stack {
         type: AttributeType.STRING,
       },
       sortKey: {
-        name: 'sk',
-        type: AttributeType.STRING,
+        name: 'appointmentDateEpoch',
+        type: AttributeType.NUMBER,
       },
     });
 

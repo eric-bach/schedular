@@ -6,10 +6,10 @@ export function request(ctx) {
     operation: 'Query',
     index: 'customerId-gsi',
     query: {
-      expression: 'customerId = :customerId AND begins_with(sk, :sk)',
+      expression: 'customerId = :customerId AND appointmentDateEpoch >= :appointmentDateEpoch',
       expressionValues: {
         ':customerId': util.dynamodb.toDynamoDB(ctx.args.customerId),
-        ':sk': util.dynamodb.toDynamoDB(ctx.args.date),
+        ':appointmentDateEpoch': util.dynamodb.toDynamoDB(ctx.args.appointmentDateEpoch),
       },
     },
     filter: {

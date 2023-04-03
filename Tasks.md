@@ -53,13 +53,14 @@ mutation BookAppointment {
 
 
 query GetAvailableAppointments {
-  getAvailableAppointments(date: "2023-03-31")
+  getAvailableAppointments(date: "2023-04-05")
   {
     items {
       pk
       sk
       type
       status
+      appointmentDateEpoch
       appointmentDetails {
         date
         startTime
@@ -72,7 +73,7 @@ query GetAvailableAppointments {
 }
 
 query GetCustomerAppointments {
-  getCustomerAppointments(customerId: "79aea011-a655-447a-92d4-1d17be6d0ea4", date: "2023-03-30")
+  getCustomerAppointments(customerId: "79aea011-a655-447a-92d4-1d17be6d0ea4", appointmentDateEpoch: 1680595200000)
   {
     items {
       pk

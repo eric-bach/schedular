@@ -95,43 +95,40 @@ export class ApiStack extends Stack {
       },
     });
 
-    // Update AppSync API role to allow access to LSI/GSIs
-    const dynamoDbDataSourceRole = new Role(this, `${props.appName}ApiServiceRole`, {
-      assumedBy: new ServicePrincipal('appsync.amazonaws.com'),
-      roleName: `${props.appName}-dynamoDb-service-role-2-${props.envName}`,
-      inlinePolicies: {
-        name: new PolicyDocument({
-          statements: [
-            new PolicyStatement({
-              effect: Effect.ALLOW,
-              actions: [
-                'dynamodb:BatchGetItem',
-                'dynamodb:BatchWriteItem',
-                'dynamodb:ConditionCheckItem',
-                'dynamodb:DeleteItem',
-                'dynamodb:DescribeTable',
-                'dynamodb:GetItem',
-                'dynamodb:GetRecords',
-                'dynamodb:GetShardIterator',
-                'dynamodb:PutItem',
-                'dynamodb:Query',
-                'dynamodb:Scan',
-                'dynamodb:UpdateItem',
-              ],
-              resources: [dataTable.tableArn + '/*'],
-            }),
-          ],
-        }),
-      },
-    });
-
     // AppSync DataSources
     const dynamoDbDataSource = new DynamoDbDataSource(this, `${props.appName}ApiDynamoDBDataSource`, {
       api: api,
       table: dataTable,
       description: 'DynamoDbDataSource',
       name: `${props.appName}-table-${props.envName}`,
-      serviceRole: dynamoDbDataSourceRole,
+      serviceRole: new Role(this, `${props.appName}ApiServiceRole`, {
+        assumedBy: new ServicePrincipal('appsync.amazonaws.com'),
+        roleName: `${props.appName}-dynamoDb-service-role-2-${props.envName}`,
+        inlinePolicies: {
+          name: new PolicyDocument({
+            statements: [
+              new PolicyStatement({
+                effect: Effect.ALLOW,
+                actions: [
+                  'dynamodb:BatchGetItem',
+                  'dynamodb:BatchWriteItem',
+                  'dynamodb:ConditionCheckItem',
+                  'dynamodb:DeleteItem',
+                  'dynamodb:DescribeTable',
+                  'dynamodb:GetItem',
+                  'dynamodb:GetRecords',
+                  'dynamodb:GetShardIterator',
+                  'dynamodb:PutItem',
+                  'dynamodb:Query',
+                  'dynamodb:Scan',
+                  'dynamodb:UpdateItem',
+                ],
+                resources: [dataTable.tableArn + '/*'],
+              }),
+            ],
+          }),
+        },
+      }),
     });
     const httpDataSource = api.addHttpDataSource(`${props.appName}-endpoint-${props.envName}`, `https://sqs.${this.region}.amazonaws.com`, {
       name: `${props.appName}ApiHttpDataSource`,

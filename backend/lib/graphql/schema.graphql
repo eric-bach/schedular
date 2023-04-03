@@ -56,6 +56,7 @@ type AppointmentViewModel {
   createdAt: AWSDateTime
   updatedAt: AWSDateTime
   type: String
+  appointmentDateEpoch: Float
   appointmentDetails: AppointmentDetailsViewModel
   status: String
   confirmationId: String
@@ -72,6 +73,7 @@ type CustomerAppointmentViewModel {
   createdAt: AWSDateTime
   updatedAt: AWSDateTime
   type: String
+  appointmentDateEpoch: Float
   appointmentDetails: AppointmentDetailsViewModel
   customerId: String
   customerDetails: CustomerViewModel
@@ -89,6 +91,7 @@ type BookAppointmentResponse {
   sk: String
   confirmationId: String
   status: String
+  appointmentDateEpoch: Float
   appointmentDetails: AppointmentDetailsViewModel
   customerId: String
   customerDetails: CustomerViewModel
@@ -102,8 +105,11 @@ type Query {
   getAppointments(date: String!, lastEvaluatedKey: LastEvaluatedKey): GetAppointmentsResponse
     @aws_cognito_user_pools(cognito_groups: ["Admins"])
 
-  getCustomerAppointments(customerId: String!, date: String!, lastEvaluatedKey: LastEvaluatedKey): GetCustomerAppointmentsResponse
-    @aws_cognito_user_pools(cognito_groups: ["Users", "Admins"])
+  getCustomerAppointments(
+    customerId: String!
+    appointmentDateEpoch: Float!
+    lastEvaluatedKey: LastEvaluatedKey
+  ): GetCustomerAppointmentsResponse @aws_cognito_user_pools(cognito_groups: ["Users", "Admins"])
 }
 
 type Mutation {
