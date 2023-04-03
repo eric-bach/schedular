@@ -1,6 +1,6 @@
 import React, { useEffect } from 'react';
-import { Amplify, Auth } from 'aws-amplify';
-import { withAuthenticator } from '@aws-amplify/ui-react';
+import { Amplify } from 'aws-amplify';
+import { Loader, useAuthenticator } from '@aws-amplify/ui-react';
 import { API, graphqlOperation } from 'aws-amplify';
 import { GraphQLQuery } from '@aws-amplify/api';
 import Container from '@mui/material/Container';
@@ -9,7 +9,6 @@ import ListItem from '@mui/material/ListItem';
 import Divider from '@mui/material/Divider';
 import ListItemText from '@mui/material/ListItemText';
 import Typography from '@mui/material/Typography';
-import Loading from '../../components/Loading';
 
 import aws_exports from '../../aws-exports';
 import { GET_CUSTOMER_APPOINTMENTS } from '../../graphql/queries';
@@ -18,13 +17,6 @@ import { GetCustomerAppointmentsResponse, CustomerAppointmentItem } from './Type
 import '@aws-amplify/ui-react/styles.css';
 
 Amplify.configure(aws_exports);
-
-type Customer = {
-  id: string;
-  name: string;
-  email: string;
-  phone: string;
-};
 
 function formatTime(timeString: string) {
   return new Date('1970-01-01T' + timeString + 'Z').toLocaleTimeString('en-US', {
@@ -36,7 +28,8 @@ function formatTime(timeString: string) {
 }
 
 function Appointments() {
-  const [customer, setCustomer] = React.useState<Customer | null>(null);
+  const { user } = useAuthenticator((context) => [context.route]);
+
   const [isLoading, setLoading] = React.useState<boolean>(false);
   const [appointments, setAppointments] = React.useState<[CustomerAppointmentItem | undefined]>();
 
@@ -57,18 +50,13 @@ function Appointments() {
   };
 
   useEffect(() => {
-    Auth.currentAuthenticatedUser().then((user) => {
-      setCustomer({
-        id: user.attributes.sub,
-        name: user.attributes.given_name,
-        email: user.attributes.email,
-        phone: user.attributes.phone_number,
-      });
-
+    if (user.attributes) {
       getCustomerAppointments(user.attributes.sub).then((resp) => {
         console.log('Appointments ', resp);
       });
-    });
+    } else {
+      // TODO Return error
+    }
   }, []);
 
   return (
@@ -77,7 +65,7 @@ function Appointments() {
         Upcoming Appointments:
       </Typography>
 
-      {isLoading && <Loading />}
+      {isLoading && <Loader variation='linear' />}
       {!isLoading && (
         <List sx={{ bgcolor: 'background.paper' }}>
           {appointments?.map((appt) => {
@@ -114,35 +102,4 @@ function Appointments() {
   );
 }
 
-export default withAuthenticator(Appointments, {
-  signUpAttributes: ['phone_number', 'given_name', 'family_name'],
-  formFields: {
-    signUp: {
-      given_name: {
-        label: 'First Name:',
-        placeholder: 'Enter your first name',
-        order: 1,
-      },
-      family_name: {
-        label: 'Last Name:',
-        placeholder: 'Enter your last name',
-        order: 2,
-      },
-      phone_number: {
-        order: 3,
-      },
-      username: {
-        label: 'Email:',
-        placeholder: 'Enter your email',
-
-        order: 4,
-      },
-      password: {
-        order: 5,
-      },
-      confirm_password: {
-        order: 6,
-      },
-    },
-  },
-});
+export default Appointments;
