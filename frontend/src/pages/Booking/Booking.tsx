@@ -19,7 +19,7 @@ import Button from '@mui/material/Button';
 
 import aws_exports from '../../aws-exports';
 import { GET_APPOINTMENTS, BOOK_APPOINTMENT } from '../../graphql/queries';
-import { GetAppointmentsResponse, AppointmentItem, AppointmentBookingResponse } from './Types';
+import { GetAppointmentsResponse, AppointmentItem, AppointmentBookingResponse } from './AppointmentTypes';
 import '@aws-amplify/ui-react/styles.css';
 
 Amplify.configure(aws_exports);

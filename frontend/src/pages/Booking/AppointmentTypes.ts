@@ -1,7 +1,4 @@
-export type Base = {
-  pk: string;
-  sk: string;
-};
+import { Base } from '../../types/BaseTypes';
 
 export type AppointmentItem = {
   pk: string;
