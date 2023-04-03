@@ -4,7 +4,7 @@
 - [x] Switch to AppSync JS Resolvers
 - [x] SignIn/SignOut does not toggle Avatar properly
 - [x] Save object (Customer, Date/Time) in DynamoDB
-- \*[] withAuthenticator - https://github.com/aws-amplify/amplify-js/issues/2526
+- [x] withAuthenticator - https://ui.docs.amplify.aws/react/guides/auth-protected
 - \*[] clean up frontend types
 - [] Build out a proper Appointment Confirmation email template
 - [] Verify email domain to remove spoofing warning
