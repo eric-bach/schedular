@@ -21,6 +21,35 @@ export const GET_APPOINTMENTS = `query GetAppointments($date: String!, $lastEval
   }
 }`;
 
+export const GET_CUSTOMER_APPOINTMENTS = `query GetCustomerAppointments($customerId: String!, $appointmentDateEpoch: Float!, $lastEvaluatedKey: LastEvaluatedKey) {
+  getCustomerAppointments(customerId: $customerId, appointmentDateEpoch: $appointmentDateEpoch, lastEvaluatedKey: $lastEvaluatedKey) {
+    items {
+      pk
+      sk
+      type
+      status
+      appointmentDetails {
+        date
+        startTime
+        endTime
+        duration
+      }
+      confirmationId    
+      customerId
+      customerDetails {
+        name
+        email
+        phone
+      }
+    }
+    lastEvaluatedKey
+    {
+      pk
+      sk
+    }
+  }
+}`;
+
 export const BOOK_APPOINTMENT = `mutation BookAppointment($input: BookingInput!) {
   bookAppointment(bookingInput: $input) {
     pk

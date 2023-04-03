@@ -138,17 +138,17 @@ function Booking() {
         container
         spacing={{ xs: 2, sm: 3, md: 3, lg: 3 }}
         columns={{ xs: 4, sm: 8, md: 12, lg: 12 }}
-        sx={{
-          '--Grid-borderWidth': '1px',
-          borderTop: 'var(--Grid-borderWidth) solid',
-          borderLeft: 'var(--Grid-borderWidth) solid',
-          borderColor: 'divider',
-          '& > div': {
-            borderRight: 'var(--Grid-borderWidth) solid',
-            borderBottom: 'var(--Grid-borderWidth) solid',
-            borderColor: 'divider',
-          },
-        }}
+        // sx={{
+        //   '--Grid-borderWidth': '1px',
+        //   borderTop: 'var(--Grid-borderWidth) solid',
+        //   borderLeft: 'var(--Grid-borderWidth) solid',
+        //   borderColor: 'divider',
+        //   '& > div': {
+        //     borderRight: 'var(--Grid-borderWidth) solid',
+        //     borderBottom: 'var(--Grid-borderWidth) solid',
+        //     borderColor: 'divider',
+        //   },
+        // }}
       >
         <Grid xs={0} sm={0} md={3} />
         <Grid xs={12} sm={12} md={6}>
