@@ -101,19 +101,18 @@ type BookAppointmentResponse {
 # GraphQL actions
 type Query {
   getAvailableAppointments(date: String!, lastEvaluatedKey: LastEvaluatedKey): GetAppointmentsResponse
-    @aws_cognito_user_pools(cognito_groups: ["Users", "Admins"])
-  getAppointments(date: String!, lastEvaluatedKey: LastEvaluatedKey): GetAppointmentsResponse
-    @aws_cognito_user_pools(cognito_groups: ["Admins"])
+    @aws_auth(cognito_groups: ["Users", "Admins"])
+  getAppointments(date: String!, lastEvaluatedKey: LastEvaluatedKey): GetAppointmentsResponse @aws_auth(cognito_groups: ["Admins"])
 
   getCustomerAppointments(
     customerId: String!
     appointmentDateEpoch: Float!
     lastEvaluatedKey: LastEvaluatedKey
-  ): GetCustomerAppointmentsResponse @aws_cognito_user_pools(cognito_groups: ["Users", "Admins"])
+  ): GetCustomerAppointmentsResponse @aws_auth(cognito_groups: ["Users", "Admins"])
 }
 
 type Mutation {
-  bookAppointment(bookingInput: BookingInput): BookAppointmentResponse @aws_cognito_user_pools(cognito_groups: ["Users", "Admins"])
+  bookAppointment(bookingInput: BookingInput): BookAppointmentResponse @aws_auth(cognito_groups: ["Users", "Admins"])
 }
 
 schema {

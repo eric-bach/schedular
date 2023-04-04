@@ -27,6 +27,10 @@ Amplify.configure(aws_exports);
 function Booking() {
   const { user } = useAuthenticator((context) => [context.route]);
 
+  // TODO Get user group
+  const groups = user?.getSignInUserSession()?.getAccessToken()?.payload['cognito:groups'];
+  console.log(groups);
+
   const [date, setDate] = React.useState<Dayjs | null>(null);
   const [timeslot, setTimeslot] = React.useState<string | null>(null);
   const [timeslotText, setTimeslotText] = React.useState<string | null>(null);

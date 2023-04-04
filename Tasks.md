@@ -22,7 +22,7 @@
 # Admin
 
 - \*[] As a massage therapist I want to be able to see all my daily appointments
-- \*[] As a massage therapist I want to be able to set my availability
+  \*[] As a massage therapist I want to be able to set my availability
 - [] As a massage therapist I want to require a phone consultation before a massage booking
 - [] As a massage therapist I want to be able to see and manage a users bookings
 
@@ -50,6 +50,25 @@ mutation BookAppointment {
   }
 }
 
+query GetAppointments {
+  getAppointments(date: "2023-04-05")
+  {
+    items {
+      pk
+      sk
+      type
+      status
+      appointmentDateEpoch
+      appointmentDetails {
+        date
+        startTime
+        endTime
+        duration
+      }
+      confirmationId
+    }
+  }
+}
 
 query GetAvailableAppointments {
   getAvailableAppointments(date: "2023-04-05")
