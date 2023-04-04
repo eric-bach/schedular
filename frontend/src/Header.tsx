@@ -18,19 +18,27 @@ import AdbIcon from '@mui/icons-material/Adb';
 
 const pages = ['Services', 'Pricing', 'Book Appointment'];
 const settings = ['Profile', 'Appointments', 'Logout'];
+const adminPages = ['Schedule'];
 
 export function Header() {
-  const { authStatus, signOut } = useAuthenticator((context) => [context.route, context.signOut]);
+  const { authStatus, user, signOut } = useAuthenticator((context) => [context.route, context.signOut]);
   const navigate = useNavigate();
 
   const [anchorElNav, setAnchorElNav] = React.useState<null | HTMLElement>(null);
   const [anchorElUser, setAnchorElUser] = React.useState<null | HTMLElement>(null);
+  const [anchorElAdmin, setAnchorElAdmin] = React.useState<null | HTMLElement>(null);
+
+  const groups = user?.getSignInUserSession()?.getAccessToken()?.payload['cognito:groups'];
+  const isAdmin = groups?.includes('Admins');
 
   const handleOpenNavMenu = (event: React.MouseEvent<HTMLElement>) => {
     setAnchorElNav(event.currentTarget);
   };
   const handleOpenUserMenu = (event: React.MouseEvent<HTMLElement>) => {
     setAnchorElUser(event.currentTarget);
+  };
+  const handleOpenAdminMenu = (event: React.MouseEvent<HTMLElement>) => {
+    setAnchorElAdmin(event.currentTarget);
   };
 
   const handleCloseNavMenu = (e: any) => {
@@ -58,6 +66,15 @@ export function Header() {
     } else if (e.target.textContent === 'Logout') {
       signOut();
       navigate('/');
+    }
+  };
+
+  const handleCloseAdminMenu = (e: any) => {
+    setAnchorElAdmin(null);
+
+    console.debug('Clicked ', e.target.textContent);
+    if (e.target.textContent === 'Schedule') {
+      navigate('/admin/schedule');
     }
   };
 
@@ -147,6 +164,38 @@ export function Header() {
                 </Button>
               ))}
             </Box>
+
+            {authStatus === 'authenticated' && isAdmin && (
+              <Box sx={{ flexGrow: 0 }}>
+                <Tooltip title='Open settings'>
+                  <Button onClick={handleOpenAdminMenu} sx={{ pr: 5, color: 'white' }}>
+                    Admin
+                  </Button>
+                </Tooltip>
+                <Menu
+                  sx={{ mt: '45px' }}
+                  id='menu-appbar'
+                  anchorEl={anchorElAdmin}
+                  anchorOrigin={{
+                    vertical: 'top',
+                    horizontal: 'right',
+                  }}
+                  keepMounted
+                  transformOrigin={{
+                    vertical: 'top',
+                    horizontal: 'right',
+                  }}
+                  open={Boolean(anchorElAdmin)}
+                  onClose={(e) => handleCloseAdminMenu(e)}
+                >
+                  {adminPages.map((setting) => (
+                    <MenuItem key={setting} onClick={(e) => handleCloseAdminMenu(e)}>
+                      <Typography textAlign='center'>{setting}</Typography>
+                    </MenuItem>
+                  ))}
+                </Menu>
+              </Box>
+            )}
 
             {authStatus === 'authenticated' && (
               <Box sx={{ flexGrow: 0 }}>

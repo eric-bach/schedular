@@ -12,6 +12,8 @@ import Booking from './pages/Booking/Booking';
 import Confirmation from './pages/Booking/Confirmation';
 import Appointments from './pages/User/Appointments';
 import Profile from './pages/User/Profile';
+import Schedule from './pages/Admin/Schedule';
+import { RequireAdminAuth } from './components/RequireAdminAuth';
 
 function App() {
   return (
@@ -52,6 +54,14 @@ function App() {
                 <RequireAuth>
                   <Appointments />
                 </RequireAuth>
+              }
+            />
+            <Route
+              path='/admin/schedule'
+              element={
+                <RequireAdminAuth>
+                  <Schedule />
+                </RequireAdminAuth>
               }
             />
             <Route path='/login' element={<Login />} />

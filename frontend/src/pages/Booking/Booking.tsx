@@ -28,8 +28,8 @@ function Booking() {
   const { user } = useAuthenticator((context) => [context.route]);
 
   // TODO Get user group
-  const groups = user?.getSignInUserSession()?.getAccessToken()?.payload['cognito:groups'];
-  console.log(groups);
+  // const groups = user?.getSignInUserSession()?.getAccessToken()?.payload['cognito:groups'];
+  // console.log(groups);
 
   const [date, setDate] = React.useState<Dayjs | null>(null);
   const [timeslot, setTimeslot] = React.useState<string | null>(null);
