@@ -10,6 +10,11 @@ import Divider from '@mui/material/Divider';
 import ListItemText from '@mui/material/ListItemText';
 import Chip from '@mui/material/Chip';
 import Stack from '@mui/material/Stack';
+import { AdapterDayjs } from '@mui/x-date-pickers/AdapterDayjs';
+import { LocalizationProvider } from '@mui/x-date-pickers/LocalizationProvider';
+import { DateCalendar } from '@mui/x-date-pickers';
+import Grid from '@mui/material/Unstable_Grid2';
+import dayjs, { Dayjs } from 'dayjs';
 
 import { GET_APPOINTMENTS } from '../../graphql/queries';
 import { GetAppointmentsResponse, AppointmentItem } from './AppointmentTypes';
@@ -21,6 +26,7 @@ function Schedule() {
   const [isLoading, setLoading] = React.useState<boolean>(false);
   const [appointments, setAppointments] = React.useState<[AppointmentItem | undefined]>();
   const [dateHeading, setDateHeading] = React.useState<string | undefined>();
+  const [date, setDate] = React.useState<Dayjs | null>(dayjs());
 
   const getAppointments = async (date: string) => {
     setLoading(true);
@@ -58,70 +64,88 @@ function Schedule() {
   }, []);
 
   return (
-    <Container maxWidth='md' sx={{ mt: 5 }}>
-      <Typography variant='h5' fontWeight='bold' align='left' color='textPrimary' gutterBottom sx={{ mt: 2 }}>
-        Schedule for {dateHeading}:
-      </Typography>
+    <Container maxWidth='lg' sx={{ mt: 5 }}>
+      <Grid container spacing={{ md: 1, lg: 1 }} columns={{ md: 6, lg: 6 }}>
+        <Grid md={2} lg={2}>
+          <LocalizationProvider dateAdapter={AdapterDayjs}>
+            <DateCalendar value={date} minDate={dayjs()} maxDate={dayjs().add(1, 'month')} onChange={(newValue) => setDate(newValue)} />
+          </LocalizationProvider>
+        </Grid>
 
-      {isLoading ? (
-        <Loader variation='linear' />
-      ) : (
-        <List sx={{ bgcolor: 'background.paper' }}>
-          {appointments?.map((appt) => {
-            if (!appt) return <div>No Appointments Today 😄</div>;
+        <Grid md={4} lg={4}>
+          {isLoading ? (
+            <Loader variation='linear' />
+          ) : (
+            <>
+              <Typography variant='h5' fontWeight='bold' align='left' color='textPrimary' gutterBottom sx={{ mt: 2 }}>
+                Schedule for {dateHeading}:
+              </Typography>
+              <List sx={{ bgcolor: 'background.paper' }}>
+                {appointments?.map((appt) => {
+                  if (!appt) return <div>No Appointments Today 😄</div>;
 
-            const heading = `${formatTime(appt?.appointmentDetails?.startTime ?? '')} to ${formatTime(
-              appt?.appointmentDetails.endTime ?? ''
-            )}`;
+                  const heading = `${formatTime(appt?.appointmentDetails?.startTime ?? '')} to ${formatTime(
+                    appt?.appointmentDetails.endTime ?? ''
+                  )}`;
 
-            return (
-              <div key={appt.sk}>
-                <ListItem
-                  alignItems='flex-start'
-                  secondaryAction={<Chip label={appt?.status} color={appt?.status === 'booked' ? 'primary' : 'success'} sx={{ mb: 1 }} />}
-                >
-                  <ListItemText
-                    primary={heading}
-                    secondary={
-                      <React.Fragment>
-                        {appt?.customerDetails ? (
-                          <Stack>
-                            <Typography component='span' variant='subtitle2' color='text.primary' sx={{ display: 'inline' }}>
-                              Customer:{' '}
-                              <Typography component='span' variant='body2'>
-                                {appt?.customerDetails.name}
-                              </Typography>
-                            </Typography>
-                            <Typography component='span' variant='subtitle2' color='text.primary' sx={{ display: 'inline' }}>
-                              Email:{' '}
-                              <Typography component='span' variant='body2'>
-                                {appt?.customerDetails.email}
-                              </Typography>
-                            </Typography>
-                            <Typography component='span' variant='subtitle2' color='text.primary' sx={{ display: 'inline' }}>
-                              Phone:{' '}
-                              <Typography component='span' variant='body2'>
-                                {appt?.customerDetails.phone}
-                              </Typography>
-                            </Typography>
-                          </Stack>
-                        ) : (
-                          <Stack>
-                            <Typography component='span' variant='body2' color='text.primary' sx={{ display: 'inline' }}>
-                              Appointment Available
-                            </Typography>
-                          </Stack>
-                        )}
-                      </React.Fragment>
-                    }
-                  />
-                </ListItem>
-                <Divider component='li' />
-              </div>
-            );
-          })}
-        </List>
-      )}
+                  return (
+                    <div key={appt.sk}>
+                      <ListItem
+                        alignItems='flex-start'
+                        secondaryAction={
+                          <Chip label={appt?.status} color={appt?.status === 'booked' ? 'primary' : 'success'} sx={{ mb: 1 }} />
+                        }
+                      >
+                        <ListItemText
+                          primary={heading}
+                          secondary={
+                            <React.Fragment>
+                              {appt?.customerDetails ? (
+                                <Stack>
+                                  <Typography component='span' variant='subtitle2' color='text.primary' sx={{ display: 'inline' }}>
+                                    Customer:{' '}
+                                    <Typography component='span' variant='body2'>
+                                      {appt?.customerDetails.name}
+                                    </Typography>
+                                  </Typography>
+                                  <Typography component='span' variant='subtitle2' color='text.primary' sx={{ display: 'inline' }}>
+                                    Email:{' '}
+                                    <Typography component='span' variant='body2'>
+                                      {appt?.customerDetails.email}
+                                    </Typography>
+                                  </Typography>
+                                  <Typography component='span' variant='subtitle2' color='text.primary' sx={{ display: 'inline' }}>
+                                    Phone:{' '}
+                                    <Typography component='span' variant='body2'>
+                                      {appt?.customerDetails.phone}
+                                    </Typography>
+                                  </Typography>
+                                </Stack>
+                              ) : (
+                                <Stack>
+                                  <Typography
+                                    component='span'
+                                    variant='body2'
+                                    color='green'
+                                    sx={{ fontStyle: 'italic', display: 'inline' }}
+                                  >
+                                    Appointment Available
+                                  </Typography>
+                                </Stack>
+                              )}
+                            </React.Fragment>
+                          }
+                        />
+                      </ListItem>
+                      <Divider component='li' />
+                    </div>
+                  );
+                })}
+              </List>
+            </>
+          )}
+        </Grid>
+      </Grid>
     </Container>
   );
 }

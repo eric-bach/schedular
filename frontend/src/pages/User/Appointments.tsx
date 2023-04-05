@@ -52,8 +52,6 @@ function Appointments() {
     }
   }, []);
 
-  if (!appointments && !isLoading) return <div>No Upcoming Appointments</div>;
-
   return (
     <Container maxWidth='md' sx={{ mt: 5 }}>
       <Typography variant='h5' fontWeight='bold' align='left' color='textPrimary' gutterBottom sx={{ mt: 2 }}>
@@ -64,42 +62,48 @@ function Appointments() {
         <Loader variation='linear' />
       ) : (
         <List sx={{ bgcolor: 'background.paper' }}>
-          {appointments?.map((appt) => {
-            if (!appt) return <></>;
+          {appointments && appointments.length > 0 ? (
+            appointments?.map((appt) => {
+              if (!appt) return <></>;
 
-            let heading = `${new Date(appt.appointmentDetails?.date ?? new Date('1901-01-01')).toLocaleDateString('en-US', {
-              weekday: 'long',
-              year: 'numeric',
-              month: 'long',
-              day: 'numeric',
-            })} at ${formatTime(appt.appointmentDetails?.startTime ?? '00:00:00')}`;
+              let heading = `${new Date(appt.appointmentDetails?.date ?? new Date('1901-01-01')).toLocaleDateString('en-US', {
+                weekday: 'long',
+                year: 'numeric',
+                month: 'long',
+                day: 'numeric',
+              })} at ${formatTime(appt.appointmentDetails?.startTime ?? '00:00:00')}`;
 
-            return (
-              <div key={appt.sk}>
-                <ListItem
-                  alignItems='flex-start'
-                  secondaryAction={
-                    <Chip label={appt.status} color='primary' variant={appt.status === 'booked' ? 'filled' : 'outlined'} sx={{ mb: 1 }} />
-                  }
-                >
-                  <ListItemText
-                    primary={heading}
-                    secondary={
-                      <React.Fragment>
-                        <Typography component='span' variant='subtitle2' color='text.primary' sx={{ display: 'inline' }}>
-                          Type:{' '}
-                          <Typography component='span' variant='body2'>
-                            {appt.type}
-                          </Typography>
-                        </Typography>
-                      </React.Fragment>
+              return (
+                <div key={appt.sk}>
+                  <ListItem
+                    alignItems='flex-start'
+                    secondaryAction={
+                      <Chip label={appt.status} color='primary' variant={appt.status === 'booked' ? 'filled' : 'outlined'} sx={{ mb: 1 }} />
                     }
-                  />
-                </ListItem>
-                <Divider component='li' />
-              </div>
-            );
-          })}
+                  >
+                    <ListItemText
+                      primary={heading}
+                      secondary={
+                        <React.Fragment>
+                          <Typography component='span' variant='subtitle2' color='text.primary' sx={{ display: 'inline' }}>
+                            Type:{' '}
+                            <Typography component='span' variant='body2'>
+                              {appt.type}
+                            </Typography>
+                          </Typography>
+                        </React.Fragment>
+                      }
+                    />
+                  </ListItem>
+                  <Divider component='li' />
+                </div>
+              );
+            })
+          ) : (
+            <Typography variant='body1' align='left' color='textPrimary'>
+              No Upcoming Appointments
+            </Typography>
+          )}
         </List>
       )}
     </Container>

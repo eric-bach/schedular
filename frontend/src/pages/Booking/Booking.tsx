@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Amplify } from 'aws-amplify';
 import { Loader, useAuthenticator } from '@aws-amplify/ui-react';
@@ -33,7 +33,7 @@ function Booking() {
   // const groups = user?.getSignInUserSession()?.getAccessToken()?.payload['cognito:groups'];
   // console.log(groups);
 
-  const [date, setDate] = React.useState<Dayjs | null>(null);
+  const [date, setDate] = React.useState<Dayjs | null>(dayjs());
   const [timeslot, setTimeslot] = React.useState<string | null>(null);
   const [timeslotText, setTimeslotText] = React.useState<string | null>(null);
   const [availableAppts, setAppts] = React.useState<[AppointmentItem | undefined]>();
@@ -42,8 +42,6 @@ function Booking() {
   const [isError, setError] = React.useState<boolean>(false);
 
   const navigate = useNavigate();
-  const today = dayjs();
-  const oneMonth = dayjs().add(1, 'month');
 
   const getAppointments = async (date: Dayjs | null) => {
     setLoading(true);
@@ -60,6 +58,10 @@ function Booking() {
 
     return appointments.data?.getAvailableAppointments?.items;
   };
+
+  useEffect(() => {
+    getAppointments(date);
+  }, []);
 
   async function dateSelected(date: Dayjs | null) {
     // Reset timeslot
@@ -146,7 +148,12 @@ function Booking() {
         <Grid xs={0} sm={0} md={0} lg={3} />
         <Grid xs={6} sm={6} md={6} lg={3}>
           <LocalizationProvider dateAdapter={AdapterDayjs}>
-            <DateCalendar value={date} minDate={today} maxDate={oneMonth} onChange={(newValue) => dateSelected(newValue)} />
+            <DateCalendar
+              value={date}
+              minDate={dayjs()}
+              maxDate={dayjs().add(1, 'month')}
+              onChange={(newValue) => dateSelected(newValue)}
+            />
           </LocalizationProvider>
         </Grid>
         <Grid xs={6} sm={6} md={6} lg={3}>
@@ -154,7 +161,7 @@ function Booking() {
           {date && !isLoading && (
             <>
               <Stack spacing={2} alignItems='flex-start'>
-                <Typography variant='subtitle1' fontWeight='bold' align='left' color='textPrimary' gutterBottom sx={{ mt: 2 }}>
+                <Typography variant='h5' fontWeight='bold' align='left' color='textPrimary' gutterBottom sx={{ mt: 2 }}>
                   Available Times:
                 </Typography>
                 {numAppts < 1 && <Typography>No times available today 😢</Typography>}
