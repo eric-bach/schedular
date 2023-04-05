@@ -6,6 +6,7 @@ type Data @model @aws_cognito_user_pools {
   type: String
   duration: Int
   status: String
+  confirmationId: String
   customer: String
   firstName: String
   lastName: String
@@ -36,21 +37,71 @@ type LastEvaluatedKeyViewModel {
   sk: String
 }
 
+type CustomerViewModel {
+  name: String
+  email: String
+  phone: String
+}
+
+type AppointmentDetailsViewModel {
+  date: AWSDate
+  startTime: String
+  endTime: String
+  duration: Int
+}
+
+type AvailableAppointmentViewModel {
+  pk: String
+  sk: String
+  createdAt: AWSDateTime
+  updatedAt: AWSDateTime
+  type: String
+  appointmentDateEpoch: Float
+  appointmentDetails: AppointmentDetailsViewModel
+  status: String
+  confirmationId: String
+}
+
+type GetAvailableAppointmentsResponse {
+  items: [AvailableAppointmentViewModel]
+  lastEvaluatedKey: LastEvaluatedKeyViewModel
+}
+
 type AppointmentViewModel {
   pk: String
   sk: String
   createdAt: AWSDateTime
   updatedAt: AWSDateTime
   type: String
-  date: AWSDate
-  startTime: String
-  endTime: String
-  duration: Int
+  appointmentDateEpoch: Float
+  appointmentDetails: AppointmentDetailsViewModel
   status: String
+  customerId: String
+  customerDetails: CustomerViewModel
+  confirmationId: String
 }
 
 type GetAppointmentsResponse {
   items: [AppointmentViewModel]
+  lastEvaluatedKey: LastEvaluatedKeyViewModel
+}
+
+type CustomerAppointmentViewModel {
+  pk: String
+  sk: String
+  createdAt: AWSDateTime
+  updatedAt: AWSDateTime
+  type: String
+  appointmentDateEpoch: Float
+  appointmentDetails: AppointmentDetailsViewModel
+  customerId: String
+  customerDetails: CustomerViewModel
+  status: String
+  confirmationId: String
+}
+
+type GetCustomerAppointmentsResponse {
+  items: [CustomerAppointmentViewModel]
   lastEvaluatedKey: LastEvaluatedKeyViewModel
 }
 
@@ -59,22 +110,28 @@ type BookAppointmentResponse {
   sk: String
   confirmationId: String
   status: String
-  customerName: String
-  customerEmail: String
-  customerPhone: String
+  appointmentDateEpoch: Float
+  appointmentDetails: AppointmentDetailsViewModel
+  customerId: String
+  customerDetails: CustomerViewModel
   updatedAt: AWSDateTime
 }
 
 # GraphQL actions
 type Query {
-  getAvailableAppointments(date: String!, lastEvaluatedKey: LastEvaluatedKey): GetAppointmentsResponse
-    @aws_cognito_user_pools(cognito_groups: ["Users", "Admins"])
-  getAppointments(date: String!, lastEvaluatedKey: LastEvaluatedKey): GetAppointmentsResponse
-    @aws_cognito_user_pools(cognito_groups: ["Admins"])
+  getAvailableAppointments(date: String!, lastEvaluatedKey: LastEvaluatedKey): GetAvailableAppointmentsResponse
+    @aws_auth(cognito_groups: ["Users", "Admins"])
+  getAppointments(date: String!, lastEvaluatedKey: LastEvaluatedKey): GetAppointmentsResponse @aws_auth(cognito_groups: ["Admins"])
+
+  getCustomerAppointments(
+    customerId: String!
+    appointmentDateEpoch: Float!
+    lastEvaluatedKey: LastEvaluatedKey
+  ): GetCustomerAppointmentsResponse @aws_auth(cognito_groups: ["Users", "Admins"])
 }
 
 type Mutation {
-  bookAppointment(bookingInput: BookingInput): BookAppointmentResponse @aws_cognito_user_pools(cognito_groups: ["Users", "Admins"])
+  bookAppointment(bookingInput: BookingInput): BookAppointmentResponse @aws_auth(cognito_groups: ["Users", "Admins"])
 }
 
 schema {

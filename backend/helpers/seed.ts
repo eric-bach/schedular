@@ -69,11 +69,19 @@ function generateRandomSeedData() {
       const duration = 60;
       let sk = dayjs(d).set('hour', h).set('minute', 0).set('second', 0).set('millisecond', 0).toISOString();
 
+      let epoch = new Date(sk).getTime();
       let date = sk.substring(0, 10);
       let startTime = sk.substring(11, 16);
       let endTime = calculateEndTime(startTime, duration);
 
-      data.push({ pk: 'appt', sk, date, startTime, endTime, duration, status: 'available', type: 'massage' });
+      data.push({
+        pk: 'appt',
+        sk,
+        appointmentDateEpoch: epoch,
+        appointmentDetails: { date, startTime, endTime, duration },
+        status: 'available',
+        type: 'massage',
+      });
     }
   }
 

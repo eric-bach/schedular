@@ -1,18 +1,11 @@
-import React from 'react';
-import ReactDOM from 'react-dom/client';
-import { BrowserRouter } from 'react-router-dom';
+import { createRoot } from 'react-dom/client';
 import App from './App';
-import Header from './Header';
-import AuthContext from './Contexts/AuthContext';
+import { Amplify } from 'aws-amplify';
 
-const root = ReactDOM.createRoot(document.getElementById('root') as HTMLElement);
-root.render(
-  <React.StrictMode>
-    <AuthContext>
-      <BrowserRouter>
-        <Header />
-        <App />
-      </BrowserRouter>
-    </AuthContext>
-  </React.StrictMode>
-);
+import aws_exports from './aws-exports';
+
+const root = createRoot(document.getElementById('root') as HTMLElement);
+
+Amplify.configure(aws_exports);
+
+root.render(<App />);
