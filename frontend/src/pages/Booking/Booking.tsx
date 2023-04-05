@@ -18,7 +18,7 @@ import Typography from '@mui/material/Typography';
 import Button from '@mui/material/Button';
 
 import aws_exports from '../../aws-exports';
-import { GET_APPOINTMENTS, BOOK_APPOINTMENT } from '../../graphql/queries';
+import { GET_AVAILABLE_APPOINTMENTS, BOOK_APPOINTMENT } from '../../graphql/queries';
 import { GetAppointmentsResponse, AppointmentItem, AppointmentBookingResponse } from './AppointmentTypes';
 import '@aws-amplify/ui-react/styles.css';
 
@@ -47,7 +47,7 @@ function Booking() {
     setLoading(true);
     console.log('GETTING APPOINTMENTS FOR ', dayjs(date).format('YYYY-MM-DD'));
     const appointments = await API.graphql<GraphQLQuery<GetAppointmentsResponse>>(
-      graphqlOperation(GET_APPOINTMENTS, {
+      graphqlOperation(GET_AVAILABLE_APPOINTMENTS, {
         date: dayjs(date).format('YYYY-MM-DD'),
       })
     );

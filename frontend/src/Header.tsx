@@ -18,7 +18,7 @@ import AdbIcon from '@mui/icons-material/Adb';
 
 const pages = ['Services', 'Pricing', 'Book Appointment'];
 const settings = ['Profile', 'Appointments', 'Logout'];
-const adminPages = ['Schedule'];
+const adminPages = ['Customers', 'Schedule', 'Manage'];
 
 export function Header() {
   const { authStatus, user, signOut } = useAuthenticator((context) => [context.route, context.signOut]);

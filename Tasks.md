@@ -5,6 +5,7 @@
 - [x] SignIn/SignOut does not toggle Avatar properly
 - [x] Save object (Customer, Date/Time) in DynamoDB
 - [x] withAuthenticator - https://ui.docs.amplify.aws/react/guides/auth-protected
+- [] Clean up styling
 - [] Build out a proper Appointment Confirmation email template
 - [] Verify email domain to remove spoofing warning
 
@@ -21,8 +22,7 @@
 
 # Admin
 
-- \*[] As a massage therapist I want to be able to see all my daily appointments
-  - [x] Added nav and protected route for Admins group only
+- [x] As a massage therapist I want to be able to see all my daily appointments
 - [] As a massage therapist I want to be able to set my availability
 - [] As a massage therapist I want to require a phone consultation before a massage booking
 - [] As a massage therapist I want to be able to see and manage a users bookings
@@ -65,6 +65,12 @@ query GetAppointments {
         startTime
         endTime
         duration
+      }
+      customerId
+      customerDetails {
+        name
+        email
+        phone
       }
       confirmationId
     }
