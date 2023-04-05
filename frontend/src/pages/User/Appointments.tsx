@@ -55,7 +55,7 @@ function Appointments() {
   if (!appointments && !isLoading) return <div>No Upcoming Appointments</div>;
 
   return (
-    <Container maxWidth='lg' sx={{ mt: 5 }}>
+    <Container maxWidth='md' sx={{ mt: 5 }}>
       <Typography variant='h5' fontWeight='bold' align='left' color='textPrimary' gutterBottom sx={{ mt: 2 }}>
         Upcoming Appointments:
       </Typography>
