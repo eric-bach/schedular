@@ -16,17 +16,9 @@ import { GET_CUSTOMER_APPOINTMENTS } from '../../graphql/queries';
 import { GetCustomerAppointmentsResponse, CustomerAppointmentItem } from './CustomerTypes';
 
 import '@aws-amplify/ui-react/styles.css';
+import { formatTime } from '../../helpers/utils';
 
 Amplify.configure(aws_exports);
-
-function formatTime(timeString: string) {
-  return new Date('1970-01-01T' + timeString + 'Z').toLocaleTimeString('en-US', {
-    timeZone: 'UTC',
-    hour12: true,
-    hour: 'numeric',
-    minute: 'numeric',
-  });
-}
 
 function Appointments() {
   const { user } = useAuthenticator((context) => [context.route]);
@@ -83,13 +75,12 @@ function Appointments() {
             })} at ${formatTime(appt.appointmentDetails?.startTime ?? '00:00:00')}`;
 
             return (
-              <>
+              <div key={appt.sk}>
                 <ListItem
                   alignItems='flex-start'
                   secondaryAction={
                     <Chip label={appt.status} color='primary' variant={appt.status === 'booked' ? 'filled' : 'outlined'} sx={{ mb: 1 }} />
                   }
-                  key={appt.sk}
                 >
                   <ListItemText
                     primary={heading}
@@ -106,7 +97,7 @@ function Appointments() {
                   />
                 </ListItem>
                 <Divider component='li' />
-              </>
+              </div>
             );
           })}
         </List>

@@ -1,13 +1,17 @@
-import Box from '@mui/material/Box';
+import Container from '@mui/material/Container';
 import Skeleton from '@mui/material/Skeleton';
 
 function Home() {
   return (
-    <Box justifyContent='center' alignItems='center' sx={{ mt: 5 }}>
+    <Container maxWidth='xl' sx={{ mt: 5 }}>
+      Home
+      <Skeleton />
       <Skeleton />
       <Skeleton animation='wave' />
+      <Skeleton animation='wave' />
       <Skeleton animation={false} />
-    </Box>
+      <Skeleton animation={false} />
+    </Container>
   );
 }
 

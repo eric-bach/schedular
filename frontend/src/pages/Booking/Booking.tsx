@@ -20,6 +20,8 @@ import Button from '@mui/material/Button';
 import aws_exports from '../../aws-exports';
 import { GET_AVAILABLE_APPOINTMENTS, BOOK_APPOINTMENT } from '../../graphql/queries';
 import { GetAppointmentsResponse, AppointmentItem, AppointmentBookingResponse } from './AppointmentTypes';
+import { formatTime } from '../../helpers/utils';
+
 import '@aws-amplify/ui-react/styles.css';
 
 Amplify.configure(aws_exports);
@@ -101,15 +103,6 @@ function Booking() {
       await dateSelected(date);
       setError(true);
     }
-  }
-
-  function formatTime(timeString: string) {
-    return new Date('1970-01-01T' + timeString + 'Z').toLocaleTimeString('en-US', {
-      timeZone: 'UTC',
-      hour12: true,
-      hour: 'numeric',
-      minute: 'numeric',
-    });
   }
 
   function dismissError() {
