@@ -9,6 +9,7 @@ import ListItem from '@mui/material/ListItem';
 import Divider from '@mui/material/Divider';
 import ListItemText from '@mui/material/ListItemText';
 import Chip from '@mui/material/Chip';
+import Stack from '@mui/material/Stack';
 
 import { GET_APPOINTMENTS } from '../../graphql/queries';
 import { GetAppointmentsResponse, AppointmentItem } from './AppointmentTypes';
@@ -46,7 +47,6 @@ function Schedule() {
         day: 'numeric',
       })}`
     );
-    console.log(dateHeading);
 
     setAppointments(appointments.data?.getAppointments?.items);
 
@@ -68,45 +68,65 @@ function Schedule() {
   return (
     <Container maxWidth='lg' sx={{ mt: 5 }}>
       <Typography variant='h5' fontWeight='bold' align='left' color='textPrimary' gutterBottom sx={{ mt: 2 }}>
-        Schedule for {dateHeading}
+        Schedule for {dateHeading}:
       </Typography>
 
-      {isLoading && <Loader variation='linear' />}
-
-      {!isLoading && (
+      {isLoading ? (
+        <Loader variation='linear' />
+      ) : (
         <List sx={{ bgcolor: 'background.paper' }}>
           {appointments?.map((appt) => {
+            if (!appt) return <div>No Appointments Today 😄</div>;
+
+            const heading = `${formatTime(appt?.appointmentDetails?.startTime ?? '')} to ${formatTime(
+              appt?.appointmentDetails.endTime ?? ''
+            )}`;
+
             return (
-              <div key={appt?.sk}>
-                <ListItem alignItems='flex-start'>
+              <>
+                <ListItem
+                  alignItems='flex-start'
+                  secondaryAction={<Chip label={appt?.status} color={appt?.status === 'booked' ? 'primary' : 'success'} sx={{ mb: 1 }} />}
+                  key={appt.sk}
+                >
                   <ListItemText
-                    primary={
-                      appt?.status === 'booked' ? (
-                        <Chip label={appt?.status} color='primary' sx={{ mb: 1 }} />
-                      ) : (
-                        <Chip label={appt?.status} color='success' variant='outlined' sx={{ mb: 1 }} />
-                      )
-                    }
+                    primary={heading}
                     secondary={
                       <React.Fragment>
-                        <Typography sx={{ display: 'inline' }} component='span' variant='body2' color='text.primary'>
-                          {appt?.appointmentDetails.startTime}
-                        </Typography>
-                        {' - '}
-                        {appt?.type}
                         {appt?.customerDetails ? (
-                          <div>
-                            {appt?.customerDetails.name} {appt?.customerDetails.email} {appt?.customerDetails.phone}
-                          </div>
+                          <Stack>
+                            <Typography component='span' variant='subtitle2' color='text.primary' sx={{ display: 'inline' }}>
+                              Customer:{' '}
+                              <Typography component='span' variant='body2'>
+                                {appt?.customerDetails.name}
+                              </Typography>
+                            </Typography>
+                            <Typography component='span' variant='subtitle2' color='text.primary' sx={{ display: 'inline' }}>
+                              Email:{' '}
+                              <Typography component='span' variant='body2'>
+                                {appt?.customerDetails.email}
+                              </Typography>
+                            </Typography>
+                            <Typography component='span' variant='subtitle2' color='text.primary' sx={{ display: 'inline' }}>
+                              Phone:{' '}
+                              <Typography component='span' variant='body2'>
+                                {appt?.customerDetails.phone}
+                              </Typography>
+                            </Typography>
+                          </Stack>
                         ) : (
-                          <div></div>
+                          <Stack>
+                            <Typography component='span' variant='body2' color='text.primary' sx={{ display: 'inline' }}>
+                              Appointment Available
+                            </Typography>
+                          </Stack>
                         )}
                       </React.Fragment>
                     }
                   />
                 </ListItem>
-                <Divider variant='inset' component='li' />
-              </div>
+                <Divider component='li' />
+              </>
             );
           })}
         </List>

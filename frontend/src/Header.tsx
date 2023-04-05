@@ -14,7 +14,7 @@ import Avatar from '@mui/material/Avatar';
 import Button from '@mui/material/Button';
 import Tooltip from '@mui/material/Tooltip';
 import MenuItem from '@mui/material/MenuItem';
-import AdbIcon from '@mui/icons-material/Adb';
+import SpaIcon from '@mui/icons-material/Spa';
 
 const pages = ['Services', 'Pricing', 'Book Appointment'];
 const settings = ['Profile', 'Appointments', 'Logout'];
@@ -83,7 +83,7 @@ export function Header() {
       <AppBar position='static'>
         <Container maxWidth='xl'>
           <Toolbar disableGutters>
-            <AdbIcon sx={{ display: { xs: 'none', md: 'flex' }, mr: 1 }} />
+            <SpaIcon sx={{ display: { xs: 'none', md: 'flex' }, mr: 1 }} />
             <Typography
               variant='h6'
               noWrap
@@ -99,7 +99,7 @@ export function Header() {
                 textDecoration: 'none',
               }}
             >
-              LOGO
+              SPA
             </Typography>
 
             <Box sx={{ flexGrow: 1, display: { xs: 'flex', md: 'none' } }}>
@@ -138,7 +138,7 @@ export function Header() {
                 ))}
               </Menu>
             </Box>
-            <AdbIcon sx={{ display: { xs: 'flex', md: 'none' }, mr: 1 }} />
+            <SpaIcon sx={{ display: { xs: 'flex', md: 'none' }, mr: 1 }} />
             <Typography
               variant='h5'
               noWrap
@@ -155,7 +155,7 @@ export function Header() {
                 textDecoration: 'none',
               }}
             >
-              LOGO
+              SPA
             </Typography>
             <Box sx={{ flexGrow: 1, display: { xs: 'none', md: 'flex' } }}>
               {pages.map((page) => (
