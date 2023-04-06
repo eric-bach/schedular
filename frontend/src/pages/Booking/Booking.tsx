@@ -38,9 +38,10 @@ function Booking() {
   const navigate = useNavigate();
 
   const getAppointments = async (date: Dayjs | null) => {
+    //console.debug('[BOOKING] Getting apppointments for', formatDateString(date));
+
     setLoading(true);
 
-    console.log('GETTING APPOINTMENTS FOR ', formatDateString(date));
     const appointments = await API.graphql<GraphQLQuery<GetAppointmentsResponse>>(
       graphqlOperation(GET_AVAILABLE_APPOINTMENTS, {
         date: formatDateString(date),
@@ -63,12 +64,12 @@ function Booking() {
     setError(false);
     setDate(date);
 
-    let appts = await getAppointments(date);
-    console.log('AVAILABLE APPOINTMENTS: ', appts);
+    await getAppointments(date);
+    //console.debug('[BOOKING] Available appointments', availableAppointments);
   }
 
   function appointmentSelected(appointment: AppointmentItem) {
-    console.log('Selected sk: ', appointment);
+    //console.debug('[BOOKING] Selected appointment', appointment);
     setAppointment(appointment);
   }
 
@@ -90,8 +91,7 @@ function Booking() {
     };
 
     const result = await API.graphql<GraphQLQuery<AppointmentBookingResponse>>(graphqlOperation(BOOK_APPOINTMENT, { input: input }));
-
-    console.log('Booked: ', result.data?.bookAppointment);
+    //console.debug('[BOOKING] Booking result', result.data?.bookAppointment);
 
     if (result.data?.bookAppointment.confirmationId) {
       navigate(`/confirmation/${result.data.bookAppointment.confirmationId}`, {

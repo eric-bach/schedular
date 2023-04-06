@@ -18,7 +18,7 @@ import dayjs, { Dayjs } from 'dayjs';
 
 import { GET_APPOINTMENTS } from '../../graphql/queries';
 import { GetAppointmentsResponse, AppointmentItem } from './AppointmentTypes';
-import { formateLocalLongDate, formatLocalTimeString } from '../../helpers/utils';
+import { formatLongDateString, formatLocalTimeString } from '../../helpers/utils';
 
 function Schedule() {
   const { user } = useAuthenticator((context) => [context.route]);
@@ -28,16 +28,17 @@ function Schedule() {
   const [dateHeading, setDateHeading] = React.useState<string | undefined>();
   const [date, setDate] = React.useState<Dayjs | null>(dayjs());
 
-  const getAppointments = async (date: string) => {
+  const getAppointments = async (date: Dayjs) => {
+    //console.debug('[SCHEDULE] Getting schedule for', date);
+
     setLoading(true);
-    console.log('GETTING APPOINTMENTS FOR', date);
     const appointments = await API.graphql<GraphQLQuery<GetAppointmentsResponse>>(
       graphqlOperation(GET_APPOINTMENTS, {
         date: date,
       })
     );
 
-    setDateHeading(`${formateLocalLongDate(date + 'T06:00:00Z')}`);
+    setDateHeading(`${formatLongDateString(date)}`);
 
     setAppointments(appointments.data?.getAppointments?.items);
 
@@ -48,14 +49,13 @@ function Schedule() {
 
   function dateSelected(date: Dayjs | null) {
     setDate(date);
-    const newDate = date ?? dayjs();
-    getAppointments(newDate.toISOString().substring(0, 10));
+    getAppointments(date ?? dayjs());
   }
 
   useEffect(() => {
     if (user.attributes) {
-      getAppointments(new Date().toISOString().slice(0, 10)).then((resp) => {
-        console.log('Appointments ', resp);
+      getAppointments(dayjs()).then((resp) => {
+        //console.debug('[SCHEDULE] Found appointments', resp);
       });
     } else {
       // TODO Return error

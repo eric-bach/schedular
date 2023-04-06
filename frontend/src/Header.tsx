@@ -44,8 +44,6 @@ export function Header() {
   const handleCloseNavMenu = (e: any) => {
     setAnchorElNav(null);
 
-    console.debug('Clicked ', e.target.textContent);
-
     if (e.target.textContent === 'Services') {
       navigate('/services');
     } else if (e.target.textContent === 'Pricing') {
@@ -58,7 +56,6 @@ export function Header() {
   const handleCloseUserMenu = (e: any) => {
     setAnchorElUser(null);
 
-    console.debug('Clicked ', e.target.textContent);
     if (e.target.textContent === 'Profile') {
       navigate('/user/profile');
     } else if (e.target.textContent === 'Appointments') {
@@ -72,7 +69,6 @@ export function Header() {
   const handleCloseAdminMenu = (e: any) => {
     setAnchorElAdmin(null);
 
-    console.debug('Clicked ', e.target.textContent);
     if (e.target.textContent === 'Schedule') {
       navigate('/admin/schedule');
     }

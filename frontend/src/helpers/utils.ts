@@ -34,6 +34,13 @@ export function formatDateString(date: Dayjs | null) {
   return dayjs(date).format('YYYY-MM-DD');
 }
 
+// Returns the long date string from an ISO8601 datetime string
+//  Input: 2023-04-06T00:00:00Z
+//  Output: April 6, 2023
+export function formatLongDateString(date: Dayjs | null) {
+  return dayjs(date).format('MMMM DD, YYYY');
+}
+
 // Returns the local ISO8601 datetime string
 //  Input: 2023-04-06T14:00:00Z
 //  Output: 2023-04-06T08:00:00-06:00

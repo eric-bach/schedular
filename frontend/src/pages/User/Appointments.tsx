@@ -28,11 +28,12 @@ function Appointments() {
   const [appointments, setAppointments] = React.useState<[CustomerAppointmentItem | undefined]>();
 
   const getCustomerAppointments = async (customerId: string) => {
+    //console.debug('[APPOINTMENTS] Getting appointments for', customerId);
+
     setLoading(true);
-    console.log('GETTING CUSTOMER APPOINTMENTS');
     const appointments = await API.graphql<GraphQLQuery<GetCustomerAppointmentsResponse>>(
       graphqlOperation(GET_CUSTOMER_APPOINTMENTS, {
-        customerId: customerId, //customer?.id,
+        customerId: customerId,
         appointmentDateEpoch: new Date().getTime(),
       })
     );
@@ -46,7 +47,7 @@ function Appointments() {
   useEffect(() => {
     if (user.attributes) {
       getCustomerAppointments(user.attributes.sub).then((resp) => {
-        console.log('Appointments ', resp);
+        //console.debug('[APPOINTMENTS] Found appointments', resp);
       });
     } else {
       // TODO Return error
@@ -70,7 +71,7 @@ function Appointments() {
               let heading = `${formateLocalLongDate(appt.sk)} at ${formatLocalTimeString(appt.sk, 0)}`;
 
               return (
-                <div key={appt.sk}>
+                <React.Fragment>
                   <ListItem
                     alignItems='flex-start'
                     secondaryAction={
@@ -98,7 +99,7 @@ function Appointments() {
                     />
                   </ListItem>
                   <Divider component='li' />
-                </div>
+                </React.Fragment>
               );
             })
           ) : (
