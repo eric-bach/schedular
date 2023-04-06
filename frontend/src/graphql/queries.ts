@@ -6,12 +6,7 @@ export const GET_AVAILABLE_APPOINTMENTS = `query GetAvailableAppointments($date:
       type
       status
       appointmentDateEpoch
-      appointmentDetails {
-        date
-        startTime
-        endTime
-        duration
-      }
+      duration
       confirmationId    
     }
     lastEvaluatedKey
@@ -30,12 +25,7 @@ export const GET_APPOINTMENTS = `query GetAppointments($date: String!, $lastEval
       type
       status
       appointmentDateEpoch
-      appointmentDetails {
-        date
-        startTime
-        endTime
-        duration
-      }
+      duration
       customerId
       customerDetails {
         name
@@ -54,12 +44,7 @@ export const GET_CUSTOMER_APPOINTMENTS = `query GetCustomerAppointments($custome
       sk
       type
       status
-      appointmentDetails {
-        date
-        startTime
-        endTime
-        duration
-      }
+      duration
       confirmationId    
       customerId
       customerDetails {
@@ -81,12 +66,7 @@ export const BOOK_APPOINTMENT = `mutation BookAppointment($input: BookingInput!)
     pk
     sk
     status
-    appointmentDetails {
-      date
-      startTime
-      endTime
-      duration
-    }
+    duration
     confirmationId
     customerId
     customerDetails

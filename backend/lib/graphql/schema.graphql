@@ -43,13 +43,6 @@ type CustomerViewModel {
   phone: String
 }
 
-type AppointmentDetailsViewModel {
-  date: AWSDate
-  startTime: String
-  endTime: String
-  duration: Int
-}
-
 type AvailableAppointmentViewModel {
   pk: String
   sk: String
@@ -57,7 +50,7 @@ type AvailableAppointmentViewModel {
   updatedAt: AWSDateTime
   type: String
   appointmentDateEpoch: Float
-  appointmentDetails: AppointmentDetailsViewModel
+  duration: Int
   status: String
   confirmationId: String
 }
@@ -74,7 +67,7 @@ type AppointmentViewModel {
   updatedAt: AWSDateTime
   type: String
   appointmentDateEpoch: Float
-  appointmentDetails: AppointmentDetailsViewModel
+  duration: Int
   status: String
   customerId: String
   customerDetails: CustomerViewModel
@@ -93,7 +86,7 @@ type CustomerAppointmentViewModel {
   updatedAt: AWSDateTime
   type: String
   appointmentDateEpoch: Float
-  appointmentDetails: AppointmentDetailsViewModel
+  duration: Int
   customerId: String
   customerDetails: CustomerViewModel
   status: String
@@ -111,7 +104,7 @@ type BookAppointmentResponse {
   confirmationId: String
   status: String
   appointmentDateEpoch: Float
-  appointmentDetails: AppointmentDetailsViewModel
+  duration: Int
   customerId: String
   customerDetails: CustomerViewModel
   updatedAt: AWSDateTime

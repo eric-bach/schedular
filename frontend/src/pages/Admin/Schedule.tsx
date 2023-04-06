@@ -18,7 +18,7 @@ import dayjs, { Dayjs } from 'dayjs';
 
 import { GET_APPOINTMENTS } from '../../graphql/queries';
 import { GetAppointmentsResponse, AppointmentItem } from './AppointmentTypes';
-import { formatTime } from '../../helpers/utils';
+import { formateLocalLongDate, formatLocalTimeString } from '../../helpers/utils';
 
 function Schedule() {
   const { user } = useAuthenticator((context) => [context.route]);
@@ -37,14 +37,7 @@ function Schedule() {
       })
     );
 
-    setDateHeading(
-      `${new Date(date ?? new Date('1901-01-01')).toLocaleDateString('en-US', {
-        weekday: 'long',
-        year: 'numeric',
-        month: 'long',
-        day: 'numeric',
-      })}`
-    );
+    setDateHeading(`${formateLocalLongDate(date + 'T06:00:00Z')}`);
 
     setAppointments(appointments.data?.getAppointments?.items);
 
@@ -52,6 +45,12 @@ function Schedule() {
 
     return appointments.data?.getAppointments?.items;
   };
+
+  function dateSelected(date: Dayjs | null) {
+    setDate(date);
+    const newDate = date ?? dayjs();
+    getAppointments(newDate.toISOString().substring(0, 10));
+  }
 
   useEffect(() => {
     if (user.attributes) {
@@ -68,7 +67,7 @@ function Schedule() {
       <Grid container spacing={{ md: 1, lg: 1 }} columns={{ md: 6, lg: 6 }}>
         <Grid md={2} lg={2}>
           <LocalizationProvider dateAdapter={AdapterDayjs}>
-            <DateCalendar value={date} minDate={dayjs()} maxDate={dayjs().add(1, 'month')} onChange={(newValue) => setDate(newValue)} />
+            <DateCalendar value={date} minDate={dayjs()} maxDate={dayjs().add(1, 'month')} onChange={(newDate) => dateSelected(newDate)} />
           </LocalizationProvider>
         </Grid>
 
@@ -81,19 +80,24 @@ function Schedule() {
                 Schedule for {dateHeading}:
               </Typography>
               <List sx={{ bgcolor: 'background.paper' }}>
-                {appointments?.map((appt) => {
-                  if (!appt) return <div>No Appointments Today 😄</div>;
+                {(!appointments || appointments.length < 1) && <Typography>No Appointments Today 😄</Typography>}
 
-                  const heading = `${formatTime(appt?.appointmentDetails?.startTime ?? '')} to ${formatTime(
-                    appt?.appointmentDetails.endTime ?? ''
-                  )}`;
+                {appointments?.map((appt) => {
+                  if (!appt) return <></>;
+
+                  const heading = `${formatLocalTimeString(appt.sk, 0)} to ${formatLocalTimeString(appt.sk, appt.duration ?? 0)}`;
 
                   return (
                     <div key={appt.sk}>
                       <ListItem
                         alignItems='flex-start'
                         secondaryAction={
-                          <Chip label={appt?.status} color={appt?.status === 'booked' ? 'primary' : 'success'} sx={{ mb: 1 }} />
+                          <Chip
+                            label={appt?.status}
+                            color={appt?.status === 'booked' ? 'primary' : 'success'}
+                            variant={appt?.status === 'cancelled' ? 'outlined' : 'filled'}
+                            sx={{ mb: 1 }}
+                          />
                         }
                       >
                         <ListItemText

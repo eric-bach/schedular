@@ -16,7 +16,8 @@ import { GET_CUSTOMER_APPOINTMENTS } from '../../graphql/queries';
 import { GetCustomerAppointmentsResponse, CustomerAppointmentItem } from './CustomerTypes';
 
 import '@aws-amplify/ui-react/styles.css';
-import { formatTime } from '../../helpers/utils';
+import { formateLocalLongDate, formatLocalTimeString } from '../../helpers/utils';
+import Stack from '@mui/material/Stack';
 
 Amplify.configure(aws_exports);
 
@@ -66,12 +67,7 @@ function Appointments() {
             appointments?.map((appt) => {
               if (!appt) return <></>;
 
-              let heading = `${new Date(appt.appointmentDetails?.date ?? new Date('1901-01-01')).toLocaleDateString('en-US', {
-                weekday: 'long',
-                year: 'numeric',
-                month: 'long',
-                day: 'numeric',
-              })} at ${formatTime(appt.appointmentDetails?.startTime ?? '00:00:00')}`;
+              let heading = `${formateLocalLongDate(appt.sk)} at ${formatLocalTimeString(appt.sk, 0)}`;
 
               return (
                 <div key={appt.sk}>
@@ -84,14 +80,20 @@ function Appointments() {
                     <ListItemText
                       primary={heading}
                       secondary={
-                        <React.Fragment>
+                        <Stack>
                           <Typography component='span' variant='subtitle2' color='text.primary' sx={{ display: 'inline' }}>
                             Type:{' '}
                             <Typography component='span' variant='body2'>
                               {appt.type}
                             </Typography>
                           </Typography>
-                        </React.Fragment>
+                          <Typography component='span' variant='subtitle2' color='text.primary' sx={{ display: 'inline' }}>
+                            Confirmation Id:{' '}
+                            <Typography component='span' variant='body2'>
+                              {appt.confirmationId}
+                            </Typography>
+                          </Typography>
+                        </Stack>
                       }
                     />
                   </ListItem>

@@ -9,12 +9,7 @@ export type CustomerViewModel = {
 export type CustomerAppointmentItem = {
   pk: string;
   sk: string;
-  appointmentDetails: {
-    date: string;
-    startTime: string;
-    endTime: string;
-    duration: number;
-  };
+  duration: number;
   status: string;
   type: string;
   customerId: String;
