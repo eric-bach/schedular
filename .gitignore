@@ -28,7 +28,7 @@ aws-exports.js
 !.env.example
 
 # testing
-/coverage
+**/coverage
 cypress.*.json
 **/cypress/videos/
 
