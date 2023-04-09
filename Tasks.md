@@ -6,8 +6,9 @@
 - [x] Save object (Customer, Date/Time) in DynamoDB
 - [x] withAuthenticator - https://ui.docs.amplify.aws/react/guides/auth-protected
 - [x] Fix up UTC to local time translation
-- [] Clean up styling
+- [] Design table
 - [] Add more resolver tests
+- [] Clean up styling
 - [] Build out a proper Appointment Confirmation email template
 - [] Verify email domain to remove spoofing warning
 
