@@ -21,40 +21,43 @@ import { GetAppointmentsResponse, AppointmentItem } from './AppointmentTypes';
 import { formatLongDateString, formatLocalTimeString } from '../../helpers/utils';
 
 function Schedule() {
-  const { user } = useAuthenticator((context) => [context.route]);
+  const { authStatus } = useAuthenticator((context) => [context.route]);
 
   const [isLoading, setLoading] = React.useState<boolean>(false);
   const [appointments, setAppointments] = React.useState<[AppointmentItem | undefined]>();
   const [dateHeading, setDateHeading] = React.useState<string | undefined>();
   const [date, setDate] = React.useState<Dayjs | null>(dayjs());
 
-  const getAppointments = async (date: Dayjs) => {
+  const getAppointments = async (d: string) => {
     //console.debug('[SCHEDULE] Getting schedule for', date);
 
     setLoading(true);
+
     const appointments = await API.graphql<GraphQLQuery<GetAppointmentsResponse>>(
       graphqlOperation(GET_APPOINTMENTS, {
-        date: date,
+        date: d,
       })
     );
-
-    setDateHeading(`${formatLongDateString(date)}`);
-
     setAppointments(appointments.data?.getAppointments?.items);
+    setDateHeading(`${formatLongDateString(date)}`);
 
     setLoading(false);
 
     return appointments.data?.getAppointments?.items;
   };
 
-  function dateSelected(date: Dayjs | null) {
-    setDate(date);
-    getAppointments(date ?? dayjs());
+  async function dateSelected(d: Dayjs | null) {
+    setDate(d);
+
+    let selectedDate = (d ?? dayjs()).toISOString().substring(0, 10);
+    await getAppointments(selectedDate);
+    //console.debug('[SCHEDULE] Appointments', appointments);
   }
 
   useEffect(() => {
-    if (user.attributes) {
-      getAppointments(dayjs()).then((resp) => {
+    if (authStatus === 'authenticated') {
+      const d = dayjs().toISOString().substring(0, 10);
+      getAppointments(d).then((resp) => {
         //console.debug('[SCHEDULE] Found appointments', resp);
       });
     } else {
@@ -67,7 +70,12 @@ function Schedule() {
       <Grid container spacing={{ md: 1, lg: 1 }} columns={{ md: 6, lg: 6 }}>
         <Grid md={2} lg={2}>
           <LocalizationProvider dateAdapter={AdapterDayjs}>
-            <DateCalendar value={date} minDate={dayjs()} maxDate={dayjs().add(1, 'month')} onChange={(newDate) => dateSelected(newDate)} />
+            <DateCalendar
+              value={date}
+              minDate={dayjs()}
+              maxDate={dayjs().add(1, 'month')}
+              onChange={(newValue) => dateSelected(newValue)}
+            />
           </LocalizationProvider>
         </Grid>
 

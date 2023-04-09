@@ -22,7 +22,7 @@ import Stack from '@mui/material/Stack';
 Amplify.configure(aws_exports);
 
 function Appointments() {
-  const { user } = useAuthenticator((context) => [context.route]);
+  const { user, authStatus } = useAuthenticator((context) => [context.route]);
 
   const [isLoading, setLoading] = React.useState<boolean>(false);
   const [appointments, setAppointments] = React.useState<[CustomerAppointmentItem | undefined]>();
@@ -45,7 +45,7 @@ function Appointments() {
   };
 
   useEffect(() => {
-    if (user.attributes) {
+    if (authStatus === 'authenticated' && user.attributes) {
       getCustomerAppointments(user.attributes.sub).then((resp) => {
         //console.debug('[APPOINTMENTS] Found appointments', resp);
       });
@@ -71,7 +71,7 @@ function Appointments() {
               let heading = `${formateLocalLongDate(appt.sk)} at ${formatLocalTimeString(appt.sk, 0)}`;
 
               return (
-                <React.Fragment>
+                <React.Fragment key={appt.sk}>
                   <ListItem
                     alignItems='flex-start'
                     secondaryAction={
