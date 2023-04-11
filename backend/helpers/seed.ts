@@ -60,8 +60,7 @@ function generateRandomSeedData() {
     // Exclude weekends
     if (dayjs(d).day() === 0 || dayjs(d).day() === 6) continue;
 
-    // Set to UTC
-    for (var h = 2; h < 11; h++) {
+    for (var h = 8; h < 17; h++) {
       // Randomly skip
       let rand = Math.floor(Math.random() * 2);
       if (rand % 2 === 1) continue;
@@ -69,16 +68,11 @@ function generateRandomSeedData() {
       const duration = 60;
       let sk = dayjs(d).set('hour', h).set('minute', 0).set('second', 0).set('millisecond', 0).toISOString();
 
-      let epoch = new Date(sk).getTime();
-      let date = sk.substring(0, 10);
-      let startTime = sk.substring(11, 16);
-      let endTime = calculateEndTime(startTime, duration);
-
       data.push({
         pk: 'appt',
         sk,
-        appointmentDateEpoch: epoch,
-        appointmentDetails: { date, startTime, endTime, duration },
+        appointmentDateEpoch: new Date(sk).getTime(),
+        duration,
         status: 'available',
         type: 'massage',
       });
@@ -87,19 +81,6 @@ function generateRandomSeedData() {
 
   return data;
 }
-
-const calculateEndTime = (startTime: string, duration: number) => {
-  let [hr, min] = startTime.split(':');
-  duration += parseInt(hr) * 60 + parseInt(min);
-  hr = Math.floor(duration / 60).toString();
-  min = (duration % 60).toString();
-
-  return `${addLeadingZeros(hr)}:${addLeadingZeros(min)}`;
-};
-
-const addLeadingZeros = (value: string) => {
-  return parseInt(value) < 10 ? `0${value}` : value;
-};
 
 async function getTableName(): Promise<string> {
   var tableName: string = `${appName}-${env}-Data`;

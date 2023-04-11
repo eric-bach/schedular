@@ -9,36 +9,31 @@ import ListItem from '@mui/material/ListItem';
 import Divider from '@mui/material/Divider';
 import ListItemText from '@mui/material/ListItemText';
 import Typography from '@mui/material/Typography';
+import Chip from '@mui/material/Chip';
 
 import aws_exports from '../../aws-exports';
 import { GET_CUSTOMER_APPOINTMENTS } from '../../graphql/queries';
 import { GetCustomerAppointmentsResponse, CustomerAppointmentItem } from './CustomerTypes';
 
 import '@aws-amplify/ui-react/styles.css';
+import { formateLocalLongDate, formatLocalTimeString } from '../../helpers/utils';
+import Stack from '@mui/material/Stack';
 
 Amplify.configure(aws_exports);
 
-function formatTime(timeString: string) {
-  return new Date('1970-01-01T' + timeString + 'Z').toLocaleTimeString('en-US', {
-    timeZone: 'UTC',
-    hour12: true,
-    hour: 'numeric',
-    minute: 'numeric',
-  });
-}
-
 function Appointments() {
-  const { user } = useAuthenticator((context) => [context.route]);
+  const { user, authStatus } = useAuthenticator((context) => [context.route]);
 
   const [isLoading, setLoading] = React.useState<boolean>(false);
   const [appointments, setAppointments] = React.useState<[CustomerAppointmentItem | undefined]>();
 
   const getCustomerAppointments = async (customerId: string) => {
+    //console.debug('[APPOINTMENTS] Getting appointments for', customerId);
+
     setLoading(true);
-    console.log('GETTING CUSTOMER APPOINTMENTS');
     const appointments = await API.graphql<GraphQLQuery<GetCustomerAppointmentsResponse>>(
       graphqlOperation(GET_CUSTOMER_APPOINTMENTS, {
-        customerId: customerId, //customer?.id,
+        customerId: customerId,
         appointmentDateEpoch: new Date().getTime(),
       })
     );
@@ -50,9 +45,9 @@ function Appointments() {
   };
 
   useEffect(() => {
-    if (user.attributes) {
+    if (authStatus === 'authenticated' && user.attributes) {
       getCustomerAppointments(user.attributes.sub).then((resp) => {
-        console.log('Appointments ', resp);
+        //console.debug('[APPOINTMENTS] Found appointments', resp);
       });
     } else {
       // TODO Return error
@@ -60,42 +55,58 @@ function Appointments() {
   }, []);
 
   return (
-    <Container maxWidth='lg' sx={{ mt: 5 }}>
+    <Container maxWidth='md' sx={{ mt: 5 }}>
       <Typography variant='h5' fontWeight='bold' align='left' color='textPrimary' gutterBottom sx={{ mt: 2 }}>
         Upcoming Appointments:
       </Typography>
 
-      {isLoading && <Loader variation='linear' />}
-      {!isLoading && (
+      {isLoading ? (
+        <Loader variation='linear' />
+      ) : (
         <List sx={{ bgcolor: 'background.paper' }}>
-          {appointments?.map((appt) => {
-            let heading = `${new Date(appt?.appointmentDetails?.date ?? new Date('1901-01-01')).toLocaleDateString('en-US', {
-              weekday: 'long',
-              year: 'numeric',
-              month: 'long',
-              day: 'numeric',
-            })} at ${formatTime(appt?.appointmentDetails?.startTime ?? '00:00:00')}`;
+          {appointments && appointments.length > 0 ? (
+            appointments?.map((appt) => {
+              if (!appt) return <></>;
 
-            return (
-              <div key={appt?.sk}>
-                <ListItem alignItems='flex-start'>
-                  <ListItemText
-                    primary={heading}
-                    secondary={
-                      <React.Fragment>
-                        <Typography sx={{ display: 'inline' }} component='span' variant='body2' color='text.primary'>
-                          {appt?.customerDetails.name}
-                        </Typography>
-                        {' - '}
-                        {appt?.type}
-                      </React.Fragment>
+              let heading = `${formateLocalLongDate(appt.sk)} at ${formatLocalTimeString(appt.sk, 0)}`;
+
+              return (
+                <React.Fragment key={appt.sk}>
+                  <ListItem
+                    alignItems='flex-start'
+                    secondaryAction={
+                      <Chip label={appt.status} color='primary' variant={appt.status === 'booked' ? 'filled' : 'outlined'} sx={{ mb: 1 }} />
                     }
-                  />
-                </ListItem>
-                <Divider variant='inset' component='li' />
-              </div>
-            );
-          })}
+                  >
+                    <ListItemText
+                      primary={heading}
+                      secondary={
+                        <Stack>
+                          <Typography component='span' variant='subtitle2' color='text.primary' sx={{ display: 'inline' }}>
+                            Type:{' '}
+                            <Typography component='span' variant='body2'>
+                              {appt.type}
+                            </Typography>
+                          </Typography>
+                          <Typography component='span' variant='subtitle2' color='text.primary' sx={{ display: 'inline' }}>
+                            Confirmation Id:{' '}
+                            <Typography component='span' variant='body2'>
+                              {appt.confirmationId}
+                            </Typography>
+                          </Typography>
+                        </Stack>
+                      }
+                    />
+                  </ListItem>
+                  <Divider component='li' />
+                </React.Fragment>
+              );
+            })
+          ) : (
+            <Typography variant='body1' align='left' color='textPrimary'>
+              No Upcoming Appointments
+            </Typography>
+          )}
         </List>
       )}
     </Container>

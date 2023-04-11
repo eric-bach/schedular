@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Amplify } from 'aws-amplify';
 import { Loader, useAuthenticator } from '@aws-amplify/ui-react';
@@ -20,6 +20,8 @@ import Button from '@mui/material/Button';
 import aws_exports from '../../aws-exports';
 import { GET_AVAILABLE_APPOINTMENTS, BOOK_APPOINTMENT } from '../../graphql/queries';
 import { GetAppointmentsResponse, AppointmentItem, AppointmentBookingResponse } from './AppointmentTypes';
+import { formatLocalTimeSpanString, formatDateString } from '../../helpers/utils';
+
 import '@aws-amplify/ui-react/styles.css';
 
 Amplify.configure(aws_exports);
@@ -27,62 +29,59 @@ Amplify.configure(aws_exports);
 function Booking() {
   const { user } = useAuthenticator((context) => [context.route]);
 
-  // TODO Get user group
-  // const groups = user?.getSignInUserSession()?.getAccessToken()?.payload['cognito:groups'];
-  // console.log(groups);
-
-  const [date, setDate] = React.useState<Dayjs | null>(null);
-  const [timeslot, setTimeslot] = React.useState<string | null>(null);
-  const [timeslotText, setTimeslotText] = React.useState<string | null>(null);
-  const [availableAppts, setAppts] = React.useState<[AppointmentItem | undefined]>();
-  const [numAppts, setNumAppts] = React.useState<number>(0);
+  const [date, setDate] = React.useState<Dayjs | null>(dayjs());
+  const [availableAppointments, setAvailableAppointments] = React.useState<[AppointmentItem | undefined]>();
+  const [appointment, setAppointment] = React.useState<AppointmentItem>();
   const [isLoading, setLoading] = React.useState<boolean>(false);
   const [isError, setError] = React.useState<boolean>(false);
 
   const navigate = useNavigate();
-  const today = dayjs();
-  const oneMonth = dayjs().add(1, 'month');
 
   const getAppointments = async (date: Dayjs | null) => {
+    //console.debug('[BOOKING] Getting apppointments for', formatDateString(date));
+
     setLoading(true);
-    console.log('GETTING APPOINTMENTS FOR ', dayjs(date).format('YYYY-MM-DD'));
+
     const appointments = await API.graphql<GraphQLQuery<GetAppointmentsResponse>>(
       graphqlOperation(GET_AVAILABLE_APPOINTMENTS, {
-        date: dayjs(date).format('YYYY-MM-DD'),
+        date: formatDateString(date),
       })
     );
-    setAppts(appointments.data?.getAvailableAppointments?.items);
-    setNumAppts(appointments.data?.getAvailableAppointments?.items.length ?? 0);
+    setAvailableAppointments(appointments.data?.getAvailableAppointments?.items);
 
     setLoading(false);
 
     return appointments.data?.getAvailableAppointments?.items;
   };
 
+  useEffect(() => {
+    getAppointments(date);
+  }, []);
+
   async function dateSelected(date: Dayjs | null) {
     // Reset timeslot
-    setTimeslot(null);
-    setTimeslotText(null);
+    setAppointment(undefined);
     setError(false);
-
     setDate(date);
-    let appts = await getAppointments(date);
-    console.log('AVAILABLE APPOINTMENTS: ', appts);
+
+    await getAppointments(date);
+    //console.debug('[BOOKING] Available appointments', availableAppointments);
   }
 
-  function timeSelected(target: any) {
-    console.log('Selected sk: ', target.id);
-    console.log('Selected Time: ', target.textContent);
-    setTimeslot(target.id);
-    setTimeslotText(target.textContent);
+  function appointmentSelected(appointment: AppointmentItem) {
+    //console.debug('[BOOKING] Selected appointment', appointment);
+    setAppointment(appointment);
   }
 
   async function bookAppointment() {
-    console.log('Booking time: ', timeslot);
+    if (!appointment || !appointment.sk) {
+      setError(true);
+      return;
+    }
 
     const input = {
       pk: 'appt',
-      sk: timeslot,
+      sk: appointment.sk,
       customer: {
         id: user.attributes?.sub,
         name: user.attributes?.given_name,
@@ -92,24 +91,16 @@ function Booking() {
     };
 
     const result = await API.graphql<GraphQLQuery<AppointmentBookingResponse>>(graphqlOperation(BOOK_APPOINTMENT, { input: input }));
-
-    console.log('Booked: ', result.data?.bookAppointment);
+    //console.debug('[BOOKING] Booking result', result.data?.bookAppointment);
 
     if (result.data?.bookAppointment.confirmationId) {
-      navigate(`/confirmation/${result.data.bookAppointment.confirmationId}`, { state: { customer: user.attributes, timeslot: timeslot } });
+      navigate(`/confirmation/${result.data.bookAppointment.confirmationId}`, {
+        state: { customer: user.attributes, appointment: appointment },
+      });
     } else {
       await dateSelected(date);
       setError(true);
     }
-  }
-
-  function formatTime(timeString: string) {
-    return new Date('1970-01-01T' + timeString + 'Z').toLocaleTimeString('en-US', {
-      timeZone: 'UTC',
-      hour12: true,
-      hour: 'numeric',
-      minute: 'numeric',
-    });
   }
 
   function dismissError() {
@@ -153,7 +144,12 @@ function Booking() {
         <Grid xs={0} sm={0} md={0} lg={3} />
         <Grid xs={6} sm={6} md={6} lg={3}>
           <LocalizationProvider dateAdapter={AdapterDayjs}>
-            <DateCalendar value={date} minDate={today} maxDate={oneMonth} onChange={(newValue) => dateSelected(newValue)} />
+            <DateCalendar
+              value={date}
+              minDate={dayjs()}
+              maxDate={dayjs().add(1, 'month')}
+              onChange={(newValue) => dateSelected(newValue)}
+            />
           </LocalizationProvider>
         </Grid>
         <Grid xs={6} sm={6} md={6} lg={3}>
@@ -161,32 +157,35 @@ function Booking() {
           {date && !isLoading && (
             <>
               <Stack spacing={2} alignItems='flex-start'>
-                <Typography variant='subtitle1' fontWeight='bold' align='left' color='textPrimary' gutterBottom sx={{ mt: 2 }}>
+                <Typography variant='h5' fontWeight='bold' align='left' color='textPrimary' gutterBottom sx={{ mt: 2 }}>
                   Available Times:
                 </Typography>
-                {numAppts < 1 && <Typography>No times available today 😢</Typography>}
-                {availableAppts?.map((m) => {
+                {(!availableAppointments || availableAppointments.length < 1) && <Typography>No times available today 😢</Typography>}
+
+                {availableAppointments?.map((m) => {
+                  if (!m) return <></>;
+
                   return (
                     <Button
-                      key={m?.sk}
+                      key={m.sk}
                       variant='contained'
                       sx={{ width: '174px' }}
-                      onClick={(e) => {
-                        timeSelected(e.target);
+                      onClick={() => {
+                        appointmentSelected(m);
                       }}
-                      id={m?.sk}
+                      id={m.sk}
                     >
-                      {formatTime(m?.appointmentDetails.startTime!)} - {formatTime(m?.appointmentDetails.endTime!)}
+                      {formatLocalTimeSpanString(m.sk, m.duration)}
                     </Button>
                   );
                 })}
               </Stack>
 
-              {timeslotText && (
+              {appointment && (
                 <>
                   <Stack alignItems='flex-start'>
                     <Typography sx={{ mt: 4 }}>
-                      {dayjs(date).format('MMM DD, YYYY')} from {timeslotText.toString()}
+                      {formatDateString(date)} from {formatLocalTimeSpanString(appointment.sk, appointment.duration)}
                     </Typography>
                     <Button variant='contained' color='success' onClick={bookAppointment}>
                       Confirm Appointment

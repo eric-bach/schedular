@@ -7,23 +7,13 @@ import Typography from '@mui/material/Typography';
 import Chip from '@mui/material/Chip';
 import Button from '@mui/material/Button';
 
-function formatTime(timeString: string) {
-  return new Date('1970-01-01T' + timeString + 'Z').toLocaleTimeString('en-US', {
-    timeZone: 'UTC',
-    hour12: true,
-    hour: 'numeric',
-    minute: 'numeric',
-  });
-}
+import { formateLocalLongDate, formatLocalTimeString } from '../../helpers/utils';
 
 export default function Confirmation() {
   const { id: confirmationId } = useParams();
   const { state } = useLocation();
 
   const navigate = useNavigate();
-
-  let date = state.timeslot.substring(0, 10);
-  let time = state.timeslot.substring(11, 16);
 
   return (
     <Container maxWidth='lg' sx={{ mt: 5 }}>
@@ -49,8 +39,7 @@ export default function Confirmation() {
         Appointment Information:
       </Typography>
       <Typography variant='body1' gutterBottom>
-        Date: {new Date(date).toLocaleDateString('en-US', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' })} at{' '}
-        {formatTime(time)}
+        Date: {formateLocalLongDate(state.appointment.sk)} at {formatLocalTimeString(state.appointment.sk, 0)}
       </Typography>
 
       <Typography variant='h6' gutterBottom>
