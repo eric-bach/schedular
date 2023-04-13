@@ -1,17 +1,32 @@
 type Data @model @aws_cognito_user_pools {
   pk: String
   sk: String
-  createdAt: AWSDateTime
-  updatedAt: AWSDateTime
   type: String
+  category: String
+  appointmentDateEpoch: Float
   duration: Int
   status: String
-  confirmationId: String
-  customer: String
+  appointmentId: String
+  appointmentDetails: AppointmentDetailsData
+  customerId: String
+  customerDetails: CustomerDetailsData
   firstName: String
   lastName: String
   email: String
-  phone: Int
+  phoneNumber: String
+  createdAt: AWSDateTime
+  updatedAt: AWSDateTime
+}
+
+type AppointmentDetailsData @model @aws_cognito_user_pools {
+  date: AWSDateTime
+  time: String
+  duration: Int
+}
+
+type CustomerDetailsData @model @aws_cognito_user_pools {
+  email: String
+  phone: String
 }
 
 input CustomerInput {
@@ -37,22 +52,17 @@ type LastEvaluatedKeyViewModel {
   sk: String
 }
 
-type CustomerViewModel {
-  name: String
-  email: String
-  phone: String
-}
-
 type AvailableAppointmentViewModel {
   pk: String
   sk: String
-  createdAt: AWSDateTime
-  updatedAt: AWSDateTime
   type: String
+  category: String
   appointmentDateEpoch: Float
   duration: Int
   status: String
-  confirmationId: String
+  bookingId: String
+  createdAt: AWSDateTime
+  updatedAt: AWSDateTime
 }
 
 type GetAvailableAppointmentsResponse {
@@ -60,18 +70,33 @@ type GetAvailableAppointmentsResponse {
   lastEvaluatedKey: LastEvaluatedKeyViewModel
 }
 
+type AppointmentDetailsViewModel {
+  date: AWSDateTime
+  time: String
+  duration: Int
+  type: String
+  category: String
+}
+
+type CustomerDetailsViewModel {
+  name: String
+  email: String
+  phone: String
+}
+
 type AppointmentViewModel {
   pk: String
   sk: String
-  createdAt: AWSDateTime
-  updatedAt: AWSDateTime
   type: String
+  category: String
   appointmentDateEpoch: Float
   duration: Int
   status: String
   customerId: String
-  customerDetails: CustomerViewModel
-  confirmationId: String
+  customerDetails: CustomerDetailsViewModel
+  bookingId: String
+  createdAt: AWSDateTime
+  updatedAt: AWSDateTime
 }
 
 type GetAppointmentsResponse {
@@ -82,15 +107,13 @@ type GetAppointmentsResponse {
 type CustomerAppointmentViewModel {
   pk: String
   sk: String
+  appointmentDateEpoch: Float
+  appointmentDetails: AppointmentDetailsViewModel
+  customerId: String
+  customerDetails: CustomerDetailsViewModel
+  status: String
   createdAt: AWSDateTime
   updatedAt: AWSDateTime
-  type: String
-  appointmentDateEpoch: Float
-  duration: Int
-  customerId: String
-  customerDetails: CustomerViewModel
-  status: String
-  confirmationId: String
 }
 
 type GetCustomerAppointmentsResponse {
@@ -101,12 +124,11 @@ type GetCustomerAppointmentsResponse {
 type BookAppointmentResponse {
   pk: ID
   sk: String
-  confirmationId: String
-  status: String
-  appointmentDateEpoch: Float
-  duration: Int
   customerId: String
-  customerDetails: CustomerViewModel
+  customerDetails: CustomerDetailsViewModel
+  appointmentId: String
+  appointmentDetails: AppointmentDetailsViewModel
+  createdAt: AWSDateTime
   updatedAt: AWSDateTime
 }
 

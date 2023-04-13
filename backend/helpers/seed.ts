@@ -3,6 +3,7 @@ import { fromIni } from '@aws-sdk/credential-providers';
 import { DynamoDBClient, PutItemCommand, PutItemCommandInput } from '@aws-sdk/client-dynamodb';
 import { marshall } from '@aws-sdk/util-dynamodb';
 import { Command } from 'commander';
+import { v4 as uuidv4 } from 'uuid';
 import dayjs from 'dayjs';
 
 const appName: string = 'schedular';
@@ -69,12 +70,13 @@ function generateRandomSeedData() {
       let sk = dayjs(d).set('hour', h).set('minute', 0).set('second', 0).set('millisecond', 0).toISOString();
 
       data.push({
-        pk: 'appt',
+        pk: `appt#${uuidv4()}`,
         sk,
+        type: 'appt',
+        category: 'massage',
         appointmentDateEpoch: new Date(sk).getTime(),
         duration,
         status: 'available',
-        type: 'massage',
       });
     }
   }
