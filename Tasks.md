@@ -6,14 +6,7 @@
 - [x] Save object (Customer, Date/Time) in DynamoDB
 - [x] withAuthenticator - https://ui.docs.amplify.aws/react/guides/auth-protected
 - [x] Fix up UTC to local time translation
-- [] Update to use new table schema
-  - [x] Generate new seed data
-  - [x] Update GraphQL schema
-  - [x] Update DynamoDB GSIs
-  - [x] Update JS Resolvers
-  - [x] Update example Queries/Mutations
-  - [] Update React API calls
-  - [] Update React component views
+- [x] Update to use new table schema
 - [] Add more resolver tests
 - [] Clean up styling
 - [] Build out a proper Appointment Confirmation email template
