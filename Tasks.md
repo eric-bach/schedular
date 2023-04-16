@@ -9,7 +9,7 @@
 - [] Update to use new table schema
   - [x] Generate new seed data
   - [x] Update GraphQL schema
-  - [] Update DynamoDB GSIs
+  - [x] Update DynamoDB GSIs
   - [] Update JS Resolvers
   - [] Update React API calls
   - [] Update React component views

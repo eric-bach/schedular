@@ -37,6 +37,28 @@ export class DatabaseStack extends Stack {
         type: AttributeType.NUMBER,
       },
     });
+    dataTable.addGlobalSecondaryIndex({
+      indexName: 'type-gsi',
+      partitionKey: {
+        name: 'type',
+        type: AttributeType.STRING,
+      },
+      sortKey: {
+        name: 'sk',
+        type: AttributeType.STRING,
+      },
+    });
+    dataTable.addGlobalSecondaryIndex({
+      indexName: 'appointmentId-gsi',
+      partitionKey: {
+        name: 'appointmentId',
+        type: AttributeType.STRING,
+      },
+      sortKey: {
+        name: 'sk',
+        type: AttributeType.STRING,
+      },
+    });
 
     /***
      *** Outputs

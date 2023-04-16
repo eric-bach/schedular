@@ -11,7 +11,7 @@ export function request(ctx) {
     },
     update: {
       expression:
-        'SET #status = :booked, confirmationId = :confirmationId, customerId = :customerId, customerDetails = :customerDetails, updatedAt = :updatedAt',
+        'SET #status = :booked, bookingId = :bookingId, customerId = :customerId, customerDetails = :customerDetails, updatedAt = :updatedAt',
       expressionNames: {
         '#status': 'status',
       },
@@ -23,7 +23,7 @@ export function request(ctx) {
         }),
         ':customerId': util.dynamodb.toDynamoDB(ctx.args.bookingInput.customer.id),
         ':booked': util.dynamodb.toDynamoDB('booked'),
-        ':confirmationId': util.dynamodb.toDynamoDB(util.autoId()),
+        ':bookingId': util.dynamodb.toDynamoDB(util.autoId()),
         ':updatedAt': util.dynamodb.toDynamoDB(util.time.nowISO8601()),
       },
     },
