@@ -1,25 +1,29 @@
 import { Base } from '../../types/BaseTypes';
 
-export type CustomerViewModel = {
-  name: string;
-  email: string;
-  phone: string;
-};
-
-export type CustomerAppointmentItem = {
+export type BookingItem = {
   pk: string;
   sk: string;
-  duration: number;
   status: string;
   type: string;
+  appointmentDetails: {
+    sk: string;
+    duration: number;
+    type: string;
+    category: string;
+  };
   customerId: String;
-  customerDetails: CustomerViewModel;
-  confirmationId: string;
+  customerDetails: {
+    id: string;
+    firstName: string;
+    lastName: string;
+    email: string;
+    phone: string;
+  };
 };
 
-export type GetCustomerAppointmentsResponse = {
-  getCustomerAppointments: {
-    items: [CustomerAppointmentItem];
+export type GetBookingsResponse = {
+  getBookings: {
+    items: [BookingItem];
   };
   lastEvaluatedKey: Base;
 };

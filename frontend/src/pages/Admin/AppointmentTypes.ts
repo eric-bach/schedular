@@ -1,20 +1,21 @@
 import { Base } from '../../types/BaseTypes';
 
-export type CustomerViewModel = {
-  name: string;
-  email: string;
-  phone: string;
-};
-
 export type AppointmentItem = {
   pk: string;
   sk: string;
-  duration: number;
-  customerId: string;
-  customerDetails: CustomerViewModel;
   status: string;
   type: string;
-  confirmationId: string;
+  category: string;
+  date: string;
+  duration: number;
+  bookingId: string;
+  customerDetails: {
+    id: string;
+    firstName: string;
+    lastName: string;
+    email: string;
+    phone: string;
+  };
 };
 
 export type GetAppointmentsResponse = {

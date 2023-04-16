@@ -4,16 +4,24 @@ export function request(ctx) {
   return {
     version: '2017-02-28',
     operation: 'Query',
+    index: 'date-gsi',
     query: {
-      expression: 'pk = :pk AND begins_with(sk, :sk)',
+      expression: '#date = :date',
+      expressionNames: {
+        '#date': 'date',
+      },
       expressionValues: {
-        ':pk': util.dynamodb.toDynamoDB('appt'),
-        ':sk': util.dynamodb.toDynamoDB(ctx.args.date),
+        ':date': util.dynamodb.toDynamoDB(`appt#${ctx.args.date}`),
       },
     },
   };
 }
 
 export function response(ctx) {
+  console.log('🔔 GetAppointments Response: ', ctx);
+
+  if (ctx.error) {
+    util.error(ctx.error.message, ctx.error.type, ctx.result);
+  }
   return ctx.result;
 }

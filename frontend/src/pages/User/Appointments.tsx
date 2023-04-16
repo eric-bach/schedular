@@ -12,8 +12,8 @@ import Typography from '@mui/material/Typography';
 import Chip from '@mui/material/Chip';
 
 import aws_exports from '../../aws-exports';
-import { GET_CUSTOMER_APPOINTMENTS } from '../../graphql/queries';
-import { GetCustomerAppointmentsResponse, CustomerAppointmentItem } from './CustomerTypes';
+import { GET_BOOKINGS } from '../../graphql/queries';
+import { GetBookingsResponse, BookingItem } from './CustomerTypes';
 
 import '@aws-amplify/ui-react/styles.css';
 import { formateLocalLongDate, formatLocalTimeString } from '../../helpers/utils';
@@ -25,29 +25,29 @@ function Appointments() {
   const { user, authStatus } = useAuthenticator((context) => [context.route]);
 
   const [isLoading, setLoading] = React.useState<boolean>(false);
-  const [appointments, setAppointments] = React.useState<[CustomerAppointmentItem | undefined]>();
+  const [bookings, setBookings] = React.useState<[BookingItem | undefined]>();
 
   const getCustomerAppointments = async (customerId: string) => {
     //console.debug('[APPOINTMENTS] Getting appointments for', customerId);
 
     setLoading(true);
-    const appointments = await API.graphql<GraphQLQuery<GetCustomerAppointmentsResponse>>(
-      graphqlOperation(GET_CUSTOMER_APPOINTMENTS, {
+    const result = await API.graphql<GraphQLQuery<GetBookingsResponse>>(
+      graphqlOperation(GET_BOOKINGS, {
         customerId: customerId,
-        appointmentDateEpoch: new Date().getTime(),
+        datetime: new Date().toISOString(),
       })
     );
-    setAppointments(appointments.data?.getCustomerAppointments?.items);
+    setBookings(result.data?.getBookings?.items);
 
     setLoading(false);
 
-    return appointments.data?.getCustomerAppointments?.items;
+    return result.data?.getBookings?.items;
   };
 
   useEffect(() => {
     if (authStatus === 'authenticated' && user.attributes) {
       getCustomerAppointments(user.attributes.sub).then((resp) => {
-        //console.debug('[APPOINTMENTS] Found appointments', resp);
+        console.debug('[APPOINTMENTS] Found appointments', resp);
       });
     } else {
       // TODO Return error
@@ -64,18 +64,23 @@ function Appointments() {
         <Loader variation='linear' />
       ) : (
         <List sx={{ bgcolor: 'background.paper' }}>
-          {appointments && appointments.length > 0 ? (
-            appointments?.map((appt) => {
-              if (!appt) return <></>;
+          {bookings && bookings.length > 0 ? (
+            bookings?.map((booking) => {
+              if (!booking) return <></>;
 
-              let heading = `${formateLocalLongDate(appt.sk)} at ${formatLocalTimeString(appt.sk, 0)}`;
+              let heading = `${formateLocalLongDate(booking.sk)} at ${formatLocalTimeString(booking.sk, 0)}`;
 
               return (
-                <React.Fragment key={appt.sk}>
+                <React.Fragment key={booking.sk}>
                   <ListItem
                     alignItems='flex-start'
                     secondaryAction={
-                      <Chip label={appt.status} color='primary' variant={appt.status === 'booked' ? 'filled' : 'outlined'} sx={{ mb: 1 }} />
+                      <Chip
+                        label={booking.status}
+                        color='primary'
+                        variant={booking.status === 'booked' ? 'filled' : 'outlined'}
+                        sx={{ mb: 1 }}
+                      />
                     }
                   >
                     <ListItemText
@@ -85,13 +90,13 @@ function Appointments() {
                           <Typography component='span' variant='subtitle2' color='text.primary' sx={{ display: 'inline' }}>
                             Type:{' '}
                             <Typography component='span' variant='body2'>
-                              {appt.type}
+                              {booking.appointmentDetails.category}
                             </Typography>
                           </Typography>
                           <Typography component='span' variant='subtitle2' color='text.primary' sx={{ display: 'inline' }}>
                             Confirmation Id:{' '}
                             <Typography component='span' variant='body2'>
-                              {appt.confirmationId}
+                              {booking.pk.split('#')[1]}
                             </Typography>
                           </Typography>
                         </Stack>

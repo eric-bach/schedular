@@ -3,11 +3,19 @@ export const GET_AVAILABLE_APPOINTMENTS = `query GetAvailableAppointments($date:
     items {
       pk
       sk
-      type
       status
-      appointmentDateEpoch
+      type
+      category
+      date
       duration
-      confirmationId    
+      bookingId
+      customerDetails {
+        id
+        firstName
+        lastName
+        email
+        phone
+      }
     }
     lastEvaluatedKey
     {
@@ -22,33 +30,16 @@ export const GET_APPOINTMENTS = `query GetAppointments($date: String!, $lastEval
     items {
       pk
       sk
-      type
       status
-      appointmentDateEpoch
-      duration
-      customerId
-      customerDetails {
-        name
-        email
-        phone
-      }
-      confirmationId
-    }
-  }
-}`;
-
-export const GET_CUSTOMER_APPOINTMENTS = `query GetCustomerAppointments($customerId: String!, $appointmentDateEpoch: Float!, $lastEvaluatedKey: LastEvaluatedKey) {
-  getCustomerAppointments(customerId: $customerId, appointmentDateEpoch: $appointmentDateEpoch, lastEvaluatedKey: $lastEvaluatedKey) {
-    items {
-      pk
-      sk
       type
-      status
+      category
+      date
       duration
-      confirmationId    
-      customerId
-      customerDetails {
-        name
+      bookingId
+      customerDetails{
+        id
+        firstName
+        lastName
         email
         phone
       }
@@ -61,19 +52,43 @@ export const GET_CUSTOMER_APPOINTMENTS = `query GetCustomerAppointments($custome
   }
 }`;
 
-export const BOOK_APPOINTMENT = `mutation BookAppointment($input: BookingInput!) {
-  bookAppointment(bookingInput: $input) {
-    pk
-    sk
-    status
-    duration
-    confirmationId
-    customerId
-    customerDetails
+export const GET_BOOKINGS = `query GetBookings($customerId: String!, $datetime: String!, $lastEvaluatedKey: LastEvaluatedKey) {
+  getBookings(customerId: $customerId, datetime: $datetime, lastEvaluatedKey: $lastEvaluatedKey) {
+    items {
+      pk
+      sk
+      status
+      type
+      appointmentDetails {
+        sk
+        duration
+        type
+        category
+      }
+      customerId
+      customerDetails {
+        id
+        firstName
+        lastName
+        email
+        phone
+      }
+    }
+    lastEvaluatedKey
     {
-      name
-      email
-      phone
+      pk
+      sk
+    }
+  }
+}`;
+
+export const CREATE_BOOKING = `mutation CreateBooking($input: BookingInput!) {
+  createBooking(bookingInput: $input) {
+    cancellationReasons
+    keys
+    {
+      pk
+      sk
     }
   }
 }`;

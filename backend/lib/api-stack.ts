@@ -155,18 +155,18 @@ export class ApiStack extends Stack {
       code: Code.fromAsset(path.join(__dirname, '/graphql/Query.getAppointments.js')),
       runtime: FunctionRuntime.JS_1_0_0,
     });
-    const getCustomerAppointmentsFunction = new AppsyncFunction(this, 'getCustomerAppointmentsFunction', {
-      name: 'getCustomerAppointmentsFunction',
+    const getBookingsFunction = new AppsyncFunction(this, 'getBookingsFunction', {
+      name: 'getBookingsFunction',
       api: api,
       dataSource: dynamoDbDataSource,
-      code: Code.fromAsset(path.join(__dirname, '/graphql/Query.getCustomerAppointments.js')),
+      code: Code.fromAsset(path.join(__dirname, '/graphql/Query.getBookings.js')),
       runtime: FunctionRuntime.JS_1_0_0,
     });
-    const bookAppointmentFunction = new AppsyncFunction(this, 'bookAppointmentFunction', {
-      name: 'bookAppointmentFunction',
+    const createBookingFunction = new AppsyncFunction(this, 'createBookingFunction', {
+      name: 'createBookingFunction',
       api: api,
       dataSource: dynamoDbDataSource,
-      code: Code.fromAsset(path.join(__dirname, '/graphql/Mutation.bookAppointment.js')),
+      code: Code.fromAsset(path.join(__dirname, '/graphql/Mutation.createBooking.js')),
       runtime: FunctionRuntime.JS_1_0_0,
     });
     const sqsSendEMailFunction = new AppsyncFunction(this, 'SqsSendEmailFunction', {
@@ -236,20 +236,20 @@ export class ApiStack extends Stack {
       pipelineConfig: [getAppointmentsFunction],
       code: passthrough,
     });
-    const getCustomerAppointmentsResolver = new Resolver(this, 'getCustomerAppointmentsResolver', {
+    const getBookingsResolver = new Resolver(this, 'getBookingsResolver', {
       api: api,
       typeName: 'Query',
-      fieldName: 'getCustomerAppointments',
+      fieldName: 'getBookings',
       runtime: FunctionRuntime.JS_1_0_0,
-      pipelineConfig: [getCustomerAppointmentsFunction],
+      pipelineConfig: [getBookingsFunction],
       code: passthrough,
     });
-    const bookAppopintmentResolver = new Resolver(this, 'bookAppointmentResolver', {
+    const createBookingResolver = new Resolver(this, 'createBookingResolver', {
       api: api,
       typeName: 'Mutation',
-      fieldName: 'bookAppointment',
+      fieldName: 'createBooking',
       runtime: FunctionRuntime.JS_1_0_0,
-      pipelineConfig: [bookAppointmentFunction, sqsSendEMailFunction],
+      pipelineConfig: [createBookingFunction, sqsSendEMailFunction],
       code: passthrough,
     });
 

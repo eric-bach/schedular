@@ -10,7 +10,8 @@
   - [x] Generate new seed data
   - [x] Update GraphQL schema
   - [x] Update DynamoDB GSIs
-  - [] Update JS Resolvers
+  - [x] Update JS Resolvers
+  - [x] Update example Queries/Mutations
   - [] Update React API calls
   - [] Update React component views
 - [] Add more resolver tests
@@ -37,97 +38,93 @@
 - [] As a massage therapist I want to be able to see and manage a users bookings
 
 ```
-mutation BookAppointment {
-  bookAppointment(bookingInput: {customer: {id: "123", email: "test@test.com", name: "Eric", phone: "123"}, pk: "123", sk: "123"})
+query GetAvailableAppointments {
+  getAvailableAppointments(date: "2023-04-20")
   {
-    pk
-    sk
-    status
-    appointmentDetails {
+    items {
+      pk
+      sk
+      status
+      type
+      category
       date
-      startTime
-      endTime
       duration
-    }
-    confirmationId
-    customerId
-    customerDetails
-    {
-      name
-      email
-      phone
+      bookingId
+      customerDetails {
+        id
+        firstName
+        lastName
+        email
+        phone
+      }
     }
   }
 }
 
 query GetAppointments {
-  getAppointments(date: "2023-04-05")
+  getAppointments(date: "2023-04-20")
   {
     items {
       pk
       sk
-      type
       status
-      appointmentDateEpoch
+      type
+      category
+      date
+      duration
+      bookingId
+    }
+  }
+}
+
+query GetBookings {
+  getBookings(customerId: "79aea011-a655-447a-92d4-1d17be6d0ea4", datetime: "2023-04-16T00:00:00Z")
+  {
+    items {
+      pk
+      sk
+      status
+      type
       appointmentDetails {
-        date
-        startTime
-        endTime
+        sk
         duration
+        type
+        category
       }
       customerId
       customerDetails {
-        name
+        id
+        firstName
+        lastName
         email
         phone
       }
-      confirmationId
     }
   }
 }
 
-query GetAvailableAppointments {
-  getAvailableAppointments(date: "2023-04-05")
-  {
-    items {
-      pk
-      sk
-      type
-      status
-      appointmentDateEpoch
-      appointmentDetails {
-        date
-        startTime
-        endTime
-        duration
-      }
-      confirmationId
+mutation CreateBooking {
+  createBooking(bookingInput: {
+    pk: "appt#96823928-2bc3-4a25-8b3f-0904b3f160b7",
+    sk: "2023-04-20T20:00:00.000Z",
+    customer: {
+      id: "79aea011-a655-447a-92d4-1d17be6d0ea4",
+      name: "Eric",
+      email: "test@test.com",
+      phone: "123"
+    },
+    appointmentDetails: {
+      duration: 60,
+      type: "appt",
+      category: "massage"
     }
-  }
-}
-
-query GetCustomerAppointments {
-  getCustomerAppointments(customerId: "79aea011-a655-447a-92d4-1d17be6d0ea4", appointmentDateEpoch: 1680595200000)
+  })
   {
-    items {
+    cancellationReasons
+    keys
+    {
       pk
       sk
-      type
-      status
-      appointmentDetails {
-        date
-        startTime
-        endTime
-        duration
-      }
-      confirmationId
-      customerId
-      customerDetails
-      {
-        name
-        email
-        phone
-      }
     }
   }
 }

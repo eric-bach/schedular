@@ -4,30 +4,28 @@ export function request(ctx) {
   return {
     version: '2017-02-28',
     operation: 'Query',
-    index: 'date-gsi',
+    index: 'customerId-gsi',
     query: {
-      expression: '#date = :date',
-      expressionNames: {
-        '#date': 'date',
-      },
+      expression: 'customerId = :customerId AND sk >= :datetime',
       expressionValues: {
-        ':date': util.dynamodb.toDynamoDB(`appt#${ctx.args.date}`),
+        ':customerId': util.dynamodb.toDynamoDB(`user#${ctx.args.customerId}`),
+        ':datetime': util.dynamodb.toDynamoDB(ctx.args.datetime),
       },
     },
     filter: {
-      expression: '#status = :s',
+      expression: '#type = :type',
       expressionNames: {
-        '#status': 'status',
+        '#type': 'type',
       },
       expressionValues: {
-        ':s': util.dynamodb.toDynamoDB('available'),
+        ':type': util.dynamodb.toDynamoDB('booking'),
       },
     },
   };
 }
 
 export function response(ctx) {
-  console.log('🔔 GetAvailableAppointments Response: ', ctx);
+  console.log('🔔 GetBooking Response: ', ctx);
 
   if (ctx.error) {
     util.error(ctx.error.message, ctx.error.type, ctx.result);

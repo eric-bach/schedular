@@ -57,7 +57,8 @@ async function seedItem(tableName: string, item: any) {
 
 function generateRandomSeedData() {
   const data = [];
-  for (var d = dayjs(); d < dayjs().add(1, 'month'); d = dayjs(d).add(1, 'day')) {
+  // TODO change to month
+  for (var d = dayjs(); d < dayjs().add(1, 'week'); d = dayjs(d).add(1, 'day')) {
     // Exclude weekends
     if (dayjs(d).day() === 0 || dayjs(d).day() === 6) continue;
 
@@ -72,11 +73,12 @@ function generateRandomSeedData() {
       data.push({
         pk: `appt#${uuidv4()}`,
         sk,
+        status: 'available',
         type: 'appt',
         category: 'massage',
-        appointmentDateEpoch: new Date(sk).getTime(),
+        date: `appt#${sk.substring(0, 10)}`,
+        //appointmentDateEpoch: new Date(sk).getTime(),
         duration,
-        status: 'available',
       });
     }
   }
