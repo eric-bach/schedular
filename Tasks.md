@@ -7,7 +7,8 @@
 - [x] withAuthenticator - https://ui.docs.amplify.aws/react/guides/auth-protected
 - [x] Fix up UTC to local time translation
 - [x] Update to use new table schema
-- [] Add more resolver tests
+- [x] Add more resolver tests
+- [] Switch resolvers to TypeScript
 - [] Clean up styling
 - [] Build out a proper Appointment Confirmation email template
 - [] Verify email domain to remove spoofing warning
