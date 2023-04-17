@@ -1,6 +1,6 @@
-import { util } from '@aws-appsync/utils';
+import { Context, util } from '@aws-appsync/utils';
 
-export function request(ctx) {
+export function request(ctx: Context) {
   console.log('🔔 BookAppointment Request: ', ctx);
 
   const bookingId = util.autoId();
@@ -111,7 +111,7 @@ export function request(ctx) {
   // };
 }
 
-export function response(ctx) {
+export function response(ctx: Context) {
   console.log('🔔 BookAppointment Response: ', ctx);
 
   if (ctx.error) {
