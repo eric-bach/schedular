@@ -8,7 +8,7 @@
 - [x] Fix up UTC to local time translation
 - [x] Update to use new table schema
 - [x] Add more resolver tests
-- [] Switch resolvers to TypeScript
+- [x] Switch resolvers to TypeScript
 - [] Clean up styling
 - [] Build out a proper Appointment Confirmation email template
 - [] Verify email domain to remove spoofing warning
@@ -103,7 +103,8 @@ mutation CreateBooking {
     sk: "2023-04-20T20:00:00.000Z",
     customer: {
       id: "79aea011-a655-447a-92d4-1d17be6d0ea4",
-      name: "Eric",
+      firstName: "Eric",
+      lastName: "Test",
       email: "test@test.com",
       phone: "123"
     },

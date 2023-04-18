@@ -57,6 +57,7 @@ input BookingInput {
   sk: AWSDateTime!
   customer: CustomerInput!
   appointmentDetails: AppointmentInput!
+  envName: String!
 }
 type BookAppointmentResponse {
   cancellationReasons: String;

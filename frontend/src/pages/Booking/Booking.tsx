@@ -19,7 +19,7 @@ import Button from '@mui/material/Button';
 
 import aws_exports from '../../aws-exports';
 import { GET_AVAILABLE_APPOINTMENTS, CREATE_BOOKING } from '../../graphql/queries';
-import { GetAppointmentsResponse, AppointmentItem, AppointmentBookingResponse } from './AppointmentTypes';
+import { GetAppointmentsResponse, AppointmentItem, AppointmentBookingResponse, BookingInput } from './AppointmentTypes';
 import { formatLocalTimeSpanString, formatDateString } from '../../helpers/utils';
 
 import '@aws-amplify/ui-react/styles.css';
@@ -80,7 +80,7 @@ function Booking() {
       return;
     }
 
-    const input = {
+    const input: BookingInput = {
       pk: appointment.pk,
       sk: appointment.sk,
       customer: {
@@ -95,6 +95,7 @@ function Booking() {
         type: appointment.type,
         category: appointment.category,
       },
+      envName: aws_exports.env_name,
     };
 
     console.debug(input);

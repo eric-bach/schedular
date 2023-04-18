@@ -1,4 +1,4 @@
-import { Context, util } from '@aws-appsync/utils';
+import { util } from '@aws-appsync/utils';
 
 export function request(ctx) {
   return {
