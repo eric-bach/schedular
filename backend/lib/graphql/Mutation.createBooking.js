@@ -1,6 +1,6 @@
 import { Context, util } from '@aws-appsync/utils';
 
-export function request(ctx: Context) {
+export function request(ctx) {
   console.log('🔔 BookAppointment Request: ', ctx);
 
   const bookingId = util.autoId();
@@ -9,8 +9,7 @@ export function request(ctx: Context) {
     operation: 'TransactWriteItems',
     transactItems: [
       {
-        // TODO Pass the table name dynamically
-        table: 'schedular-dev-Data',
+        table: `schedular-${ctx.args.bookingInput.envName}-Data`,
         operation: 'PutItem',
         key: {
           pk: util.dynamodb.toDynamoDB(`booking#${bookingId}`),
@@ -37,8 +36,7 @@ export function request(ctx: Context) {
         },
       },
       {
-        // TODO Pass the table name dynamically
-        table: 'schedular-dev-Data',
+        table: `schedular-${ctx.args.bookingInput.envName}-Data`,
         operation: 'UpdateItem',
         key: {
           pk: util.dynamodb.toDynamoDB(ctx.args.bookingInput.pk),
@@ -111,7 +109,7 @@ export function request(ctx: Context) {
   // };
 }
 
-export function response(ctx: Context) {
+export function response(ctx) {
   console.log('🔔 BookAppointment Response: ', ctx);
 
   if (ctx.error) {

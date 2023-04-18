@@ -1,6 +1,6 @@
 import { Context, util } from '@aws-appsync/utils';
 
-export function request(ctx: Context) {
+export function request(ctx) {
   return {
     version: '2017-02-28',
     operation: 'Query',
@@ -24,7 +24,7 @@ export function request(ctx: Context) {
   };
 }
 
-export function response(ctx: Context) {
+export function response(ctx) {
   console.log('🔔 GetBooking Response: ', ctx);
 
   if (ctx.error) {
