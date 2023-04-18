@@ -27,14 +27,36 @@ export class DatabaseStack extends Stack {
     });
     // GSIs for Data Table
     dataTable.addGlobalSecondaryIndex({
+      indexName: 'date-gsi',
+      partitionKey: {
+        name: 'date',
+        type: AttributeType.STRING,
+      },
+      sortKey: {
+        name: 'sk',
+        type: AttributeType.STRING,
+      },
+    });
+    dataTable.addGlobalSecondaryIndex({
       indexName: 'customerId-gsi',
       partitionKey: {
         name: 'customerId',
         type: AttributeType.STRING,
       },
       sortKey: {
-        name: 'appointmentDateEpoch',
-        type: AttributeType.NUMBER,
+        name: 'sk',
+        type: AttributeType.STRING,
+      },
+    });
+    dataTable.addGlobalSecondaryIndex({
+      indexName: 'type-gsi',
+      partitionKey: {
+        name: 'type',
+        type: AttributeType.STRING,
+      },
+      sortKey: {
+        name: 'sk',
+        type: AttributeType.STRING,
       },
     });
 

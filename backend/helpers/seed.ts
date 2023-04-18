@@ -3,6 +3,7 @@ import { fromIni } from '@aws-sdk/credential-providers';
 import { DynamoDBClient, PutItemCommand, PutItemCommandInput } from '@aws-sdk/client-dynamodb';
 import { marshall } from '@aws-sdk/util-dynamodb';
 import { Command } from 'commander';
+import { v4 as uuidv4 } from 'uuid';
 import dayjs from 'dayjs';
 
 const appName: string = 'schedular';
@@ -56,7 +57,8 @@ async function seedItem(tableName: string, item: any) {
 
 function generateRandomSeedData() {
   const data = [];
-  for (var d = dayjs(); d < dayjs().add(1, 'month'); d = dayjs(d).add(1, 'day')) {
+  // TODO change to month
+  for (var d = dayjs(); d < dayjs().add(1, 'week'); d = dayjs(d).add(1, 'day')) {
     // Exclude weekends
     if (dayjs(d).day() === 0 || dayjs(d).day() === 6) continue;
 
@@ -69,12 +71,14 @@ function generateRandomSeedData() {
       let sk = dayjs(d).set('hour', h).set('minute', 0).set('second', 0).set('millisecond', 0).toISOString();
 
       data.push({
-        pk: 'appt',
+        pk: `appt#${uuidv4()}`,
         sk,
-        appointmentDateEpoch: new Date(sk).getTime(),
-        duration,
         status: 'available',
-        type: 'massage',
+        type: 'appt',
+        category: 'massage',
+        date: `appt#${sk.substring(0, 10)}`,
+        //appointmentDateEpoch: new Date(sk).getTime(),
+        duration,
       });
     }
   }

@@ -4,11 +4,11 @@ import { readFile } from 'fs/promises';
 const appsync = new AppSyncClient({ region: 'us-east-1' });
 const file = './lib/graphql/Query.getAppointments.js';
 
-test('validate an update request', async () => {
+test('validate a getAppointment request', async () => {
   // Arrange
   const context = {
     arguments: {
-      date: '2023-04-06',
+      date: new Date().toISOString().substring(0, 10),
     },
   };
   const input: EvaluateCodeCommandInput = {
@@ -29,9 +29,8 @@ test('validate an update request', async () => {
 
   const result = JSON.parse(response.evaluationResult ?? '{}');
   expect(result.operation).toEqual('Query');
-  expect(result.query.expression).toEqual('pk = :pk AND begins_with(sk, :sk)');
+  expect(result.query.expression).toEqual('#date = :date');
 
   const expressionValues = unmarshall(result.query.expressionValues);
-  expect(expressionValues[':pk']).toEqual('appt');
-  expect(expressionValues[':sk']).toEqual(context.arguments.date);
+  expect(expressionValues[':date']).toEqual(`appt#${context.arguments.date}`);
 });

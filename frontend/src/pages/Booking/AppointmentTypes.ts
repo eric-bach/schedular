@@ -3,10 +3,12 @@ import { Base } from '../../types/BaseTypes';
 export type AppointmentItem = {
   pk: string;
   sk: string;
-  duration: number;
   status: string;
   type: string;
-  confirmationId: string;
+  category: string;
+  date: string;
+  duration: number;
+  bookingId: string;
 };
 
 export type GetAppointmentsResponse = {
@@ -17,17 +19,8 @@ export type GetAppointmentsResponse = {
 };
 
 export type AppointmentBookingResponse = {
-  bookAppointment: {
-    pk: string;
-    sk: string;
-    confirmationId: string;
-    status: string;
-    duration: number;
-    customerId: string;
-    customerDetails: {
-      name: string;
-      email: string;
-      phone: string;
-    };
+  createBooking: {
+    cancellationReasons: string;
+    keys: [Base];
   };
 };

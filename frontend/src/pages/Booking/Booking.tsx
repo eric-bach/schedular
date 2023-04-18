@@ -18,11 +18,12 @@ import Typography from '@mui/material/Typography';
 import Button from '@mui/material/Button';
 
 import aws_exports from '../../aws-exports';
-import { GET_AVAILABLE_APPOINTMENTS, BOOK_APPOINTMENT } from '../../graphql/queries';
+import { GET_AVAILABLE_APPOINTMENTS, CREATE_BOOKING } from '../../graphql/queries';
 import { GetAppointmentsResponse, AppointmentItem, AppointmentBookingResponse } from './AppointmentTypes';
 import { formatLocalTimeSpanString, formatDateString } from '../../helpers/utils';
 
 import '@aws-amplify/ui-react/styles.css';
+import { Base } from '../../types/BaseTypes';
 
 Amplify.configure(aws_exports);
 
@@ -80,21 +81,31 @@ function Booking() {
     }
 
     const input = {
-      pk: 'appt',
+      pk: appointment.pk,
       sk: appointment.sk,
       customer: {
         id: user.attributes?.sub,
-        name: user.attributes?.given_name,
+        firstName: user.attributes?.given_name,
+        lastName: user.attributes?.family_name,
         email: user.attributes?.email,
         phone: user.attributes?.phone_number,
       },
+      appointmentDetails: {
+        duration: appointment.duration,
+        type: appointment.type,
+        category: appointment.category,
+      },
     };
 
-    const result = await API.graphql<GraphQLQuery<AppointmentBookingResponse>>(graphqlOperation(BOOK_APPOINTMENT, { input: input }));
-    //console.debug('[BOOKING] Booking result', result.data?.bookAppointment);
+    console.debug(input);
+    const result = await API.graphql<GraphQLQuery<AppointmentBookingResponse>>(graphqlOperation(CREATE_BOOKING, { input: input }));
+    console.debug('[BOOKING] Booking result', result.data?.createBooking);
 
-    if (result.data?.bookAppointment.confirmationId) {
-      navigate(`/confirmation/${result.data.bookAppointment.confirmationId}`, {
+    if (result.data?.createBooking.keys) {
+      const bookingPkString = result.data.createBooking.keys.find((keys: Base) => keys.pk.startsWith('booking#'));
+      const bookingPk = bookingPkString?.pk.slice(8);
+      console.log('BOOOKING PK ', bookingPk);
+      navigate(`/confirmation/${bookingPk}`, {
         state: { customer: user.attributes, appointment: appointment },
       });
     } else {

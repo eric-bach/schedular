@@ -39,7 +39,7 @@ function Schedule() {
       })
     );
     setAppointments(appointments.data?.getAppointments?.items);
-    setDateHeading(`${formatLongDateString(date)}`);
+    setDateHeading(`${formatLongDateString(dayjs(d))}`);
 
     setLoading(false);
 
@@ -51,14 +51,15 @@ function Schedule() {
 
     let selectedDate = (d ?? dayjs()).toISOString().substring(0, 10);
     await getAppointments(selectedDate);
-    //console.debug('[SCHEDULE] Appointments', appointments);
+
+    //console.debug('[SCHEDULE] Found appointments', appointments);
   }
 
   useEffect(() => {
     if (authStatus === 'authenticated') {
       const d = dayjs().toISOString().substring(0, 10);
       getAppointments(d).then((resp) => {
-        //console.debug('[SCHEDULE] Found appointments', resp);
+        //console.debug('[SCHEDULE] Loaded initial appointments', resp);
       });
     } else {
       // TODO Return error
@@ -112,12 +113,12 @@ function Schedule() {
                           primary={heading}
                           secondary={
                             <React.Fragment>
-                              {appt?.customerDetails ? (
+                              {appt?.bookingId ? (
                                 <Stack>
                                   <Typography component='span' variant='subtitle2' color='text.primary' sx={{ display: 'inline' }}>
                                     Customer:{' '}
                                     <Typography component='span' variant='body2'>
-                                      {appt?.customerDetails.name}
+                                      {appt?.customerDetails.firstName}
                                     </Typography>
                                   </Typography>
                                   <Typography component='span' variant='subtitle2' color='text.primary' sx={{ display: 'inline' }}>
