@@ -20,7 +20,7 @@ import Button from '@mui/material/Button';
 import aws_exports from '../../aws-exports';
 import { GET_AVAILABLE_APPOINTMENTS, CREATE_BOOKING } from '../../graphql/queries';
 import { GetAppointmentsResponse, AppointmentItem, AppointmentBookingResponse, BookingInput } from './AppointmentTypes';
-import { formatLocalTimeSpanString, formatDateString } from '../../helpers/utils';
+import { formatLocalTimeSpanString, formatDateString, formatLongDateString } from '../../helpers/utils';
 
 import '@aws-amplify/ui-react/styles.css';
 import { Base } from '../../types/BaseTypes';
@@ -38,15 +38,16 @@ function Booking() {
 
   const navigate = useNavigate();
 
-  const getAppointments = async (date: Dayjs | null) => {
-    //console.debug('[BOOKING] Getting apppointments for', formatDateString(date));
+  const getAppointments = async (date: Dayjs) => {
+    let from = dayjs(date).set('hour', 0).set('minute', 0).set('second', 0).set('millisecond', 0).toISOString();
+    let to = dayjs(date.add(6, 'hour')).set('hour', 0).set('minute', 0).set('second', 0).set('millisecond', 0).toISOString();
+
+    //console.debug(`[BOOKING] Getting schedule from ${from} to ${to}`);
 
     setLoading(true);
 
     const appointments = await API.graphql<GraphQLQuery<GetAppointmentsResponse>>(
-      graphqlOperation(GET_AVAILABLE_APPOINTMENTS, {
-        date: formatDateString(date),
-      })
+      graphqlOperation(GET_AVAILABLE_APPOINTMENTS, { from, to })
     );
     setAvailableAppointments(appointments.data?.getAvailableAppointments?.items);
 
@@ -56,7 +57,7 @@ function Booking() {
   };
 
   useEffect(() => {
-    getAppointments(date);
+    getAppointments(date ?? dayjs());
   }, []);
 
   async function dateSelected(date: Dayjs | null) {
@@ -65,8 +66,8 @@ function Booking() {
     setError(false);
     setDate(date);
 
-    await getAppointments(date);
-    //console.debug('[BOOKING] Available appointments', availableAppointments);
+    await getAppointments(date ?? dayjs());
+    console.debug('[BOOKING] Available appointments', availableAppointments);
   }
 
   function appointmentSelected(appointment: AppointmentItem) {
@@ -197,7 +198,7 @@ function Booking() {
                 <>
                   <Stack alignItems='flex-start'>
                     <Typography sx={{ mt: 4 }}>
-                      {formatDateString(date)} from {formatLocalTimeSpanString(appointment.sk, appointment.duration)}
+                      {formatLongDateString(date)} from {formatLocalTimeSpanString(appointment.sk, appointment.duration)}
                     </Typography>
                     <Button variant='contained' color='success' onClick={bookAppointment}>
                       Confirm Appointment

@@ -9,6 +9,7 @@
 - [x] Update to use new table schema
 - [x] Add more resolver tests
 - [x] Switch resolvers to TypeScript
+- [x] Fix UTC to local date/time
 - [] Clean up styling
 - [] Build out a proper Appointment Confirmation email template
 - [] Verify email domain to remove spoofing warning
@@ -33,7 +34,7 @@
 
 ```
 query GetAvailableAppointments {
-  getAvailableAppointments(date: "2023-04-20")
+  getAvailableAppointments(from: "2023-04-20T06:00:00Z", to: "2023-04-21T06:00:00Z")
   {
     items {
       pk
@@ -56,7 +57,7 @@ query GetAvailableAppointments {
 }
 
 query GetAppointments {
-  getAppointments(date: "2023-04-20")
+  getAppointments(from: "2023-04-20T06:00:00Z", to: "2023-04-21T06:00:00Z")
   {
     items {
       pk

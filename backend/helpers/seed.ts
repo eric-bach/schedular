@@ -57,8 +57,7 @@ async function seedItem(tableName: string, item: any) {
 
 function generateRandomSeedData() {
   const data = [];
-  // TODO change to month
-  for (var d = dayjs(); d < dayjs().add(1, 'week'); d = dayjs(d).add(1, 'day')) {
+  for (var d = dayjs(); d < dayjs().add(1, 'month'); d = dayjs(d).add(1, 'day')) {
     // Exclude weekends
     if (dayjs(d).day() === 0 || dayjs(d).day() === 6) continue;
 
@@ -77,7 +76,6 @@ function generateRandomSeedData() {
         type: 'appt',
         category: 'massage',
         date: `appt#${sk.substring(0, 10)}`,
-        //appointmentDateEpoch: new Date(sk).getTime(),
         duration,
       });
     }

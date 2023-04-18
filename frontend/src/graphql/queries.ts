@@ -1,5 +1,5 @@
-export const GET_AVAILABLE_APPOINTMENTS = `query GetAvailableAppointments($date: String!, $lastEvaluatedKey: LastEvaluatedKey) {
-  getAvailableAppointments(date: $date, lastEvaluatedKey: $lastEvaluatedKey) {
+export const GET_AVAILABLE_APPOINTMENTS = `query GetAvailableAppointments($to: String!, $from: String!, $lastEvaluatedKey: LastEvaluatedKey) {
+  getAvailableAppointments(from: $from, to: $to, lastEvaluatedKey: $lastEvaluatedKey) {
     items {
       pk
       sk
@@ -25,8 +25,8 @@ export const GET_AVAILABLE_APPOINTMENTS = `query GetAvailableAppointments($date:
   }
 }`;
 
-export const GET_APPOINTMENTS = `query GetAppointments($date: String!, $lastEvaluatedKey: LastEvaluatedKey) {
-  getAppointments(date: $date, lastEvaluatedKey: $lastEvaluatedKey) {
+export const GET_APPOINTMENTS = `query GetAppointments($from: String!, $to: String!, $lastEvaluatedKey: LastEvaluatedKey) {
+  getAppointments(from: $from, to: $to, lastEvaluatedKey: $lastEvaluatedKey) {
     items {
       pk
       sk

@@ -28,16 +28,15 @@ function Schedule() {
   const [dateHeading, setDateHeading] = React.useState<string | undefined>();
   const [date, setDate] = React.useState<Dayjs | null>(dayjs());
 
-  const getAppointments = async (d: string) => {
-    //console.debug('[SCHEDULE] Getting schedule for', date);
+  const getAppointments = async (d: Dayjs) => {
+    let from = dayjs(d).set('hour', 0).set('minute', 0).set('second', 0).set('millisecond', 0).toISOString();
+    let to = dayjs(d.add(6, 'hour')).set('hour', 0).set('minute', 0).set('second', 0).set('millisecond', 0).toISOString();
+
+    console.debug(`[SCHEDULE] Getting schedule from ${from} to ${to}`);
 
     setLoading(true);
 
-    const appointments = await API.graphql<GraphQLQuery<GetAppointmentsResponse>>(
-      graphqlOperation(GET_APPOINTMENTS, {
-        date: d,
-      })
-    );
+    const appointments = await API.graphql<GraphQLQuery<GetAppointmentsResponse>>(graphqlOperation(GET_APPOINTMENTS, { from, to }));
     setAppointments(appointments.data?.getAppointments?.items);
     setDateHeading(`${formatLongDateString(dayjs(d))}`);
 
@@ -48,16 +47,14 @@ function Schedule() {
 
   async function dateSelected(d: Dayjs | null) {
     setDate(d);
+    await getAppointments(d ?? dayjs());
 
-    let selectedDate = (d ?? dayjs()).toISOString().substring(0, 10);
-    await getAppointments(selectedDate);
-
-    //console.debug('[SCHEDULE] Found appointments', appointments);
+    console.debug('[SCHEDULE] Found appointments', appointments);
   }
 
   useEffect(() => {
     if (authStatus === 'authenticated') {
-      const d = dayjs().toISOString().substring(0, 10);
+      const d = dayjs();
       getAppointments(d).then((resp) => {
         //console.debug('[SCHEDULE] Loaded initial appointments', resp);
       });
