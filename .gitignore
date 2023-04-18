@@ -11,6 +11,9 @@ node_modules
 # production
 /build
 
+# Include AppSync JS Resolvers
+!**/graphql/*.js
+
 # CDK asset staging directory
 .cdk.staging
 cdk.out

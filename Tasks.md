@@ -111,7 +111,8 @@ mutation CreateBooking {
       duration: 60,
       type: "appt",
       category: "massage"
-    }
+    },
+    envName: "dev"
   })
   {
     cancellationReasons
