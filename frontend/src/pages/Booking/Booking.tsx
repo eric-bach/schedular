@@ -20,7 +20,7 @@ import Button from '@mui/material/Button';
 import aws_exports from '../../aws-exports';
 import { GET_AVAILABLE_APPOINTMENTS, CREATE_BOOKING } from '../../graphql/queries';
 import { GetAppointmentsResponse, AppointmentItem, AppointmentBookingResponse, BookingInput } from './AppointmentTypes';
-import { formatLocalTimeSpanString, formatDateString, formatLongDateString } from '../../helpers/utils';
+import { formatLocalTimeSpanString, formatLongDateString } from '../../helpers/utils';
 
 import '@aws-amplify/ui-react/styles.css';
 import { Base } from '../../types/BaseTypes';
@@ -40,9 +40,9 @@ function Booking() {
 
   const getAppointments = async (date: Dayjs) => {
     let from = dayjs(date).set('hour', 0).set('minute', 0).set('second', 0).set('millisecond', 0).toISOString();
-    let to = dayjs(date.add(6, 'hour')).set('hour', 0).set('minute', 0).set('second', 0).set('millisecond', 0).toISOString();
+    let to = dayjs(date.add(30, 'hour')).set('hour', 0).set('minute', 0).set('second', 0).set('millisecond', 0).toISOString();
 
-    //console.debug(`[BOOKING] Getting schedule from ${from} to ${to}`);
+    console.debug(`[BOOKING] Getting schedule from ${from} to ${to}`);
 
     setLoading(true);
 

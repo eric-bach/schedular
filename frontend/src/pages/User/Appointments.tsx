@@ -10,6 +10,7 @@ import Divider from '@mui/material/Divider';
 import ListItemText from '@mui/material/ListItemText';
 import Typography from '@mui/material/Typography';
 import Chip from '@mui/material/Chip';
+import DeleteIcon from '@mui/icons-material/Delete';
 
 import aws_exports from '../../aws-exports';
 import { GET_BOOKINGS } from '../../graphql/queries';
@@ -54,6 +55,10 @@ function Appointments() {
     }
   }, []);
 
+  const handleDelete = () => {
+    console.info('Delete.');
+  };
+
   return (
     <Container maxWidth='md' sx={{ mt: 5 }}>
       <Typography variant='h5' fontWeight='bold' align='left' color='textPrimary' gutterBottom sx={{ mt: 2 }}>
@@ -69,18 +74,29 @@ function Appointments() {
               if (!booking) return <></>;
 
               let heading = `${formateLocalLongDate(booking.sk)} at ${formatLocalTimeString(booking.sk, 0)}`;
+              let chipColor = booking.status === 'booked' ? '#1976D2' : booking.status === 'cancelled' ? '#CD5C5C' : 'white';
 
               return (
                 <React.Fragment key={booking.sk}>
                   <ListItem
                     alignItems='flex-start'
                     secondaryAction={
-                      <Chip
-                        label={booking.status}
-                        color='primary'
-                        variant={booking.status === 'booked' ? 'filled' : 'outlined'}
-                        sx={{ mb: 1 }}
-                      />
+                      <Stack direction='row' spacing={1}>
+                        <Chip
+                          label={booking.status}
+                          variant={booking.status === 'booked' ? 'filled' : 'outlined'}
+                          sx={{ mb: 1, backgroundColor: chipColor, color: 'white' }}
+                        />
+                        {booking.status === 'booked' && (
+                          <Chip
+                            label='cancel'
+                            onClick={handleDelete}
+                            onDelete={handleDelete}
+                            sx={{ backgroundColor: '#FA5F55', color: 'white', mb: 1 }}
+                            deleteIcon={<DeleteIcon />}
+                          />
+                        )}
+                      </Stack>
                     }
                   >
                     <ListItemText

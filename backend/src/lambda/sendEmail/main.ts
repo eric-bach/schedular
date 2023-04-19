@@ -38,37 +38,23 @@ exports.handler = async (event: any) => {
 //    Input:  {id=123, nestedObject={name=test}}
 //    Output: {"id":"123","nextedObject":{"name":"123"}}
 function parseUrlDecodedString(body: string): string {
-  // Split each key:value pair and remove leading and trailing parenthesis
-  const commaSplitBody = body.substring(1, body.length - 1).split(',');
+  // Turn { to {" and } to "}
+  let jsonOutput = body.replace(/{/gi, '{"').replace(/}/gi, '"}');
 
-  // Build new JSON string
-  let jsonOutput = '{';
-  commaSplitBody.forEach((s) => {
-    const equalSplitBody = s.split('=');
+  // Turn = to :
+  jsonOutput = jsonOutput.replace(/=/gi, '":"');
 
-    let i = 0;
-    equalSplitBody.forEach((t) => {
-      if (i % 2 === 0) {
-        // Key
-        jsonOutput += `"${t.trim()}":`;
-        ++i;
-      } else if (t.startsWith('{')) {
-        // Nested value (start)
-        jsonOutput += `${t.trim().replace(/[\{]/g, '{"')}":`;
-      } else if (t.endsWith('}')) {
-        // Nested value (end)
-        jsonOutput += `"${t.trim().replace(/[\}]/g, '"}')},`;
-        ++i;
-      } else {
-        // Value
-        jsonOutput += `"${t.trim()}",`;
-        ++i;
-      }
-    });
-  });
+  // Turn , to ", "
+  jsonOutput = jsonOutput.replace(/,\s/gi, '", "');
 
-  // Trim last comma and close JSON string
-  jsonOutput = jsonOutput.substring(0, jsonOutput.length - 1) + '}';
+  // Turn "[ to [ and ]" to ]
+  jsonOutput = jsonOutput.replace(/"\[/gi, '[').replace(/\]"/gi, ']');
+
+  // Turn }", "{ to }, {
+  jsonOutput = jsonOutput.replace(/}", "{/gi, '}, {');
+
+  // Turn "null" to null
+  jsonOutput = jsonOutput.replace(/"null"/gi, 'null');
 
   console.log('JSON Output ', jsonOutput);
   return jsonOutput;

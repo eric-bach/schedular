@@ -10,6 +10,8 @@
 - [x] Add more resolver tests
 - [x] Switch resolvers to TypeScript
 - [x] Fix UTC to local date/time
+- [] Fix email notifications
+  - Add function in pipeline to getAppointments to pass to email
 - [] Clean up styling
 - [] Build out a proper Appointment Confirmation email template
 - [] Verify email domain to remove spoofing warning
@@ -22,6 +24,7 @@
 - [x] As a user I want to receive a confirmation email for an appointment
 - [x] As a user I want to see my upcoming appointments
 - [] As a user I want the ability to cancel an appointment
+  - [] Send email notification on cancellation
 - [] As a user I want to receive notification email of an upcoming appointment
 - [] As a user I want to see my past appointments
 
@@ -120,6 +123,22 @@ mutation CreateBooking {
     cancellationReasons
     keys
     {
+      pk
+      sk
+    }
+  }
+}
+
+mutation CancelBooking {
+  cancelBooking(input: {
+    bookingId: "booking#4265920a-db4a-439e-a922-fd575d7c2871",
+    appointmentId: "appt#dba247d8-86f8-4a97-859c-95a292416879",
+    sk: "2023-04-20T14:00:00.000Z",
+    envName: "dev"
+  })
+  {
+    cancellationReasons
+    keys {
       pk
       sk
     }

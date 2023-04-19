@@ -30,7 +30,7 @@ function Schedule() {
 
   const getAppointments = async (d: Dayjs) => {
     let from = dayjs(d).set('hour', 0).set('minute', 0).set('second', 0).set('millisecond', 0).toISOString();
-    let to = dayjs(d.add(6, 'hour')).set('hour', 0).set('minute', 0).set('second', 0).set('millisecond', 0).toISOString();
+    let to = dayjs(d.add(30, 'hour')).set('hour', 0).set('minute', 0).set('second', 0).set('millisecond', 0).toISOString();
 
     console.debug(`[SCHEDULE] Getting schedule from ${from} to ${to}`);
 
@@ -115,19 +115,19 @@ function Schedule() {
                                   <Typography component='span' variant='subtitle2' color='text.primary' sx={{ display: 'inline' }}>
                                     Customer:{' '}
                                     <Typography component='span' variant='body2'>
-                                      {appt?.customerDetails.firstName}
+                                      {appt?.customerDetails?.firstName}
                                     </Typography>
                                   </Typography>
                                   <Typography component='span' variant='subtitle2' color='text.primary' sx={{ display: 'inline' }}>
                                     Email:{' '}
                                     <Typography component='span' variant='body2'>
-                                      {appt?.customerDetails.email}
+                                      {appt?.customerDetails?.email}
                                     </Typography>
                                   </Typography>
                                   <Typography component='span' variant='subtitle2' color='text.primary' sx={{ display: 'inline' }}>
                                     Phone:{' '}
                                     <Typography component='span' variant='body2'>
-                                      {appt?.customerDetails.phone}
+                                      {appt?.customerDetails?.phone}
                                     </Typography>
                                   </Typography>
                                 </Stack>
