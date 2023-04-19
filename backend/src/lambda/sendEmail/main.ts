@@ -6,54 +6,32 @@ exports.handler = async (event: any) => {
   const message = JSON.parse(parseUrlDecodedString(event.Records[0].body));
   console.debug(`🕧 Mesage: ${JSON.stringify(message)}`);
 
-  // Send email confirmation
-  const client = new SESClient({ region: process.env.REGION });
+  // // Send email confirmation
+  // const client = new SESClient({ region: process.env.REGION });
 
-  // const boundary = `----=_Part${Math.random().toString().substr(2)}`;
-  // const body = `This is to confirm your appointment for ${message.customer} on ${message.sk}\nConfirmation Id: ${message.confirmationId}`;
-  // const rawMessage = [
-  //   `From: ${process.env.SENDER_EMAIL}`,
-  //   `To: bach.eric@gmail.com`,
-  //   `Subject: Appointment Confirmation`,
-  //   `MIME-Version: 1.0`,
-  //   `Content-Type: multipart/alternative; boundary="${boundary}"`,
-  //   `\n`,
-  //   `--${boundary}`,
-  //   `Content-Type: text/plain; charset=UTF-8`,
-  //   `Content-Transfer-Encoding: 7bit`,
-  //   `\n`,
-  //   `${body}`,
-  // ];
-  // const input: SendRawEmailCommandInput = {
+  // const input: SendEmailCommandInput = {
   //   Source: process.env.SENDER_EMAIL,
   //   // TODO Change to user email
-  //   Destinations: ['bach.eric@gmail.com'],
-  //   RawMessage: { Data: new TextEncoder().encode(rawMessage.join('\n')) },
+  //   //Destination: { ToAddresses: [${message.customerEmail}] },
+  //   Destination: { ToAddresses: ['bach.eric@gmail.com'] },
+  //   Message: {
+  //     Subject: {
+  //       Charset: 'UTF-8',
+  //       Data: 'Appointment Confirmation',
+  //     },
+  //     Body: {
+  //       Text: {
+  //         Charset: 'UTF-8',
+  //         Data: `This is to confirm your appointment for ${message.customerName} on ${message.appointmentDetails.date} from ${message.appointmentDetails.startTime} to ${message.appointmentDetails.endTime}\nConfirmation Id: ${message.confirmationId}`,
+  //       },
+  //     },
+  //   },
   // };
 
-  const input: SendEmailCommandInput = {
-    Source: process.env.SENDER_EMAIL,
-    // TODO Change to user email
-    //Destination: { ToAddresses: [${message.customerEmail}] },
-    Destination: { ToAddresses: ['bach.eric@gmail.com'] },
-    Message: {
-      Subject: {
-        Charset: 'UTF-8',
-        Data: 'Appointment Confirmation',
-      },
-      Body: {
-        Text: {
-          Charset: 'UTF-8',
-          Data: `This is to confirm your appointment for ${message.customerName} on ${message.appointmentDetails.date} from ${message.appointmentDetails.startTime} to ${message.appointmentDetails.endTime}\nConfirmation Id: ${message.confirmationId}`,
-        },
-      },
-    },
-  };
+  // const command = new SendEmailCommand(input);
+  // const response = await client.send(command);
 
-  const command = new SendEmailCommand(input);
-  const response = await client.send(command);
-
-  console.log(`✅ Appointment Confirmation sent: {result: ${JSON.stringify(response)}}}`);
+  // console.log(`✅ Appointment Confirmation sent: {result: ${JSON.stringify(response)}}}`);
 };
 
 // Takes a SQS urlDecoded string and converts it to proper JSON

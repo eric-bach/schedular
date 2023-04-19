@@ -64,6 +64,14 @@ type BookAppointmentResponse {
   keys: [LastEvaluatedKeyViewModel]
 }
 
+# CancelBooking
+input CancelBookingInput {
+  bookingId: String!
+  appointmentId: String!
+  sk: String!
+  envName: String!
+}
+
 # GetAppointments, GetAvailableAppointments
 type CustomerDetailsViewModel {
   id: String
@@ -122,6 +130,7 @@ type Query {
 
 type Mutation {
   createBooking(bookingInput: BookingInput): BookAppointmentResponse @aws_auth(cognito_groups: ["Users", "Admins"])
+  cancelBooking(input: CancelBookingInput): BookAppointmentResponse @aws_auth(cognito_groups: ["Users", "Admins"])
 }
 
 schema {

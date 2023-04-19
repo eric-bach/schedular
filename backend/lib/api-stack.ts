@@ -169,6 +169,13 @@ export class ApiStack extends Stack {
       code: Code.fromAsset(path.join(__dirname, '/graphql/Mutation.createBooking.js')),
       runtime: FunctionRuntime.JS_1_0_0,
     });
+    const cancelBookingFunction = new AppsyncFunction(this, 'cancelBookingFunction', {
+      name: 'cancelBookingFunction',
+      api: api,
+      dataSource: dynamoDbDataSource,
+      code: Code.fromAsset(path.join(__dirname, '/graphql/Mutation.cancelBooking.js')),
+      runtime: FunctionRuntime.JS_1_0_0,
+    });
     const sqsSendEMailFunction = new AppsyncFunction(this, 'SqsSendEmailFunction', {
       name: 'sqsSendEmail',
       api: api,
@@ -250,6 +257,14 @@ export class ApiStack extends Stack {
       fieldName: 'createBooking',
       runtime: FunctionRuntime.JS_1_0_0,
       pipelineConfig: [createBookingFunction, sqsSendEMailFunction],
+      code: passthrough,
+    });
+    const cancelBookingResolver = new Resolver(this, 'cancelBookingResolver', {
+      api: api,
+      typeName: 'Mutation',
+      fieldName: 'cancelBooking',
+      runtime: FunctionRuntime.JS_1_0_0,
+      pipelineConfig: [cancelBookingFunction],
       code: passthrough,
     });
 
