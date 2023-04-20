@@ -56,10 +56,7 @@ export class ApiStack extends Stack {
       environment: {
         SENDER_EMAIL: process.env.SENDER_EMAIL || 'info@example.com',
       },
-      //retryAttempts: 1,
-      maxEventAge: Duration.minutes(1),
       timeout: Duration.seconds(10),
-      //deadLetterQueue: deadLetterQueue,
       memorySize: 256,
       role: new Role(this, 'SendEmailConsumerRole', {
         assumedBy: new ServicePrincipal('lambda.amazonaws.com'),
