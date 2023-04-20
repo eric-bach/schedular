@@ -23,7 +23,6 @@ import { GetAppointmentsResponse, AppointmentItem, AppointmentBookingResponse, B
 import { formatLocalTimeSpanString, formatLongDateString } from '../../helpers/utils';
 
 import '@aws-amplify/ui-react/styles.css';
-import { Base } from '../../types/BaseTypes';
 
 Amplify.configure(aws_exports);
 
@@ -39,9 +38,9 @@ function Booking() {
   const navigate = useNavigate();
 
   const getAppointments = async (date: Dayjs) => {
-    let from = dayjs(date).set('hour', 0).set('minute', 0).set('second', 0).set('millisecond', 0).toISOString();
+    let fromDate = dayjs(date).set('hour', 0).set('minute', 0).set('second', 0).set('millisecond', 0).valueOf();
+    let from = new Date(Math.max(new Date().getTime(), fromDate)).toISOString();
     let to = dayjs(date.add(1, 'day')).set('hour', 0).set('minute', 0).set('second', 0).set('millisecond', 0).toISOString();
-
     console.debug(`[BOOKING] Getting schedule from ${from} to ${to}`);
 
     setLoading(true);

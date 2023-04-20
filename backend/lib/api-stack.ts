@@ -23,7 +23,6 @@ import { Effect, ManagedPolicy, PolicyDocument, PolicyStatement, Role, ServicePr
 const dotenv = require('dotenv');
 import * as path from 'path';
 import { SchedularApiStackProps } from './types/SchedularStackProps';
-import { SqsDestination } from 'aws-cdk-lib/aws-lambda-destinations';
 
 dotenv.config();
 
@@ -42,10 +41,15 @@ export class ApiStack extends Stack {
     // SQS
     const emailQueue = new Queue(this, `${props.appName}-${props.envName}-emailDelivery`, {
       queueName: `${props.appName}-${props.envName}-emailDelivery`,
+      retentionPeriod: Duration.minutes(1),
+      // TODO Remove in Prod
+      deadLetterQueue: {
+        queue: new Queue(this, `${props.appName}-${props.envName}-sendEmailDeadLetter`, {
+          queueName: `${props.appName}-${props.envName}-sendEmailDeadLetter`,
+        }),
+        maxReceiveCount: 1,
+      },
     });
-    // const deadLetterQueue = new Queue(this, `${props.appName}-${props.envName}-sendEmailDeadLetter`, {
-    //   queueName: `${props.appName}-${props.envName}-sendEmailDeadLetter`,
-    // });
 
     // Lambda
     const sendEmailFunction = new NodejsFunction(this, 'SendEmailFunction', {
