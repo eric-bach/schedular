@@ -5,6 +5,7 @@ export type BookingItem = {
   sk: string;
   status: string;
   type: string;
+  appointmentId: string;
   appointmentDetails: {
     sk: string;
     duration: number;
@@ -26,4 +27,35 @@ export type GetBookingsResponse = {
     items: [BookingItem];
   };
   lastEvaluatedKey: Base;
+};
+
+export type CancelBookingInput = {
+  bookingId: string;
+  appointmentId: string;
+  sk: string;
+  envName: string;
+};
+
+export type CancelBookingResponse = {
+  cancelBooking: {
+    pk: string;
+    sk: string;
+    status: string;
+    type: string;
+    appointmentId: string;
+    appointmentDetails: {
+      sk: string;
+      duration: number;
+      type: string;
+      category: string;
+    };
+    customerDetails: {
+      id: string | undefined;
+      firstName: string | undefined;
+      lastName: string | undefined;
+      email: string | undefined;
+      phone: string | undefined;
+    };
+    bookingId: string;
+  };
 };

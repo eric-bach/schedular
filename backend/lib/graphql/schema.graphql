@@ -62,12 +62,12 @@ input BookingInput {
 type BookAppointmentResponse {
   pk: String!
   sk: AWSDateTime!
-  status: String!
   type: String!
-  category: String!
-  date: String!
-  duration: Int!
+  status: String!
   bookingId: String
+  appointmentId: String
+  appointmentDetails: AppointmentDetailsViewModel!
+  customerId: String
   customerDetails: CustomerDetailsViewModel @aws_auth(cognito_groups: ["Admins"])
   createdAt: AWSDateTime
   updatedAt: AWSDateTime
@@ -122,6 +122,20 @@ type GetAppointmentResponse {
   updatedAt: AWSDateTime
 }
 
+# GetBooking
+type GetBookingResponse {
+  pk: String!
+  sk: AWSDateTime!
+  status: String!
+  type: String!
+  appointmentId: String!
+  appointmentDetails: AppointmentDetailsViewModel!
+  customerId: String!
+  customerDetails: CustomerDetailsViewModel!
+  createdAt: AWSDateTime
+  updatedAt: AWSDateTime
+}
+
 # GetBookings
 type AppointmentDetailsViewModel {
   sk: AWSDateTime!
@@ -134,6 +148,7 @@ type BookingsViewModel {
   sk: AWSDateTime!
   status: String!
   type: String!
+  appointmentId: String!
   appointmentDetails: AppointmentDetailsViewModel!
   customerId: String!
   customerDetails: CustomerDetailsViewModel!
@@ -152,6 +167,7 @@ type Query {
   getAppointment(pk: String!, sk: String!): GetAppointmentResponse @aws_auth(cognito_groups: ["Users", "Admins"])
   getAppointments(from: String!, to: String!, lastEvaluatedKey: LastEvaluatedKey): GetAppointmentsResponse
     @aws_auth(cognito_groups: ["Admins"])
+  getBooking(pk: String!, sk: String!): GetBookingResponse @aws_auth(cognito_groups: ["Users", "Admins"])
   getBookings(customerId: String!, datetime: String!, lastEvaluatedKey: LastEvaluatedKey): GetBookingsResponse
     @aws_auth(cognito_groups: ["Users", "Admins"])
 }

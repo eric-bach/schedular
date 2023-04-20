@@ -13,8 +13,8 @@ import Chip from '@mui/material/Chip';
 import DeleteIcon from '@mui/icons-material/Delete';
 
 import aws_exports from '../../aws-exports';
-import { GET_BOOKINGS } from '../../graphql/queries';
-import { GetBookingsResponse, BookingItem } from './CustomerTypes';
+import { CANCEL_BOOKING, GET_BOOKINGS } from '../../graphql/queries';
+import { GetBookingsResponse, BookingItem, CancelBookingInput, CancelBookingResponse } from './CustomerTypes';
 
 import '@aws-amplify/ui-react/styles.css';
 import { formateLocalLongDate, formatLocalTimeString } from '../../helpers/utils';
@@ -49,15 +49,26 @@ function Appointments() {
   useEffect(() => {
     if (authStatus === 'authenticated' && user.attributes) {
       getCustomerAppointments(user.attributes.sub).then((resp) => {
-        console.debug('[APPOINTMENTS] Found appointments', resp);
+        console.debug('[APPOINTMENTS] Found bookings', resp);
       });
     } else {
       // TODO Return error
     }
   }, []);
 
-  const handleDelete = () => {
-    console.info('Delete.');
+  const cancelAppointment = async (booking: BookingItem) => {
+    console.info('Cancel Appointment', booking);
+
+    const input: CancelBookingInput = {
+      bookingId: booking.pk,
+      appointmentId: booking.appointmentId,
+      sk: booking.sk,
+      envName: 'dev',
+    };
+    console.log('Input: ', input);
+    const result = await API.graphql<GraphQLQuery<CancelBookingResponse>>(graphqlOperation(CANCEL_BOOKING, { input: input }));
+    console.log('Result: ', result);
+    // TODO Refresh results
   };
 
   return (
@@ -91,8 +102,8 @@ function Appointments() {
                         {booking.status === 'booked' && (
                           <Chip
                             label='cancel'
-                            onClick={handleDelete}
-                            onDelete={handleDelete}
+                            onClick={() => cancelAppointment(booking)}
+                            onDelete={() => cancelAppointment(booking)}
                             sx={{ backgroundColor: '#FA5F55', color: 'white', mb: 1 }}
                             deleteIcon={<DeleteIcon />}
                           />
