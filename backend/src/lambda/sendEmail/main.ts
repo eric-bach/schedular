@@ -4,6 +4,7 @@ exports.handler = async (event: any) => {
   console.debug(`🕧 Received event: ${JSON.stringify(event)}`);
 
   const message = JSON.parse(parseUrlDecodedString(event.Records[0].body));
+  //const message = JSON.parse(event.Records[0].body);
   console.debug(`🕧 Mesage: ${JSON.stringify(message)}`);
 
   // Send email confirmation

@@ -10,8 +10,11 @@
 - [x] Add more resolver tests
 - [x] Switch resolvers to TypeScript
 - [x] Fix UTC to local date/time
-- [] Fix email notifications
-  - Add function in pipeline to getAppointments to pass to email
+- [x] Fix email notifications
+  - [] Read up on how event source mapping failures work on Lambda - destinations vs DLQ
+  - [? ] Add a DLQ to Lambda
+  - [ ] Test the failure
+  - [ ] Update cancelBooking to follow the same pipeline as createBooking to send email
 - [] Clean up styling
 - [] Build out a proper Appointment Confirmation email template
 - [] Verify email domain to remove spoofing warning
@@ -23,6 +26,7 @@
 - [x] As a user I want a confirmation of a booked appointment
 - [x] As a user I want to receive a confirmation email for an appointment
 - [x] As a user I want to see my upcoming appointments
+- [] Bug: Fix issue with Bookings showing available appointments that have past
 - [] As a user I want the ability to cancel an appointment
   - [] Send email notification on cancellation
 - [] As a user I want to receive notification email of an upcoming appointment

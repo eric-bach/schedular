@@ -23,6 +23,7 @@ import { Effect, ManagedPolicy, PolicyDocument, PolicyStatement, Role, ServicePr
 const dotenv = require('dotenv');
 import * as path from 'path';
 import { SchedularApiStackProps } from './types/SchedularStackProps';
+import { SqsDestination } from 'aws-cdk-lib/aws-lambda-destinations';
 
 dotenv.config();
 
@@ -42,6 +43,9 @@ export class ApiStack extends Stack {
     const emailQueue = new Queue(this, `${props.appName}-${props.envName}-emailDelivery`, {
       queueName: `${props.appName}-${props.envName}-emailDelivery`,
     });
+    const deadLetterQueue = new Queue(this, `${props.appName}-${props.envName}-sendEmailDeadLetter`, {
+      queueName: `${props.appName}-${props.envName}-sendEmailDeadLetter`,
+    });
 
     // Lambda
     const sendEmailFunction = new NodejsFunction(this, 'SendEmailFunction', {
@@ -52,7 +56,10 @@ export class ApiStack extends Stack {
       environment: {
         SENDER_EMAIL: process.env.SENDER_EMAIL || 'info@example.com',
       },
+      //retryAttempts: 1,
+      maxEventAge: Duration.minutes(15),
       timeout: Duration.seconds(10),
+      //deadLetterQueue: deadLetterQueue,
       memorySize: 256,
       role: new Role(this, 'SendEmailConsumerRole', {
         assumedBy: new ServicePrincipal('lambda.amazonaws.com'),
