@@ -43,9 +43,9 @@ export class ApiStack extends Stack {
     const emailQueue = new Queue(this, `${props.appName}-${props.envName}-emailDelivery`, {
       queueName: `${props.appName}-${props.envName}-emailDelivery`,
     });
-    const deadLetterQueue = new Queue(this, `${props.appName}-${props.envName}-sendEmailDeadLetter`, {
-      queueName: `${props.appName}-${props.envName}-sendEmailDeadLetter`,
-    });
+    // const deadLetterQueue = new Queue(this, `${props.appName}-${props.envName}-sendEmailDeadLetter`, {
+    //   queueName: `${props.appName}-${props.envName}-sendEmailDeadLetter`,
+    // });
 
     // Lambda
     const sendEmailFunction = new NodejsFunction(this, 'SendEmailFunction', {
@@ -57,7 +57,7 @@ export class ApiStack extends Stack {
         SENDER_EMAIL: process.env.SENDER_EMAIL || 'info@example.com',
       },
       //retryAttempts: 1,
-      maxEventAge: Duration.minutes(15),
+      maxEventAge: Duration.minutes(1),
       timeout: Duration.seconds(10),
       //deadLetterQueue: deadLetterQueue,
       memorySize: 256,
