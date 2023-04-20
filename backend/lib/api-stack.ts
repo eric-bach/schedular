@@ -192,7 +192,7 @@ export class ApiStack extends Stack {
         import { util } from '@aws-appsync/utils';
 
         export function request(ctx) {
-          console.log('🔔 REQUEST: ', ctx);
+          console.log('🔔 SqsSendEmailFunction Request:', ctx);
 
           const message = util.urlEncode(ctx.prev.result);
           return {
@@ -209,7 +209,7 @@ export class ApiStack extends Stack {
         }
 
         export function response(ctx) {
-          console.log('🔔 RESPONSE: ', ctx);
+          console.log('🔔 SqsSendEmailFunction Response:', ctx);
 
           if (ctx.error) {
             util.error(ctx.error.message, ctx.error.type, ctx.result);

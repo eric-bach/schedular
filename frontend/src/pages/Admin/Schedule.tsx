@@ -30,7 +30,7 @@ function Schedule() {
 
   const getAppointments = async (d: Dayjs) => {
     let from = dayjs(d).set('hour', 0).set('minute', 0).set('second', 0).set('millisecond', 0).toISOString();
-    let to = dayjs(d.add(30, 'hour')).set('hour', 0).set('minute', 0).set('second', 0).set('millisecond', 0).toISOString();
+    let to = dayjs(d.add(1, 'day')).set('hour', 0).set('minute', 0).set('second', 0).set('millisecond', 0).toISOString();
 
     console.debug(`[SCHEDULE] Getting schedule from ${from} to ${to}`);
 

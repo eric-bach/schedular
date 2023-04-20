@@ -11,9 +11,7 @@ exports.handler = async (event: any) => {
 
   const input: SendEmailCommandInput = {
     Source: process.env.SENDER_EMAIL,
-    // TODO Change to user email
-    //Destination: { ToAddresses: [${message.customerDetails.email}] },
-    Destination: { ToAddresses: ['bach.eric@gmail.com'] },
+    Destination: { ToAddresses: [message.customerDetails.email] },
     Message: {
       Subject: {
         Charset: 'UTF-8',
@@ -22,17 +20,18 @@ exports.handler = async (event: any) => {
       Body: {
         Text: {
           Charset: 'UTF-8',
-          Data: `This is to confirm your appointment for ${message.customerDetails.firstName} on ${formateLocalLongDate(message.sk)} from ${
-            message.appointmentDetails.startTime
-          } to ${formatLocalTimeSpanString(message.sk, message.duration)}\nConfirmation Id: ${message.bookingId}`,
+          Data: `This is to confirm your appointment for ${message.customerDetails.firstName} ${
+            message.customerDetails.lastName
+          } on ${formateLocalLongDate(message.sk)} from ${formatLocalTimeSpanString(message.sk, message.duration)}\nConfirmation Id: ${
+            message.bookingId
+          }`,
         },
       },
     },
   };
 
   const command = new SendEmailCommand(input);
-  //const response = await client.send(command);
-
+  const response = await client.send(command);
   console.log(`✅ Appointment Confirmation sent: {result: ${JSON.stringify(response)}}}`);
 };
 

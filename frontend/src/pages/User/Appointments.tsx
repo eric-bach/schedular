@@ -30,6 +30,7 @@ function Appointments() {
 
   const getCustomerAppointments = async (customerId: string) => {
     //console.debug('[APPOINTMENTS] Getting appointments for', customerId);
+    console.debug('[APPOINTMENTS] Getting appointments for', new Date().toISOString());
 
     setLoading(true);
     const result = await API.graphql<GraphQLQuery<GetBookingsResponse>>(

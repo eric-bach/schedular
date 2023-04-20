@@ -40,7 +40,7 @@ function Booking() {
 
   const getAppointments = async (date: Dayjs) => {
     let from = dayjs(date).set('hour', 0).set('minute', 0).set('second', 0).set('millisecond', 0).toISOString();
-    let to = dayjs(date.add(30, 'hour')).set('hour', 0).set('minute', 0).set('second', 0).set('millisecond', 0).toISOString();
+    let to = dayjs(date.add(1, 'day')).set('hour', 0).set('minute', 0).set('second', 0).set('millisecond', 0).toISOString();
 
     console.debug(`[BOOKING] Getting schedule from ${from} to ${to}`);
 
@@ -100,21 +100,19 @@ function Booking() {
     };
 
     console.debug(input);
-    const result = await API.graphql(graphqlOperation(CREATE_BOOKING, { input: input }));
-    console.log(result);
-    //const result = await API.graphql<GraphQLQuery<AppointmentBookingResponse>>(graphqlOperation(CREATE_BOOKING, { input: input }));
-    // console.debug('[BOOKING] Booking result', result.data?.createBooking);
+    const result = await API.graphql<GraphQLQuery<AppointmentBookingResponse>>(graphqlOperation(CREATE_BOOKING, { input: input }));
+    console.debug('[BOOKING] Booking result', result.data?.createBooking);
 
-    // if (result.data?.createBooking.bookingId) {
-    //   const bookingPk = result.data.createBooking.pk.slice(8);
-    //   console.log('BOOOKING PK ', bookingPk);
-    //   navigate(`/confirmation/${bookingPk}`, {
-    //     state: { customer: user.attributes, appointment: appointment },
-    //   });
-    // } else {
-    //   await dateSelected(date);
-    //   setError(true);
-    // }
+    if (result.data?.createBooking.bookingId) {
+      const bookingPk = result.data.createBooking.pk.slice(8);
+      console.log('BOOOKING PK ', bookingPk);
+      navigate(`/confirmation/${bookingPk}`, {
+        state: { customer: user.attributes, appointment: appointment },
+      });
+    } else {
+      await dateSelected(date);
+      setError(true);
+    }
   }
 
   function dismissError() {
