@@ -6,32 +6,34 @@ exports.handler = async (event: any) => {
   const message = JSON.parse(parseUrlDecodedString(event.Records[0].body));
   console.debug(`🕧 Mesage: ${JSON.stringify(message)}`);
 
-  // // Send email confirmation
-  // const client = new SESClient({ region: process.env.REGION });
+  // Send email confirmation
+  const client = new SESClient({ region: process.env.REGION });
 
-  // const input: SendEmailCommandInput = {
-  //   Source: process.env.SENDER_EMAIL,
-  //   // TODO Change to user email
-  //   //Destination: { ToAddresses: [${message.customerEmail}] },
-  //   Destination: { ToAddresses: ['bach.eric@gmail.com'] },
-  //   Message: {
-  //     Subject: {
-  //       Charset: 'UTF-8',
-  //       Data: 'Appointment Confirmation',
-  //     },
-  //     Body: {
-  //       Text: {
-  //         Charset: 'UTF-8',
-  //         Data: `This is to confirm your appointment for ${message.customerName} on ${message.appointmentDetails.date} from ${message.appointmentDetails.startTime} to ${message.appointmentDetails.endTime}\nConfirmation Id: ${message.confirmationId}`,
-  //       },
-  //     },
-  //   },
-  // };
+  const input: SendEmailCommandInput = {
+    Source: process.env.SENDER_EMAIL,
+    // TODO Change to user email
+    //Destination: { ToAddresses: [${message.customerDetails.email}] },
+    Destination: { ToAddresses: ['bach.eric@gmail.com'] },
+    Message: {
+      Subject: {
+        Charset: 'UTF-8',
+        Data: 'Appointment Confirmation',
+      },
+      Body: {
+        Text: {
+          Charset: 'UTF-8',
+          Data: `This is to confirm your appointment for ${message.customerDetails.firstName} on ${formateLocalLongDate(message.sk)} from ${
+            message.appointmentDetails.startTime
+          } to ${formatLocalTimeSpanString(message.sk, message.duration)}\nConfirmation Id: ${message.bookingId}`,
+        },
+      },
+    },
+  };
 
-  // const command = new SendEmailCommand(input);
-  // const response = await client.send(command);
+  const command = new SendEmailCommand(input);
+  //const response = await client.send(command);
 
-  // console.log(`✅ Appointment Confirmation sent: {result: ${JSON.stringify(response)}}}`);
+  console.log(`✅ Appointment Confirmation sent: {result: ${JSON.stringify(response)}}}`);
 };
 
 // Takes a SQS urlDecoded string and converts it to proper JSON
@@ -56,6 +58,42 @@ function parseUrlDecodedString(body: string): string {
   // Turn "null" to null
   jsonOutput = jsonOutput.replace(/"null"/gi, 'null');
 
+  // Turn "{ to { and }" to }
+  jsonOutput = jsonOutput.replace(/""{/gi, '{').replace(/}""/gi, '}').replace(/"{/gi, '{').replace(/}"/gi, '}');
+
   console.log('JSON Output ', jsonOutput);
   return jsonOutput;
+}
+
+// Returns the local time part in a span (to - from) of an ISO8601 datetime string
+//  Input: 2023-04-06T14:00:00Z, 60
+//  Output: 8:00 AM - 9:00 AM
+function formatLocalTimeSpanString(dateString: string, duration: number) {
+  return `${formatLocalTimeString(dateString, 0)} - ${formatLocalTimeString(dateString, duration)}`;
+}
+
+// Returns the local time part (including offset) of an ISO8601 datetime string
+//  Input: 2023-04-06T14:00:00Z, 0
+//  Output: 8:00 AM
+function formatLocalTimeString(dateString: string, offsetMinutes: number) {
+  const date = new Date(new Date(dateString).getTime() + offsetMinutes * 60000);
+  return date.toLocaleTimeString('en-US', {
+    timeZone: 'America/Edmonton',
+    hour12: true,
+    hour: 'numeric',
+    minute: 'numeric',
+  });
+}
+
+// Returns the local long date string from an ISO8601 datetime string
+//  Input: 2023-04-06T14:00:00Z
+//  Output: Thursday, April 6, 2023
+function formateLocalLongDate(dateString: string) {
+  return new Date(dateString).toLocaleDateString('en-US', {
+    timeZone: 'America/Edmonton',
+    weekday: 'long',
+    year: 'numeric',
+    month: 'long',
+    day: 'numeric',
+  });
 }

@@ -148,6 +148,13 @@ export class ApiStack extends Stack {
       code: Code.fromAsset(path.join(__dirname, '/graphql/Query.getAvailableAppointments.js')),
       runtime: FunctionRuntime.JS_1_0_0,
     });
+    const getAppointmentFunc = new AppsyncFunction(this, 'getAppointmentFunction', {
+      name: 'getAppointmentFunction',
+      api: api,
+      dataSource: dynamoDbDataSource,
+      code: Code.fromAsset(path.join(__dirname, '/graphql/Query.getAppointment.js')),
+      runtime: FunctionRuntime.JS_1_0_0,
+    });
     const getAppointmentsFunction = new AppsyncFunction(this, 'getAppointmentsFunction', {
       name: 'getAppointmentsFunction',
       api: api,
@@ -235,6 +242,14 @@ export class ApiStack extends Stack {
       pipelineConfig: [getAvailableAppointmentsFunc],
       code: passthrough,
     });
+    const getAppointmentResolver = new Resolver(this, 'getAppointmentResolver', {
+      api: api,
+      typeName: 'Query',
+      fieldName: 'getAppointment',
+      runtime: FunctionRuntime.JS_1_0_0,
+      pipelineConfig: [getAppointmentFunc],
+      code: passthrough,
+    });
     const getAppointmentsResolver = new Resolver(this, 'getAppointmentsResolver', {
       api: api,
       typeName: 'Query',
@@ -256,7 +271,7 @@ export class ApiStack extends Stack {
       typeName: 'Mutation',
       fieldName: 'createBooking',
       runtime: FunctionRuntime.JS_1_0_0,
-      pipelineConfig: [createBookingFunction, sqsSendEMailFunction],
+      pipelineConfig: [createBookingFunction, getAppointmentFunc, sqsSendEMailFunction],
       code: passthrough,
     });
     const cancelBookingResolver = new Resolver(this, 'cancelBookingResolver', {

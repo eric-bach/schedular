@@ -84,11 +84,20 @@ export const GET_BOOKINGS = `query GetBookings($customerId: String!, $datetime: 
 
 export const CREATE_BOOKING = `mutation CreateBooking($input: BookingInput!) {
   createBooking(bookingInput: $input) {
-    cancellationReasons
-    keys
-    {
-      pk
-      sk
+    pk
+    sk
+    status
+    type
+    category
+    date
+    duration
+    bookingId
+    customerDetails {
+      id
+      firstName
+      lastName
+      email
+      phone
     }
   }
 }`;

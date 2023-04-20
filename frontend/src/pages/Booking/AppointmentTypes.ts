@@ -20,8 +20,21 @@ export type GetAppointmentsResponse = {
 
 export type AppointmentBookingResponse = {
   createBooking: {
-    cancellationReasons: string;
-    keys: [Base];
+    pk: string;
+    sk: string;
+    status: string;
+    type: string;
+    category: string;
+    date: string;
+    duration: number;
+    customerDetails: {
+      id: string | undefined;
+      firstName: string | undefined;
+      lastName: string | undefined;
+      email: string | undefined;
+      phone: string | undefined;
+    };
+    bookingId: string;
   };
 };
 

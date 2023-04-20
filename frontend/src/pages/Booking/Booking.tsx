@@ -100,20 +100,21 @@ function Booking() {
     };
 
     console.debug(input);
-    const result = await API.graphql<GraphQLQuery<AppointmentBookingResponse>>(graphqlOperation(CREATE_BOOKING, { input: input }));
-    console.debug('[BOOKING] Booking result', result.data?.createBooking);
+    const result = await API.graphql(graphqlOperation(CREATE_BOOKING, { input: input }));
+    console.log(result);
+    //const result = await API.graphql<GraphQLQuery<AppointmentBookingResponse>>(graphqlOperation(CREATE_BOOKING, { input: input }));
+    // console.debug('[BOOKING] Booking result', result.data?.createBooking);
 
-    if (result.data?.createBooking.keys) {
-      const bookingPkString = result.data.createBooking.keys.find((keys: Base) => keys.pk.startsWith('booking#'));
-      const bookingPk = bookingPkString?.pk.slice(8);
-      console.log('BOOOKING PK ', bookingPk);
-      navigate(`/confirmation/${bookingPk}`, {
-        state: { customer: user.attributes, appointment: appointment },
-      });
-    } else {
-      await dateSelected(date);
-      setError(true);
-    }
+    // if (result.data?.createBooking.bookingId) {
+    //   const bookingPk = result.data.createBooking.pk.slice(8);
+    //   console.log('BOOOKING PK ', bookingPk);
+    //   navigate(`/confirmation/${bookingPk}`, {
+    //     state: { customer: user.attributes, appointment: appointment },
+    //   });
+    // } else {
+    //   await dateSelected(date);
+    //   setError(true);
+    // }
   }
 
   function dismissError() {

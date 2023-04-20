@@ -60,8 +60,17 @@ input BookingInput {
   envName: String!
 }
 type BookAppointmentResponse {
-  cancellationReasons: String;
-  keys: [LastEvaluatedKeyViewModel]
+  pk: String!
+  sk: AWSDateTime!
+  status: String!
+  type: String!
+  category: String!
+  date: String!
+  duration: Int!
+  bookingId: String
+  customerDetails: CustomerDetailsViewModel @aws_auth(cognito_groups: ["Admins"])
+  createdAt: AWSDateTime
+  updatedAt: AWSDateTime
 }
 
 # CancelBooking
@@ -89,13 +98,28 @@ type AppointmentViewModel {
   date: String!
   duration: Int!
   bookingId: String
-  customerDetails: CustomerDetailsViewModel @aws_auth(cognito_groups: ["Users", "Admins"])
+  customerDetails: CustomerDetailsViewModel @aws_auth(cognito_groups: ["Admins"])
   createdAt: AWSDateTime
   updatedAt: AWSDateTime
 }
 type GetAppointmentsResponse {
   items: [AppointmentViewModel]
   lastEvaluatedKey: LastEvaluatedKeyViewModel
+}
+
+# GetAppointment
+type GetAppointmentResponse {
+  pk: String!
+  sk: AWSDateTime!
+  status: String!
+  type: String!
+  category: String!
+  date: String!
+  duration: Int!
+  bookingId: String
+  customerDetails: CustomerDetailsViewModel @aws_auth(cognito_groups: ["Admins"])
+  createdAt: AWSDateTime
+  updatedAt: AWSDateTime
 }
 
 # GetBookings
@@ -123,9 +147,13 @@ type GetBookingsResponse {
 
 # GraphQL actions
 type Query {
-  getAvailableAppointments(from: String!, to: String!, lastEvaluatedKey: LastEvaluatedKey): GetAppointmentsResponse @aws_auth(cognito_groups: ["Users", "Admins"])
-  getAppointments(from: String!, to: String!, lastEvaluatedKey: LastEvaluatedKey): GetAppointmentsResponse @aws_auth(cognito_groups: ["Admins"])
-  getBookings(customerId: String!, datetime: String!, lastEvaluatedKey: LastEvaluatedKey): GetBookingsResponse @aws_auth(cognito_groups: ["Users", "Admins"])
+  getAvailableAppointments(from: String!, to: String!, lastEvaluatedKey: LastEvaluatedKey): GetAppointmentsResponse
+    @aws_auth(cognito_groups: ["Users", "Admins"])
+  getAppointment(pk: String!, sk: String!): GetAppointmentResponse @aws_auth(cognito_groups: ["Users", "Admins"])
+  getAppointments(from: String!, to: String!, lastEvaluatedKey: LastEvaluatedKey): GetAppointmentsResponse
+    @aws_auth(cognito_groups: ["Admins"])
+  getBookings(customerId: String!, datetime: String!, lastEvaluatedKey: LastEvaluatedKey): GetBookingsResponse
+    @aws_auth(cognito_groups: ["Users", "Admins"])
 }
 
 type Mutation {

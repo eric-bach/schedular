@@ -103,9 +103,9 @@ query GetBookings {
 
 mutation CreateBooking {
   createBooking(bookingInput: {
-    pk: "appt#96823928-2bc3-4a25-8b3f-0904b3f160b7",
-    sk: "2023-04-20T20:00:00.000Z",
-    customer: {
+		pk: "appt#a8680d6a-4011-4805-a79e-5a201137ce66",
+		sk: "2023-04-21T18:00:00.000Z"
+		customer: {
       id: "79aea011-a655-447a-92d4-1d17be6d0ea4",
       firstName: "Eric",
       lastName: "Test",
@@ -120,11 +120,20 @@ mutation CreateBooking {
     envName: "dev"
   })
   {
-    cancellationReasons
-    keys
-    {
-      pk
-      sk
+    pk
+    sk
+    status
+    type
+    category
+    date
+    duration
+    bookingId
+    customerDetails  {
+      id
+      firstName
+      lastName
+      email
+      phone
     }
   }
 }
