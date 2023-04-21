@@ -76,7 +76,6 @@ function generateRandomSeedData() {
         status: 'available',
         type: 'appt',
         category: 'massage',
-        date: `appt#${sk.substring(0, 10)}`,
         duration,
       });
     }
