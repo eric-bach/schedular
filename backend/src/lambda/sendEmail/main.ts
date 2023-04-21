@@ -23,9 +23,10 @@ exports.handler = async (event: any) => {
           Charset: 'UTF-8',
           Data: `This is to confirm your appointment for ${message.customerDetails.firstName} ${
             message.customerDetails.lastName
-          } on ${formateLocalLongDate(message.sk)} from ${formatLocalTimeSpanString(message.sk, message.duration)}\nConfirmation Id: ${
-            message.bookingId
-          }`,
+          } on ${formateLocalLongDate(message.sk)} from ${formatLocalTimeSpanString(
+            message.sk,
+            message.appointmentDetails.duration
+          )}\nConfirmation Id: ${message.pk.substring(8)}`,
         },
       },
     },

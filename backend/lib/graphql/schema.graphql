@@ -3,7 +3,6 @@ type Data @model @aws_cognito_user_pools {
   sk: AWSDateTime
   type: String
   category: String
-  date: String
   duration: Int
   status: String
   bookingId: String
@@ -52,25 +51,12 @@ input AppointmentInput {
   type: String!
   category: String!
 }
-input BookingInput {
+input CreateBookingInput {
   pk: String!
   sk: AWSDateTime!
   customer: CustomerInput!
   appointmentDetails: AppointmentInput!
   envName: String!
-}
-type BookAppointmentResponse {
-  pk: String!
-  sk: AWSDateTime!
-  type: String!
-  status: String!
-  bookingId: String
-  appointmentId: String
-  appointmentDetails: AppointmentDetailsViewModel!
-  customerId: String
-  customerDetails: CustomerDetailsViewModel @aws_auth(cognito_groups: ["Admins"])
-  createdAt: AWSDateTime
-  updatedAt: AWSDateTime
 }
 
 # CancelBooking
@@ -79,6 +65,19 @@ input CancelBookingInput {
   appointmentId: String!
   sk: String!
   envName: String!
+}
+
+# CreateBooking, CancelBooking response
+type BookingResponse {
+  pk: String!
+  sk: AWSDateTime!
+  type: String!
+  appointmentId: String
+  appointmentDetails: AppointmentDetailsViewModel!
+  customerId: String
+  customerDetails: CustomerDetailsViewModel @aws_auth(cognito_groups: ["Admins"])
+  createdAt: AWSDateTime
+  updatedAt: AWSDateTime
 }
 
 # GetAppointments, GetAvailableAppointments
@@ -95,7 +94,6 @@ type AppointmentViewModel {
   status: String!
   type: String!
   category: String!
-  date: String!
   duration: Int!
   bookingId: String
   customerDetails: CustomerDetailsViewModel @aws_auth(cognito_groups: ["Admins"])
@@ -114,7 +112,6 @@ type GetAppointmentResponse {
   status: String!
   type: String!
   category: String!
-  date: String!
   duration: Int!
   bookingId: String
   customerDetails: CustomerDetailsViewModel @aws_auth(cognito_groups: ["Admins"])
@@ -126,7 +123,6 @@ type GetAppointmentResponse {
 type GetBookingResponse {
   pk: String!
   sk: AWSDateTime!
-  status: String!
   type: String!
   appointmentId: String!
   appointmentDetails: AppointmentDetailsViewModel!
@@ -138,15 +134,16 @@ type GetBookingResponse {
 
 # GetBookings
 type AppointmentDetailsViewModel {
+  pk: String!
   sk: AWSDateTime!
-  duration: Int!
   type: String!
   category: String!
+  status: String!
+  duration: Int!
 }
 type BookingsViewModel {
   pk: String!
   sk: AWSDateTime!
-  status: String!
   type: String!
   appointmentId: String!
   appointmentDetails: AppointmentDetailsViewModel!
@@ -173,8 +170,8 @@ type Query {
 }
 
 type Mutation {
-  createBooking(bookingInput: BookingInput): BookAppointmentResponse @aws_auth(cognito_groups: ["Users", "Admins"])
-  cancelBooking(input: CancelBookingInput): BookAppointmentResponse @aws_auth(cognito_groups: ["Users", "Admins"])
+  createBooking(input: CreateBookingInput): BookingResponse @aws_auth(cognito_groups: ["Users", "Admins"])
+  cancelBooking(input: CancelBookingInput): BookingResponse @aws_auth(cognito_groups: ["Users", "Admins"])
 }
 
 schema {

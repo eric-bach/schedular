@@ -4,43 +4,47 @@ export function request(ctx) {
   console.log('🔔 CreateBooking Request: ', ctx);
 
   const bookingId = util.autoId();
+  const { envName, pk, sk, appointmentDetails, customer } = ctx.args.input;
 
   return {
     operation: 'TransactWriteItems',
     transactItems: [
       {
-        table: `schedular-${ctx.args.bookingInput.envName}-Data`,
+        table: `schedular-${envName}-Data`,
         operation: 'PutItem',
         key: {
           pk: util.dynamodb.toDynamoDB(`booking#${bookingId}`),
-          sk: util.dynamodb.toDynamoDB(ctx.args.bookingInput.sk),
+          sk: util.dynamodb.toDynamoDB(sk),
         },
         attributeValues: {
-          status: util.dynamodb.toDynamoDB('booked'),
           type: util.dynamodb.toDynamoDB('booking'),
-          appointmentId: util.dynamodb.toDynamoDB(ctx.args.bookingInput.pk),
+          appointmentId: util.dynamodb.toDynamoDB(pk),
           appointmentDetails: util.dynamodb.toDynamoDB({
-            sk: ctx.args.bookingInput.sk,
-            duration: ctx.args.bookingInput.appointmentDetails.duration,
-            type: ctx.args.bookingInput.appointmentDetails.type,
-            category: ctx.args.bookingInput.appointmentDetails.category,
+            pk: pk,
+            sk: sk,
+            status: 'booked',
+            type: appointmentDetails.type,
+            category: appointmentDetails.category,
+            duration: appointmentDetails.duration,
           }),
-          customerId: util.dynamodb.toDynamoDB(`user#${ctx.args.bookingInput.customer.id}`),
+          customerId: util.dynamodb.toDynamoDB(`user#${customer.id}`),
           customerDetails: util.dynamodb.toDynamoDB({
-            id: ctx.args.bookingInput.customer.id,
-            firstName: ctx.args.bookingInput.customer.firstName,
-            lastName: ctx.args.bookingInput.customer.lastName,
-            email: ctx.args.bookingInput.customer.email,
-            phone: ctx.args.bookingInput.customer.phone,
+            id: customer.id,
+            firstName: customer.firstName,
+            lastName: customer.lastName,
+            email: customer.email,
+            phone: customer.phone,
           }),
+          createdAt: util.dynamodb.toDynamoDB(util.time.nowISO8601()),
+          updatedAt: util.dynamodb.toDynamoDB(util.time.nowISO8601()),
         },
       },
       {
-        table: `schedular-${ctx.args.bookingInput.envName}-Data`,
+        table: `schedular-${envName}-Data`,
         operation: 'UpdateItem',
         key: {
-          pk: util.dynamodb.toDynamoDB(ctx.args.bookingInput.pk),
-          sk: util.dynamodb.toDynamoDB(ctx.args.bookingInput.sk),
+          pk: util.dynamodb.toDynamoDB(pk),
+          sk: util.dynamodb.toDynamoDB(sk),
         },
         update: {
           expression: 'SET #status = :booked, bookingId = :bookingId, customerDetails = :customerDetails, updatedAt = :updatedAt',
@@ -51,11 +55,11 @@ export function request(ctx) {
             ':booked': util.dynamodb.toDynamoDB('booked'),
             ':bookingId': util.dynamodb.toDynamoDB(bookingId),
             ':customerDetails': util.dynamodb.toDynamoDB({
-              id: ctx.args.bookingInput.customer.id,
-              firstName: ctx.args.bookingInput.customer.firstName,
-              lastName: ctx.args.bookingInput.customer.lastName,
-              email: ctx.args.bookingInput.customer.email,
-              phone: ctx.args.bookingInput.customer.phone,
+              id: customer.id,
+              firstName: customer.firstName,
+              lastName: customer.lastName,
+              email: customer.email,
+              phone: customer.phone,
             }),
             ':updatedAt': util.dynamodb.toDynamoDB(util.time.nowISO8601()),
           },

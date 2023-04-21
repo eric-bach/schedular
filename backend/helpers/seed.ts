@@ -57,7 +57,8 @@ async function seedItem(tableName: string, item: any) {
 
 function generateRandomSeedData() {
   const data = [];
-  for (var d = dayjs(); d < dayjs().add(1, 'month'); d = dayjs(d).add(1, 'day')) {
+  // TODO Change to month
+  for (var d = dayjs(); d < dayjs().add(1, 'week'); d = dayjs(d).add(1, 'day')) {
     // Exclude weekends
     if (dayjs(d).day() === 0 || dayjs(d).day() === 6) continue;
 

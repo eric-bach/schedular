@@ -14,7 +14,7 @@ import DeleteIcon from '@mui/icons-material/Delete';
 
 import aws_exports from '../../aws-exports';
 import { CANCEL_BOOKING, GET_BOOKINGS } from '../../graphql/queries';
-import { GetBookingsResponse, BookingItem, CancelBookingInput, CancelBookingResponse } from './CustomerTypes';
+import { GetBookingsResponse, BookingItem, CancelBookingInput, CancelBookingResponse } from '../../types/BookingTypes';
 
 import '@aws-amplify/ui-react/styles.css';
 import { formateLocalLongDate, formatLocalTimeString } from '../../helpers/utils';
@@ -85,8 +85,9 @@ function Appointments() {
             bookings?.map((booking) => {
               if (!booking) return <></>;
 
+              const { status } = booking.appointmentDetails;
               let heading = `${formateLocalLongDate(booking.sk)} at ${formatLocalTimeString(booking.sk, 0)}`;
-              let chipColor = booking.status === 'booked' ? '#1976D2' : booking.status === 'cancelled' ? '#CD5C5C' : 'white';
+              let chipColor = status === 'booked' ? '#1976D2' : status === 'cancelled' ? '#CD5C5C' : 'white';
 
               return (
                 <React.Fragment key={booking.sk}>
@@ -95,11 +96,11 @@ function Appointments() {
                     secondaryAction={
                       <Stack direction='row' spacing={1}>
                         <Chip
-                          label={booking.status}
-                          variant={booking.status === 'booked' ? 'filled' : 'outlined'}
+                          label={status}
+                          variant={status === 'booked' ? 'filled' : 'outlined'}
                           sx={{ mb: 1, backgroundColor: chipColor, color: 'white' }}
                         />
-                        {booking.status === 'booked' && (
+                        {status === 'booked' && (
                           <Chip
                             label='cancel'
                             onClick={() => cancelAppointment(booking)}

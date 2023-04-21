@@ -19,7 +19,7 @@ import Button from '@mui/material/Button';
 
 import aws_exports from '../../aws-exports';
 import { GET_AVAILABLE_APPOINTMENTS, CREATE_BOOKING } from '../../graphql/queries';
-import { GetAppointmentsResponse, AppointmentItem, AppointmentBookingResponse, BookingInput } from './AppointmentTypes';
+import { GetAppointmentsResponse, AppointmentItem, CreateBookingResponse, CreateBookingInput } from '../../types/BookingTypes';
 import { formatLocalTimeSpanString, formatLongDateString } from '../../helpers/utils';
 
 import '@aws-amplify/ui-react/styles.css';
@@ -70,7 +70,7 @@ function Booking() {
   }
 
   function appointmentSelected(appointment: AppointmentItem) {
-    //console.debug('[BOOKING] Selected appointment', appointment);
+    console.debug('[BOOKING] Selected appointment', appointment);
     setAppointment(appointment);
   }
 
@@ -80,7 +80,7 @@ function Booking() {
       return;
     }
 
-    const input: BookingInput = {
+    const input: CreateBookingInput = {
       pk: appointment.pk,
       sk: appointment.sk,
       customer: {
@@ -98,14 +98,12 @@ function Booking() {
       envName: aws_exports.env_name,
     };
 
-    console.debug(input);
-    const result = await API.graphql<GraphQLQuery<AppointmentBookingResponse>>(graphqlOperation(CREATE_BOOKING, { input: input }));
+    console.debug('[BOOKING] Booking input', input);
+    const result = await API.graphql<GraphQLQuery<CreateBookingResponse>>(graphqlOperation(CREATE_BOOKING, { input: input }));
     console.debug('[BOOKING] Booking result', result.data?.createBooking);
 
-    if (result.data?.createBooking.bookingId) {
-      const bookingPk = result.data.createBooking.pk.slice(8);
-      console.log('BOOOKING PK ', bookingPk);
-      navigate(`/confirmation/${bookingPk}`, {
+    if (result.data?.createBooking.appointmentDetails.status === 'booked') {
+      navigate(`/confirmation/${result.data.createBooking.pk.slice(8)}`, {
         state: { customer: user.attributes, appointment: appointment },
       });
     } else {

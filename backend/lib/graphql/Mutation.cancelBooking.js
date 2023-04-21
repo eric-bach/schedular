@@ -14,12 +14,8 @@ export function request(ctx) {
           sk: util.dynamodb.toDynamoDB(ctx.args.input.sk),
         },
         update: {
-          expression: 'SET #status = :cancelled, updatedAt = :updatedAt',
-          expressionNames: {
-            '#status': 'status',
-          },
+          expression: `SET appointmentDetails: ${util.dynamodb.toDynamoDB({ status: 'cancelled' })}, updatedAt = :updatedAt`,
           expressionValues: {
-            ':cancelled': util.dynamodb.toDynamoDB('cancelled'),
             ':updatedAt': util.dynamodb.toDynamoDB(util.time.nowISO8601()),
           },
         },

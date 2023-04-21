@@ -57,6 +57,8 @@ query GetAvailableAppointments {
         email
         phone
       }
+      updatedAt
+      createdAt
     }
   }
 }
@@ -73,6 +75,8 @@ query GetAppointments {
       date
       duration
       bookingId
+      updatedAt
+      createdAt
     }
   }
 }

@@ -6,7 +6,6 @@ export type AppointmentItem = {
   status: string;
   type: string;
   category: string;
-  date: string;
   duration: number;
   bookingId: string;
   customerDetails: {
