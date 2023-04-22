@@ -1,8 +1,11 @@
 import React, { useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { Amplify } from 'aws-amplify';
 import { Loader, useAuthenticator } from '@aws-amplify/ui-react';
 import { API, graphqlOperation } from 'aws-amplify';
 import { GraphQLQuery } from '@aws-amplify/api';
+import Alert from '@mui/material/Alert';
+import AlertTitle from '@mui/material/AlertTitle';
 import Container from '@mui/material/Container';
 import List from '@mui/material/List';
 import ListItem from '@mui/material/ListItem';
@@ -24,9 +27,11 @@ Amplify.configure(aws_exports);
 
 function Appointments() {
   const { user, authStatus } = useAuthenticator((context) => [context.route]);
+  const navigate = useNavigate();
 
   const [isLoading, setLoading] = React.useState<boolean>(false);
   const [bookings, setBookings] = React.useState<[BookingItem | undefined]>();
+  const [isError, setError] = React.useState<boolean>(false);
 
   const getCustomerAppointments = async (customerId: string) => {
     //console.debug('[APPOINTMENTS] Getting appointments for', customerId);
@@ -39,6 +44,7 @@ function Appointments() {
         datetime: new Date().toISOString(),
       })
     );
+
     setBookings(result.data?.getBookings?.items);
 
     setLoading(false);
@@ -57,25 +63,47 @@ function Appointments() {
   }, []);
 
   const cancelAppointment = async (booking: BookingItem) => {
-    console.info('Cancel Appointment', booking);
-
     const input: CancelBookingInput = {
       bookingId: booking.pk,
-      appointmentId: booking.appointmentDetails.pk,
-      sk: booking.sk,
+      appointmentDetails: booking.appointmentDetails,
       envName: 'dev',
     };
-    console.log('Input: ', input);
+
+    console.debug('[APPOINTMENTS] Cancel booking:', input);
+
     const result = await API.graphql<GraphQLQuery<CancelBookingResponse>>(graphqlOperation(CANCEL_BOOKING, { input: input }));
-    console.log('Result: ', result);
-    // TODO Refresh results
+
+    console.debug('[APPOINTMENTS] Cancel booking result:', result);
+
+    if (!result.errors) {
+      navigate(0);
+    } else {
+      setError(true);
+      // TODO display error
+    }
   };
+
+  function dismissError() {
+    setError(false);
+  }
 
   return (
     <Container maxWidth='md' sx={{ mt: 5 }}>
       <Typography variant='h5' fontWeight='bold' align='left' color='textPrimary' gutterBottom sx={{ mt: 2 }}>
         Upcoming Appointments:
       </Typography>
+
+      {isError && (
+        <Alert
+          severity='error'
+          onClose={() => {
+            dismissError();
+          }}
+        >
+          <AlertTitle>Error</AlertTitle>
+          Could not cancel appointment. Please try again or contact the SPA.
+        </Alert>
+      )}
 
       {isLoading ? (
         <Loader variation='linear' />
@@ -90,7 +118,7 @@ function Appointments() {
               let chipColor = status === 'booked' ? '#1976D2' : status === 'cancelled' ? '#CD5C5C' : 'white';
 
               return (
-                <React.Fragment key={booking.sk}>
+                <React.Fragment key={booking.pk}>
                   <ListItem
                     alignItems='flex-start'
                     secondaryAction={

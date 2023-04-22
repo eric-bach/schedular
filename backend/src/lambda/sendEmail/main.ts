@@ -10,32 +10,60 @@ exports.handler = async (event: any) => {
   // Send email confirmation
   const client = new SESClient({ region: process.env.REGION });
 
-  const input: SendEmailCommandInput = {
-    Source: process.env.SENDER_EMAIL,
-    Destination: { ToAddresses: [message.customerDetails.email] },
-    Message: {
-      Subject: {
-        Charset: 'UTF-8',
-        Data: 'Appointment Confirmation',
-      },
-      Body: {
-        Text: {
-          Charset: 'UTF-8',
-          Data: `This is to confirm your appointment for ${message.customerDetails.firstName} ${
-            message.customerDetails.lastName
-          } on ${formateLocalLongDate(message.sk)} from ${formatLocalTimeSpanString(
-            message.sk,
-            message.appointmentDetails.duration
-          )}\nConfirmation Id: ${message.pk.substring(8)}`,
-        },
-      },
-    },
-  };
+  const input: SendEmailCommandInput = getEmailInput(message);
 
   const command = new SendEmailCommand(input);
   const response = await client.send(command);
   console.log(`✅ Appointment Confirmation sent: {result: ${JSON.stringify(response)}}}`);
 };
+
+function getEmailInput(message: any): SendEmailCommandInput {
+  if (message.appointmentDetails.status === 'booked') {
+    return {
+      Source: process.env.SENDER_EMAIL,
+      Destination: { ToAddresses: [message.customerDetails.email] },
+      Message: {
+        Subject: {
+          Charset: 'UTF-8',
+          Data: 'Appointment Confirmation',
+        },
+        Body: {
+          Text: {
+            Charset: 'UTF-8',
+            Data: `This is to confirm your appointment for ${message.customerDetails.firstName} ${
+              message.customerDetails.lastName
+            } on ${formateLocalLongDate(message.sk)} from ${formatLocalTimeSpanString(
+              message.sk,
+              message.appointmentDetails.duration
+            )}\nConfirmation Id: ${message.pk.substring(8)}`,
+          },
+        },
+      },
+    };
+  } else {
+    return {
+      Source: process.env.SENDER_EMAIL,
+      Destination: { ToAddresses: [message.customerDetails.email] },
+      Message: {
+        Subject: {
+          Charset: 'UTF-8',
+          Data: 'Appointment Cancelled',
+        },
+        Body: {
+          Text: {
+            Charset: 'UTF-8',
+            Data: `This is to confirm your appointment cancellation for ${message.customerDetails.firstName} ${
+              message.customerDetails.lastName
+            } on ${formateLocalLongDate(message.sk)} from ${formatLocalTimeSpanString(
+              message.sk,
+              message.appointmentDetails.duration
+            )}\nConfirmation Id: ${message.pk.substring(8)}`,
+          },
+        },
+      },
+    };
+  }
+}
 
 // Takes a SQS urlDecoded string and converts it to proper JSON
 //    Input:  {id=123, nestedObject={name=test}}

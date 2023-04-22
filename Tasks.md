@@ -24,10 +24,7 @@
 - [x] As a user I want to receive a confirmation email for an appointment
 - [x] As a user I want to see my upcoming appointments
 - [x] Bug: Fix issue with Bookings showing available appointments that have past
-- [] As a user I want the ability to cancel an appointment
-  - [] Clean up types
-  - [] Consider removing appointmentId (from booking) and bookingId (from appt)
-  - [] Send email notification on cancellation
+- [x] As a user I want the ability to cancel an appointment
 - [] As a user I want to receive notification email of an upcoming appointment
 - [] As a user I want to see my past appointments
 

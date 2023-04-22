@@ -115,8 +115,14 @@ export type GetBookingsResponse = {
 // CancelBooking - /user/appointments
 export type CancelBookingInput = {
   bookingId: string;
-  appointmentId: string;
-  sk: string;
+  appointmentDetails: {
+    pk: string;
+    sk: string;
+    type: string;
+    category: string;
+    status: string;
+    duration: number;
+  };
   envName: string;
 };
 export type CancelBookingResponse = {

@@ -60,10 +60,17 @@ input CreateBookingInput {
 }
 
 # CancelBooking
+input AppointmentDetailsInput {
+  pk: String!
+  sk: String!
+  status: String!
+  type: String!
+  category: String!
+  duration: Int!
+}
 input CancelBookingInput {
   bookingId: String!
-  appointmentId: String!
-  sk: String!
+  appointmentDetails: AppointmentDetailsInput!
   envName: String!
 }
 

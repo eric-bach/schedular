@@ -3,29 +3,39 @@ import { util } from '@aws-appsync/utils';
 export function request(ctx) {
   console.log('🔔 CancelBooking Request: ', ctx);
 
+  const { envName, bookingId, appointmentDetails } = ctx.args.input;
+
   return {
     operation: 'TransactWriteItems',
     transactItems: [
       {
-        table: `schedular-${ctx.args.input.envName}-Data`,
+        table: `schedular-${envName}-Data`,
         operation: 'UpdateItem',
         key: {
-          pk: util.dynamodb.toDynamoDB(ctx.args.input.bookingId),
-          sk: util.dynamodb.toDynamoDB(ctx.args.input.sk),
+          pk: util.dynamodb.toDynamoDB(bookingId),
+          sk: util.dynamodb.toDynamoDB(appointmentDetails.sk),
         },
         update: {
-          expression: `SET appointmentDetails: ${util.dynamodb.toDynamoDB({ status: 'cancelled' })}, updatedAt = :updatedAt`,
+          expression: `SET appointmentDetails = :appointmentDetails, updatedAt = :updatedAt`,
           expressionValues: {
             ':updatedAt': util.dynamodb.toDynamoDB(util.time.nowISO8601()),
+            ':appointmentDetails': util.dynamodb.toDynamoDB({
+              pk: appointmentDetails.pk,
+              sk: appointmentDetails.sk,
+              type: appointmentDetails.type,
+              category: appointmentDetails.category,
+              duration: appointmentDetails.duration,
+              status: 'cancelled',
+            }),
           },
         },
       },
       {
-        table: `schedular-${ctx.args.input.envName}-Data`,
+        table: `schedular-${envName}-Data`,
         operation: 'UpdateItem',
         key: {
-          pk: util.dynamodb.toDynamoDB(ctx.args.input.appointmentId),
-          sk: util.dynamodb.toDynamoDB(ctx.args.input.sk),
+          pk: util.dynamodb.toDynamoDB(appointmentDetails.pk),
+          sk: util.dynamodb.toDynamoDB(appointmentDetails.sk),
         },
         update: {
           expression: 'SET #status = :available, updatedAt = :updatedAt REMOVE bookingId, customerDetails',
