@@ -19,11 +19,15 @@ import Button from '@mui/material/Button';
 
 import aws_exports from '../../aws-exports';
 import { GET_AVAILABLE_APPOINTMENTS, CREATE_BOOKING } from '../../graphql/queries';
-import { GetAppointmentsResponse, AppointmentItem, AppointmentBookingResponse } from './AppointmentTypes';
-import { formatLocalTimeSpanString, formatDateString } from '../../helpers/utils';
+import {
+  GetAvailableAppointmentsResponse,
+  AvailableAppointmentItem,
+  CreateBookingResponse,
+  CreateBookingInput,
+} from '../../types/BookingTypes';
+import { formatLocalTimeSpanString, formatLongDateString } from '../../helpers/utils';
 
 import '@aws-amplify/ui-react/styles.css';
-import { Base } from '../../types/BaseTypes';
 
 Amplify.configure(aws_exports);
 
@@ -31,22 +35,23 @@ function Booking() {
   const { user } = useAuthenticator((context) => [context.route]);
 
   const [date, setDate] = React.useState<Dayjs | null>(dayjs());
-  const [availableAppointments, setAvailableAppointments] = React.useState<[AppointmentItem | undefined]>();
-  const [appointment, setAppointment] = React.useState<AppointmentItem>();
+  const [availableAppointments, setAvailableAppointments] = React.useState<[AvailableAppointmentItem | undefined]>();
+  const [appointment, setAppointment] = React.useState<AvailableAppointmentItem>();
   const [isLoading, setLoading] = React.useState<boolean>(false);
   const [isError, setError] = React.useState<boolean>(false);
 
   const navigate = useNavigate();
 
-  const getAppointments = async (date: Dayjs | null) => {
-    //console.debug('[BOOKING] Getting apppointments for', formatDateString(date));
+  const getAppointments = async (date: Dayjs) => {
+    let fromDate = dayjs(date).set('hour', 0).set('minute', 0).set('second', 0).set('millisecond', 0).valueOf();
+    let from = new Date(Math.max(new Date().getTime(), fromDate)).toISOString();
+    let to = dayjs(date.add(1, 'day')).set('hour', 0).set('minute', 0).set('second', 0).set('millisecond', 0).toISOString();
+    console.debug(`[BOOKING] Getting schedule from ${from} to ${to}`);
 
     setLoading(true);
 
-    const appointments = await API.graphql<GraphQLQuery<GetAppointmentsResponse>>(
-      graphqlOperation(GET_AVAILABLE_APPOINTMENTS, {
-        date: formatDateString(date),
-      })
+    const appointments = await API.graphql<GraphQLQuery<GetAvailableAppointmentsResponse>>(
+      graphqlOperation(GET_AVAILABLE_APPOINTMENTS, { from, to })
     );
     setAvailableAppointments(appointments.data?.getAvailableAppointments?.items);
 
@@ -56,7 +61,7 @@ function Booking() {
   };
 
   useEffect(() => {
-    getAppointments(date);
+    getAppointments(date ?? dayjs());
   }, []);
 
   async function dateSelected(date: Dayjs | null) {
@@ -65,12 +70,12 @@ function Booking() {
     setError(false);
     setDate(date);
 
-    await getAppointments(date);
-    //console.debug('[BOOKING] Available appointments', availableAppointments);
+    await getAppointments(date ?? dayjs());
+    console.debug('[BOOKING] Available appointments', availableAppointments);
   }
 
-  function appointmentSelected(appointment: AppointmentItem) {
-    //console.debug('[BOOKING] Selected appointment', appointment);
+  function appointmentSelected(appointment: AvailableAppointmentItem) {
+    console.debug('[BOOKING] Selected appointment', appointment);
     setAppointment(appointment);
   }
 
@@ -80,7 +85,7 @@ function Booking() {
       return;
     }
 
-    const input = {
+    const input: CreateBookingInput = {
       pk: appointment.pk,
       sk: appointment.sk,
       customer: {
@@ -91,21 +96,19 @@ function Booking() {
         phone: user.attributes?.phone_number,
       },
       appointmentDetails: {
-        duration: appointment.duration,
         type: appointment.type,
         category: appointment.category,
+        duration: appointment.duration,
       },
+      envName: aws_exports.env_name,
     };
 
-    console.debug(input);
-    const result = await API.graphql<GraphQLQuery<AppointmentBookingResponse>>(graphqlOperation(CREATE_BOOKING, { input: input }));
+    console.debug('[BOOKING] Booking input', input);
+    const result = await API.graphql<GraphQLQuery<CreateBookingResponse>>(graphqlOperation(CREATE_BOOKING, { input: input }));
     console.debug('[BOOKING] Booking result', result.data?.createBooking);
 
-    if (result.data?.createBooking.keys) {
-      const bookingPkString = result.data.createBooking.keys.find((keys: Base) => keys.pk.startsWith('booking#'));
-      const bookingPk = bookingPkString?.pk.slice(8);
-      console.log('BOOOKING PK ', bookingPk);
-      navigate(`/confirmation/${bookingPk}`, {
+    if (result.data?.createBooking.appointmentDetails.status === 'booked') {
+      navigate(`/confirmation/${result.data.createBooking.pk.slice(8)}`, {
         state: { customer: user.attributes, appointment: appointment },
       });
     } else {
@@ -196,7 +199,7 @@ function Booking() {
                 <>
                   <Stack alignItems='flex-start'>
                     <Typography sx={{ mt: 4 }}>
-                      {formatDateString(date)} from {formatLocalTimeSpanString(appointment.sk, appointment.duration)}
+                      {formatLongDateString(date)} from {formatLocalTimeSpanString(appointment.sk, appointment.duration)}
                     </Typography>
                     <Button variant='contained' color='success' onClick={bookAppointment}>
                       Confirm Appointment

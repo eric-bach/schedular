@@ -1,19 +1,17 @@
 import { util } from '@aws-appsync/utils';
 
 export function request(ctx) {
+  console.log('🔔 GetAppointment Request: ', ctx);
+  const appointment = ctx.prev.result.keys.find((k) => k.pk.startsWith('appt#'));
+
   return {
     version: '2017-02-28',
     operation: 'Query',
-    index: 'type-gsi',
     query: {
-      expression: '#type = :type AND sk BETWEEN :fromDate AND :toDate',
-      expressionNames: {
-        '#type': 'type',
-      },
+      expression: 'pk = :pk AND sk = :sk',
       expressionValues: {
-        ':type': util.dynamodb.toDynamoDB('appt'),
-        ':fromDate': util.dynamodb.toDynamoDB(ctx.args.from),
-        ':toDate': util.dynamodb.toDynamoDB(ctx.args.to),
+        ':pk': util.dynamodb.toDynamoDB(appointment.pk),
+        ':sk': util.dynamodb.toDynamoDB(appointment.sk),
       },
     },
   };
@@ -25,5 +23,5 @@ export function response(ctx) {
   if (ctx.error) {
     util.error(ctx.error.message, ctx.error.type, ctx.result);
   }
-  return ctx.result;
+  return ctx.result.items[0];
 }

@@ -1,17 +1,19 @@
-import { Context, util } from '@aws-appsync/utils';
+import { util } from '@aws-appsync/utils';
 
 export function request(ctx) {
   return {
     version: '2017-02-28',
     operation: 'Query',
-    index: 'date-gsi',
+    index: 'type-gsi',
     query: {
-      expression: '#date = :date',
+      expression: '#type = :type AND sk BETWEEN :fromDate AND :toDate',
       expressionNames: {
-        '#date': 'date',
+        '#type': 'type',
       },
       expressionValues: {
-        ':date': util.dynamodb.toDynamoDB(`appt#${ctx.args.date}`),
+        ':type': util.dynamodb.toDynamoDB('appt'),
+        ':fromDate': util.dynamodb.toDynamoDB(ctx.args.from),
+        ':toDate': util.dynamodb.toDynamoDB(ctx.args.to),
       },
     },
     filter: {

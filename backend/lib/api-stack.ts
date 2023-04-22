@@ -41,6 +41,14 @@ export class ApiStack extends Stack {
     // SQS
     const emailQueue = new Queue(this, `${props.appName}-${props.envName}-emailDelivery`, {
       queueName: `${props.appName}-${props.envName}-emailDelivery`,
+      retentionPeriod: Duration.minutes(1),
+      // TODO Remove in Prod
+      deadLetterQueue: {
+        queue: new Queue(this, `${props.appName}-${props.envName}-sendEmailDeadLetter`, {
+          queueName: `${props.appName}-${props.envName}-sendEmailDeadLetter`,
+        }),
+        maxReceiveCount: 1,
+      },
     });
 
     // Lambda
@@ -148,6 +156,20 @@ export class ApiStack extends Stack {
       code: Code.fromAsset(path.join(__dirname, '/graphql/Query.getAvailableAppointments.js')),
       runtime: FunctionRuntime.JS_1_0_0,
     });
+    const getAppointmentFunc = new AppsyncFunction(this, 'getAppointmentFunction', {
+      name: 'getAppointmentFunction',
+      api: api,
+      dataSource: dynamoDbDataSource,
+      code: Code.fromAsset(path.join(__dirname, '/graphql/Query.getAppointment.js')),
+      runtime: FunctionRuntime.JS_1_0_0,
+    });
+    const getBookingFunc = new AppsyncFunction(this, 'getBookingFunction', {
+      name: 'getBookingFunction',
+      api: api,
+      dataSource: dynamoDbDataSource,
+      code: Code.fromAsset(path.join(__dirname, '/graphql/Query.getBooking.js')),
+      runtime: FunctionRuntime.JS_1_0_0,
+    });
     const getAppointmentsFunction = new AppsyncFunction(this, 'getAppointmentsFunction', {
       name: 'getAppointmentsFunction',
       api: api,
@@ -169,6 +191,13 @@ export class ApiStack extends Stack {
       code: Code.fromAsset(path.join(__dirname, '/graphql/Mutation.createBooking.js')),
       runtime: FunctionRuntime.JS_1_0_0,
     });
+    const cancelBookingFunction = new AppsyncFunction(this, 'cancelBookingFunction', {
+      name: 'cancelBookingFunction',
+      api: api,
+      dataSource: dynamoDbDataSource,
+      code: Code.fromAsset(path.join(__dirname, '/graphql/Mutation.cancelBooking.js')),
+      runtime: FunctionRuntime.JS_1_0_0,
+    });
     const sqsSendEMailFunction = new AppsyncFunction(this, 'SqsSendEmailFunction', {
       name: 'sqsSendEmail',
       api: api,
@@ -178,7 +207,7 @@ export class ApiStack extends Stack {
         import { util } from '@aws-appsync/utils';
 
         export function request(ctx) {
-          console.log('🔔 REQUEST: ', ctx);
+          console.log('🔔 SqsSendEmailFunction Request:', ctx);
 
           const message = util.urlEncode(ctx.prev.result);
           return {
@@ -195,7 +224,7 @@ export class ApiStack extends Stack {
         }
 
         export function response(ctx) {
-          console.log('🔔 RESPONSE: ', ctx);
+          console.log('🔔 SqsSendEmailFunction Response:', ctx);
 
           if (ctx.error) {
             util.error(ctx.error.message, ctx.error.type, ctx.result);
@@ -228,6 +257,14 @@ export class ApiStack extends Stack {
       pipelineConfig: [getAvailableAppointmentsFunc],
       code: passthrough,
     });
+    const getAppointmentResolver = new Resolver(this, 'getAppointmentResolver', {
+      api: api,
+      typeName: 'Query',
+      fieldName: 'getAppointment',
+      runtime: FunctionRuntime.JS_1_0_0,
+      pipelineConfig: [getAppointmentFunc],
+      code: passthrough,
+    });
     const getAppointmentsResolver = new Resolver(this, 'getAppointmentsResolver', {
       api: api,
       typeName: 'Query',
@@ -249,7 +286,15 @@ export class ApiStack extends Stack {
       typeName: 'Mutation',
       fieldName: 'createBooking',
       runtime: FunctionRuntime.JS_1_0_0,
-      pipelineConfig: [createBookingFunction, sqsSendEMailFunction],
+      pipelineConfig: [createBookingFunction, getBookingFunc, sqsSendEMailFunction],
+      code: passthrough,
+    });
+    const cancelBookingResolver = new Resolver(this, 'cancelBookingResolver', {
+      api: api,
+      typeName: 'Mutation',
+      fieldName: 'cancelBooking',
+      runtime: FunctionRuntime.JS_1_0_0,
+      pipelineConfig: [cancelBookingFunction, getBookingFunc, sqsSendEMailFunction],
       code: passthrough,
     });
 

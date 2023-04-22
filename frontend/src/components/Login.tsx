@@ -49,7 +49,7 @@ export function Login() {
 
   return (
     <View className='auth-wrapper' padding='5rem'>
-      <Authenticator signUpAttributes={['family_name', 'name', 'phone_number']} formFields={formFields}></Authenticator>
+      <Authenticator signUpAttributes={['family_name', 'phone_number']} formFields={formFields}></Authenticator>
     </View>
   );
 }

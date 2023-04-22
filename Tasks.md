@@ -8,7 +8,10 @@
 - [x] Fix up UTC to local time translation
 - [x] Update to use new table schema
 - [x] Add more resolver tests
-- [] Switch resolvers to TypeScript
+- [x] Switch resolvers to TypeScript
+- [x] Fix UTC to local date/time
+- [x] Fix email notifications
+- [] Add pagination to bookings list
 - [] Clean up styling
 - [] Build out a proper Appointment Confirmation email template
 - [] Verify email domain to remove spoofing warning
@@ -20,7 +23,8 @@
 - [x] As a user I want a confirmation of a booked appointment
 - [x] As a user I want to receive a confirmation email for an appointment
 - [x] As a user I want to see my upcoming appointments
-- [] As a user I want the ability to cancel an appointment
+- [x] Bug: Fix issue with Bookings showing available appointments that have past
+- [x] As a user I want the ability to cancel an appointment
 - [] As a user I want to receive notification email of an upcoming appointment
 - [] As a user I want to see my past appointments
 
@@ -33,7 +37,7 @@
 
 ```
 query GetAvailableAppointments {
-  getAvailableAppointments(date: "2023-04-20")
+  getAvailableAppointments(from: "2023-04-20T06:00:00Z", to: "2023-04-21T06:00:00Z")
   {
     items {
       pk
@@ -51,12 +55,14 @@ query GetAvailableAppointments {
         email
         phone
       }
+      updatedAt
+      createdAt
     }
   }
 }
 
 query GetAppointments {
-  getAppointments(date: "2023-04-20")
+  getAppointments(from: "2023-04-20T06:00:00Z", to: "2023-04-21T06:00:00Z")
   {
     items {
       pk
@@ -67,6 +73,8 @@ query GetAppointments {
       date
       duration
       bookingId
+      updatedAt
+      createdAt
     }
   }
 }
@@ -99,11 +107,12 @@ query GetBookings {
 
 mutation CreateBooking {
   createBooking(bookingInput: {
-    pk: "appt#96823928-2bc3-4a25-8b3f-0904b3f160b7",
-    sk: "2023-04-20T20:00:00.000Z",
-    customer: {
+		pk: "appt#a8680d6a-4011-4805-a79e-5a201137ce66",
+		sk: "2023-04-21T18:00:00.000Z"
+		customer: {
       id: "79aea011-a655-447a-92d4-1d17be6d0ea4",
-      name: "Eric",
+      firstName: "Eric",
+      lastName: "Test",
       email: "test@test.com",
       phone: "123"
     },
@@ -115,9 +124,34 @@ mutation CreateBooking {
     envName: "dev"
   })
   {
+    pk
+    sk
+    status
+    type
+    category
+    date
+    duration
+    bookingId
+    customerDetails  {
+      id
+      firstName
+      lastName
+      email
+      phone
+    }
+  }
+}
+
+mutation CancelBooking {
+  cancelBooking(input: {
+    bookingId: "booking#4265920a-db4a-439e-a922-fd575d7c2871",
+    appointmentId: "appt#dba247d8-86f8-4a97-859c-95a292416879",
+    sk: "2023-04-20T14:00:00.000Z",
+    envName: "dev"
+  })
+  {
     cancellationReasons
-    keys
-    {
+    keys {
       pk
       sk
     }

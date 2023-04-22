@@ -4,94 +4,125 @@ exports.handler = async (event: any) => {
   console.debug(`🕧 Received event: ${JSON.stringify(event)}`);
 
   const message = JSON.parse(parseUrlDecodedString(event.Records[0].body));
+  //const message = JSON.parse(event.Records[0].body);
   console.debug(`🕧 Mesage: ${JSON.stringify(message)}`);
 
   // Send email confirmation
   const client = new SESClient({ region: process.env.REGION });
 
-  // const boundary = `----=_Part${Math.random().toString().substr(2)}`;
-  // const body = `This is to confirm your appointment for ${message.customer} on ${message.sk}\nConfirmation Id: ${message.confirmationId}`;
-  // const rawMessage = [
-  //   `From: ${process.env.SENDER_EMAIL}`,
-  //   `To: bach.eric@gmail.com`,
-  //   `Subject: Appointment Confirmation`,
-  //   `MIME-Version: 1.0`,
-  //   `Content-Type: multipart/alternative; boundary="${boundary}"`,
-  //   `\n`,
-  //   `--${boundary}`,
-  //   `Content-Type: text/plain; charset=UTF-8`,
-  //   `Content-Transfer-Encoding: 7bit`,
-  //   `\n`,
-  //   `${body}`,
-  // ];
-  // const input: SendRawEmailCommandInput = {
-  //   Source: process.env.SENDER_EMAIL,
-  //   // TODO Change to user email
-  //   Destinations: ['bach.eric@gmail.com'],
-  //   RawMessage: { Data: new TextEncoder().encode(rawMessage.join('\n')) },
-  // };
-
-  const input: SendEmailCommandInput = {
-    Source: process.env.SENDER_EMAIL,
-    // TODO Change to user email
-    //Destination: { ToAddresses: [${message.customerEmail}] },
-    Destination: { ToAddresses: ['bach.eric@gmail.com'] },
-    Message: {
-      Subject: {
-        Charset: 'UTF-8',
-        Data: 'Appointment Confirmation',
-      },
-      Body: {
-        Text: {
-          Charset: 'UTF-8',
-          Data: `This is to confirm your appointment for ${message.customerName} on ${message.appointmentDetails.date} from ${message.appointmentDetails.startTime} to ${message.appointmentDetails.endTime}\nConfirmation Id: ${message.confirmationId}`,
-        },
-      },
-    },
-  };
+  const input: SendEmailCommandInput = getEmailInput(message);
 
   const command = new SendEmailCommand(input);
   const response = await client.send(command);
-
   console.log(`✅ Appointment Confirmation sent: {result: ${JSON.stringify(response)}}}`);
 };
+
+function getEmailInput(message: any): SendEmailCommandInput {
+  if (message.appointmentDetails.status === 'booked') {
+    return {
+      Source: process.env.SENDER_EMAIL,
+      Destination: { ToAddresses: [message.customerDetails.email] },
+      Message: {
+        Subject: {
+          Charset: 'UTF-8',
+          Data: 'Appointment Confirmation',
+        },
+        Body: {
+          Text: {
+            Charset: 'UTF-8',
+            Data: `This is to confirm your appointment for ${message.customerDetails.firstName} ${
+              message.customerDetails.lastName
+            } on ${formateLocalLongDate(message.sk)} from ${formatLocalTimeSpanString(
+              message.sk,
+              message.appointmentDetails.duration
+            )}\nConfirmation Id: ${message.pk.substring(8)}`,
+          },
+        },
+      },
+    };
+  } else {
+    return {
+      Source: process.env.SENDER_EMAIL,
+      Destination: { ToAddresses: [message.customerDetails.email] },
+      Message: {
+        Subject: {
+          Charset: 'UTF-8',
+          Data: 'Appointment Cancelled',
+        },
+        Body: {
+          Text: {
+            Charset: 'UTF-8',
+            Data: `This is to confirm your appointment cancellation for ${message.customerDetails.firstName} ${
+              message.customerDetails.lastName
+            } on ${formateLocalLongDate(message.sk)} from ${formatLocalTimeSpanString(
+              message.sk,
+              message.appointmentDetails.duration
+            )}\nConfirmation Id: ${message.pk.substring(8)}`,
+          },
+        },
+      },
+    };
+  }
+}
 
 // Takes a SQS urlDecoded string and converts it to proper JSON
 //    Input:  {id=123, nestedObject={name=test}}
 //    Output: {"id":"123","nextedObject":{"name":"123"}}
 function parseUrlDecodedString(body: string): string {
-  // Split each key:value pair and remove leading and trailing parenthesis
-  const commaSplitBody = body.substring(1, body.length - 1).split(',');
+  // Turn { to {" and } to "}
+  let jsonOutput = body.replace(/{/gi, '{"').replace(/}/gi, '"}');
 
-  // Build new JSON string
-  let jsonOutput = '{';
-  commaSplitBody.forEach((s) => {
-    const equalSplitBody = s.split('=');
+  // Turn = to :
+  jsonOutput = jsonOutput.replace(/=/gi, '":"');
 
-    let i = 0;
-    equalSplitBody.forEach((t) => {
-      if (i % 2 === 0) {
-        // Key
-        jsonOutput += `"${t.trim()}":`;
-        ++i;
-      } else if (t.startsWith('{')) {
-        // Nested value (start)
-        jsonOutput += `${t.trim().replace(/[\{]/g, '{"')}":`;
-      } else if (t.endsWith('}')) {
-        // Nested value (end)
-        jsonOutput += `"${t.trim().replace(/[\}]/g, '"}')},`;
-        ++i;
-      } else {
-        // Value
-        jsonOutput += `"${t.trim()}",`;
-        ++i;
-      }
-    });
-  });
+  // Turn , to ", "
+  jsonOutput = jsonOutput.replace(/,\s/gi, '", "');
 
-  // Trim last comma and close JSON string
-  jsonOutput = jsonOutput.substring(0, jsonOutput.length - 1) + '}';
+  // Turn "[ to [ and ]" to ]
+  jsonOutput = jsonOutput.replace(/"\[/gi, '[').replace(/\]"/gi, ']');
+
+  // Turn }", "{ to }, {
+  jsonOutput = jsonOutput.replace(/}", "{/gi, '}, {');
+
+  // Turn "null" to null
+  jsonOutput = jsonOutput.replace(/"null"/gi, 'null');
+
+  // Turn "{ to { and }" to }
+  jsonOutput = jsonOutput.replace(/""{/gi, '{').replace(/}""/gi, '}').replace(/"{/gi, '{').replace(/}"/gi, '}');
 
   console.log('JSON Output ', jsonOutput);
   return jsonOutput;
+}
+
+// Returns the local time part in a span (to - from) of an ISO8601 datetime string
+//  Input: 2023-04-06T14:00:00Z, 60
+//  Output: 8:00 AM - 9:00 AM
+function formatLocalTimeSpanString(dateString: string, duration: number) {
+  return `${formatLocalTimeString(dateString, 0)} - ${formatLocalTimeString(dateString, duration)}`;
+}
+
+// Returns the local time part (including offset) of an ISO8601 datetime string
+//  Input: 2023-04-06T14:00:00Z, 0
+//  Output: 8:00 AM
+function formatLocalTimeString(dateString: string, offsetMinutes: number) {
+  const date = new Date(new Date(dateString).getTime() + offsetMinutes * 60000);
+  return date.toLocaleTimeString('en-US', {
+    timeZone: 'America/Edmonton',
+    hour12: true,
+    hour: 'numeric',
+    minute: 'numeric',
+  });
+}
+
+// Returns the local long date string from an ISO8601 datetime string
+//  Input: 2023-04-06T14:00:00Z
+//  Output: Thursday, April 6, 2023
+function formateLocalLongDate(dateString: string) {
+  return new Date(dateString).toLocaleDateString('en-US', {
+    timeZone: 'America/Edmonton',
+    weekday: 'long',
+    year: 'numeric',
+    month: 'long',
+    day: 'numeric',
+  });
 }

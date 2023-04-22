@@ -17,7 +17,7 @@ import Grid from '@mui/material/Unstable_Grid2';
 import dayjs, { Dayjs } from 'dayjs';
 
 import { GET_APPOINTMENTS } from '../../graphql/queries';
-import { GetAppointmentsResponse, AppointmentItem } from './AppointmentTypes';
+import { GetAppointmentsResponse, AppointmentItem } from '../../types/BookingTypes';
 import { formatLongDateString, formatLocalTimeString } from '../../helpers/utils';
 
 function Schedule() {
@@ -28,16 +28,15 @@ function Schedule() {
   const [dateHeading, setDateHeading] = React.useState<string | undefined>();
   const [date, setDate] = React.useState<Dayjs | null>(dayjs());
 
-  const getAppointments = async (d: string) => {
-    //console.debug('[SCHEDULE] Getting schedule for', date);
+  const getAppointments = async (d: Dayjs) => {
+    let from = dayjs(d).set('hour', 0).set('minute', 0).set('second', 0).set('millisecond', 0).toISOString();
+    let to = dayjs(d.add(1, 'day')).set('hour', 0).set('minute', 0).set('second', 0).set('millisecond', 0).toISOString();
+
+    console.debug(`[SCHEDULE] Getting schedule from ${from} to ${to}`);
 
     setLoading(true);
 
-    const appointments = await API.graphql<GraphQLQuery<GetAppointmentsResponse>>(
-      graphqlOperation(GET_APPOINTMENTS, {
-        date: d,
-      })
-    );
+    const appointments = await API.graphql<GraphQLQuery<GetAppointmentsResponse>>(graphqlOperation(GET_APPOINTMENTS, { from, to }));
     setAppointments(appointments.data?.getAppointments?.items);
     setDateHeading(`${formatLongDateString(dayjs(d))}`);
 
@@ -48,16 +47,14 @@ function Schedule() {
 
   async function dateSelected(d: Dayjs | null) {
     setDate(d);
+    await getAppointments(d ?? dayjs());
 
-    let selectedDate = (d ?? dayjs()).toISOString().substring(0, 10);
-    await getAppointments(selectedDate);
-
-    //console.debug('[SCHEDULE] Found appointments', appointments);
+    console.debug('[SCHEDULE] Found appointments', appointments);
   }
 
   useEffect(() => {
     if (authStatus === 'authenticated') {
-      const d = dayjs().toISOString().substring(0, 10);
+      const d = dayjs();
       getAppointments(d).then((resp) => {
         //console.debug('[SCHEDULE] Loaded initial appointments', resp);
       });
@@ -97,7 +94,7 @@ function Schedule() {
                   const heading = `${formatLocalTimeString(appt.sk, 0)} to ${formatLocalTimeString(appt.sk, appt.duration ?? 0)}`;
 
                   return (
-                    <div key={appt.sk}>
+                    <React.Fragment key={appt.sk}>
                       <ListItem
                         alignItems='flex-start'
                         secondaryAction={
@@ -118,19 +115,19 @@ function Schedule() {
                                   <Typography component='span' variant='subtitle2' color='text.primary' sx={{ display: 'inline' }}>
                                     Customer:{' '}
                                     <Typography component='span' variant='body2'>
-                                      {appt?.customerDetails.firstName}
+                                      {appt?.customerDetails?.firstName}
                                     </Typography>
                                   </Typography>
                                   <Typography component='span' variant='subtitle2' color='text.primary' sx={{ display: 'inline' }}>
                                     Email:{' '}
                                     <Typography component='span' variant='body2'>
-                                      {appt?.customerDetails.email}
+                                      {appt?.customerDetails?.email}
                                     </Typography>
                                   </Typography>
                                   <Typography component='span' variant='subtitle2' color='text.primary' sx={{ display: 'inline' }}>
                                     Phone:{' '}
                                     <Typography component='span' variant='body2'>
-                                      {appt?.customerDetails.phone}
+                                      {appt?.customerDetails?.phone}
                                     </Typography>
                                   </Typography>
                                 </Stack>
@@ -151,7 +148,7 @@ function Schedule() {
                         />
                       </ListItem>
                       <Divider component='li' />
-                    </div>
+                    </React.Fragment>
                   );
                 })}
               </List>
