@@ -18,7 +18,6 @@ export function request(ctx) {
         },
         attributeValues: {
           type: util.dynamodb.toDynamoDB('booking'),
-          appointmentId: util.dynamodb.toDynamoDB(pk),
           appointmentDetails: util.dynamodb.toDynamoDB({
             pk: pk,
             sk: sk,

@@ -61,7 +61,7 @@ function Appointments() {
 
     const input: CancelBookingInput = {
       bookingId: booking.pk,
-      appointmentId: booking.appointmentId,
+      appointmentId: booking.appointmentDetails.pk,
       sk: booking.sk,
       envName: 'dev',
     };

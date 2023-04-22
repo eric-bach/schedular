@@ -28,7 +28,7 @@ export function request(ctx) {
           sk: util.dynamodb.toDynamoDB(ctx.args.input.sk),
         },
         update: {
-          expression: 'SET #status = :available, updatedAt = :updatedAt REMOVE bookingId, customerId, customerDetails',
+          expression: 'SET #status = :available, updatedAt = :updatedAt REMOVE bookingId, customerDetails',
           expressionNames: {
             '#status': 'status',
           },

@@ -1,6 +1,7 @@
 import { Base } from './BaseTypes';
 
-export type AppointmentItem = {
+// GetAvailableAppointments - /booking
+export type AvailableAppointmentItem = {
   pk: string;
   sk: string;
   status: string;
@@ -9,28 +10,21 @@ export type AppointmentItem = {
   duration: number;
   bookingId: string;
 };
-
-export type GetAppointmentsResponse = {
+export type GetAvailableAppointmentsResponse = {
   getAvailableAppointments: {
-    items: [AppointmentItem];
+    items: [AvailableAppointmentItem];
   };
   lastEvaluatedKey: Base;
 };
 
-export type BookingItem = {
+// GetAppointments - /admin/schedule
+export type AppointmentItem = {
   pk: string;
   sk: string;
+  status: string;
   type: string;
-  appointmentId: string;
-  appointmentDetails: {
-    pk: string;
-    sk: string;
-    type: string;
-    category: string;
-    status: string;
-    duration: number;
-  };
-  customerId: String;
+  category: string;
+  duration: number;
   customerDetails: {
     id: string;
     firstName: string;
@@ -38,29 +32,38 @@ export type BookingItem = {
     email: string;
     phone: string;
   };
+  bookingId: string;
 };
-
-export type GetBookingsResponse = {
-  getBookings: {
-    items: [BookingItem];
+export type GetAppointmentsResponse = {
+  getAppointments: {
+    items: [AppointmentItem];
   };
   lastEvaluatedKey: Base;
 };
 
-export type CancelBookingInput = {
-  bookingId: string;
-  appointmentId: string;
+// CreateBooking - /booking
+export type CreateBookingInput = {
+  pk: string;
   sk: string;
+  customer: {
+    id: string | undefined;
+    firstName: string | undefined;
+    lastName: string | undefined;
+    email: string | undefined;
+    phone: string | undefined;
+  };
+  appointmentDetails: {
+    duration: number;
+    type: string;
+    category: string;
+  };
   envName: string;
 };
-
-// CreateBooking
 export type CreateBookingResponse = {
   createBooking: {
     pk: string;
     sk: string;
     type: string;
-    appointmentId: string;
     appointmentDetails: {
       pk: string;
       sk: string;
@@ -80,13 +83,47 @@ export type CreateBookingResponse = {
   };
 };
 
-// CancelBooking
+// GetBookings = /user/appointments
+export type BookingItem = {
+  pk: string;
+  sk: string;
+  type: string;
+  appointmentDetails: {
+    pk: string;
+    sk: string;
+    type: string;
+    category: string;
+    status: string;
+    duration: number;
+  };
+  customerId: String;
+  customerDetails: {
+    id: string;
+    firstName: string;
+    lastName: string;
+    email: string;
+    phone: string;
+  };
+};
+export type GetBookingsResponse = {
+  getBookings: {
+    items: [BookingItem];
+  };
+  lastEvaluatedKey: Base;
+};
+
+// CancelBooking - /user/appointments
+export type CancelBookingInput = {
+  bookingId: string;
+  appointmentId: string;
+  sk: string;
+  envName: string;
+};
 export type CancelBookingResponse = {
   cancelBooking: {
     pk: string;
     sk: string;
     type: string;
-    appointmentId: string;
     appointmentDetails: {
       pk: string;
       sk: string;
@@ -103,23 +140,4 @@ export type CancelBookingResponse = {
       phone: string | undefined;
     };
   };
-};
-
-// CreateBooking
-export type CreateBookingInput = {
-  pk: string;
-  sk: string;
-  customer: {
-    id: string | undefined;
-    firstName: string | undefined;
-    lastName: string | undefined;
-    email: string | undefined;
-    phone: string | undefined;
-  };
-  appointmentDetails: {
-    duration: number;
-    type: string;
-    category: string;
-  };
-  envName: string;
 };

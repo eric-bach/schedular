@@ -56,7 +56,6 @@ export const GET_BOOKINGS = `query GetBookings($customerId: String!, $datetime: 
       pk
       sk
       type
-      appointmentId
       appointmentDetails {
         pk
         sk
@@ -87,7 +86,6 @@ export const CREATE_BOOKING = `mutation CreateBooking($input: CreateBookingInput
     pk
     sk
     type
-    appointmentId
     appointmentDetails {
       pk
       sk
@@ -112,7 +110,6 @@ export const CANCEL_BOOKING = `mutation CancelBooking($input: CancelBookingInput
     pk
     sk
     type
-    appointmentId
     appointmentDetails {
       pk
       sk

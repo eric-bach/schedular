@@ -19,7 +19,12 @@ import Button from '@mui/material/Button';
 
 import aws_exports from '../../aws-exports';
 import { GET_AVAILABLE_APPOINTMENTS, CREATE_BOOKING } from '../../graphql/queries';
-import { GetAppointmentsResponse, AppointmentItem, CreateBookingResponse, CreateBookingInput } from '../../types/BookingTypes';
+import {
+  GetAvailableAppointmentsResponse,
+  AvailableAppointmentItem,
+  CreateBookingResponse,
+  CreateBookingInput,
+} from '../../types/BookingTypes';
 import { formatLocalTimeSpanString, formatLongDateString } from '../../helpers/utils';
 
 import '@aws-amplify/ui-react/styles.css';
@@ -30,8 +35,8 @@ function Booking() {
   const { user } = useAuthenticator((context) => [context.route]);
 
   const [date, setDate] = React.useState<Dayjs | null>(dayjs());
-  const [availableAppointments, setAvailableAppointments] = React.useState<[AppointmentItem | undefined]>();
-  const [appointment, setAppointment] = React.useState<AppointmentItem>();
+  const [availableAppointments, setAvailableAppointments] = React.useState<[AvailableAppointmentItem | undefined]>();
+  const [appointment, setAppointment] = React.useState<AvailableAppointmentItem>();
   const [isLoading, setLoading] = React.useState<boolean>(false);
   const [isError, setError] = React.useState<boolean>(false);
 
@@ -45,7 +50,7 @@ function Booking() {
 
     setLoading(true);
 
-    const appointments = await API.graphql<GraphQLQuery<GetAppointmentsResponse>>(
+    const appointments = await API.graphql<GraphQLQuery<GetAvailableAppointmentsResponse>>(
       graphqlOperation(GET_AVAILABLE_APPOINTMENTS, { from, to })
     );
     setAvailableAppointments(appointments.data?.getAvailableAppointments?.items);
@@ -69,7 +74,7 @@ function Booking() {
     console.debug('[BOOKING] Available appointments', availableAppointments);
   }
 
-  function appointmentSelected(appointment: AppointmentItem) {
+  function appointmentSelected(appointment: AvailableAppointmentItem) {
     console.debug('[BOOKING] Selected appointment', appointment);
     setAppointment(appointment);
   }
@@ -91,9 +96,9 @@ function Booking() {
         phone: user.attributes?.phone_number,
       },
       appointmentDetails: {
-        duration: appointment.duration,
         type: appointment.type,
         category: appointment.category,
+        duration: appointment.duration,
       },
       envName: aws_exports.env_name,
     };

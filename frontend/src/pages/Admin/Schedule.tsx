@@ -17,7 +17,7 @@ import Grid from '@mui/material/Unstable_Grid2';
 import dayjs, { Dayjs } from 'dayjs';
 
 import { GET_APPOINTMENTS } from '../../graphql/queries';
-import { GetAppointmentsResponse, AppointmentItem } from './AppointmentTypes';
+import { GetAppointmentsResponse, AppointmentItem } from '../../types/BookingTypes';
 import { formatLongDateString, formatLocalTimeString } from '../../helpers/utils';
 
 function Schedule() {
@@ -94,7 +94,7 @@ function Schedule() {
                   const heading = `${formatLocalTimeString(appt.sk, 0)} to ${formatLocalTimeString(appt.sk, appt.duration ?? 0)}`;
 
                   return (
-                    <div key={appt.sk}>
+                    <React.Fragment key={appt.sk}>
                       <ListItem
                         alignItems='flex-start'
                         secondaryAction={
@@ -148,7 +148,7 @@ function Schedule() {
                         />
                       </ListItem>
                       <Divider component='li' />
-                    </div>
+                    </React.Fragment>
                   );
                 })}
               </List>
