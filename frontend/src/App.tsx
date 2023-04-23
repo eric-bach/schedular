@@ -1,19 +1,19 @@
 import { Authenticator } from '@aws-amplify/ui-react';
+import { BrowserRouter, Routes, Route } from 'react-router-dom';
 
-import { RequireAuth } from './components/RequireAuth';
-import { Login } from './components/Login';
 import Home from './pages/Home/Home';
 import { Header } from './Header';
-
-import { BrowserRouter, Routes, Route } from 'react-router-dom';
+import { Login } from './components/Login';
+import { RequireAuth } from './components/RequireAuth';
+import { RequireAdminAuth } from './components/RequireAdminAuth';
 import Services from './pages/Home/Services';
 import Pricing from './pages/Home/Pricing';
 import Booking from './pages/Booking/Booking';
 import Confirmation from './pages/Booking/Confirmation';
-import Appointments from './pages/User/Appointments';
+import UserAppointments from './pages/User/UserAppointments';
 import Profile from './pages/User/Profile';
+import Appointments from './pages/Admin/Appointments';
 import Schedule from './pages/Admin/Schedule';
-import { RequireAdminAuth } from './components/RequireAdminAuth';
 
 function App() {
   return (
@@ -52,8 +52,16 @@ function App() {
               path='/user/appointments'
               element={
                 <RequireAuth>
-                  <Appointments />
+                  <UserAppointments />
                 </RequireAuth>
+              }
+            />
+            <Route
+              path='/admin/appointments'
+              element={
+                <RequireAdminAuth>
+                  <Appointments />
+                </RequireAdminAuth>
               }
             />
             <Route

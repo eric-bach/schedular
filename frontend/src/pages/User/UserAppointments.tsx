@@ -33,7 +33,7 @@ import Stack from '@mui/material/Stack';
 
 Amplify.configure(aws_exports);
 
-function Appointments() {
+function UserAppointments() {
   const { user, authStatus } = useAuthenticator((context) => [context.route]);
   const navigate = useNavigate();
 
@@ -47,8 +47,8 @@ function Appointments() {
   const fullScreen = useMediaQuery(theme.breakpoints.down('md'));
 
   const getCustomerAppointments = async (customerId: string) => {
-    //console.debug('[APPOINTMENTS] Getting appointments for', customerId);
-    console.debug('[APPOINTMENTS] Getting appointments for', new Date().toISOString());
+    //console.debug('[USER APPOINTMENTS] Getting appointments for', customerId);
+    console.debug('[USER APPOINTMENTS] Getting appointments for', new Date().toISOString());
 
     setLoading(true);
     const result = await API.graphql<GraphQLQuery<GetBookingsResponse>>(
@@ -68,7 +68,7 @@ function Appointments() {
   useEffect(() => {
     if (authStatus === 'authenticated' && user.attributes) {
       getCustomerAppointments(user.attributes.sub).then((resp) => {
-        console.debug('[APPOINTMENTS] Found bookings', resp);
+        console.debug('[USER APPOINTMENTS] Found bookings', resp);
       });
     } else {
       // TODO Return error
@@ -86,11 +86,11 @@ function Appointments() {
       envName: 'dev',
     };
 
-    console.debug('[APPOINTMENTS] Cancel booking:', input);
+    console.debug('[USER APPOINTMENTS] Cancel booking:', input);
 
     const result = await API.graphql<GraphQLQuery<CancelBookingResponse>>(graphqlOperation(CANCEL_BOOKING, { input: input }));
 
-    console.debug('[APPOINTMENTS] Cancel booking result:', result);
+    console.debug('[USER APPOINTMENTS] Cancel booking result:', result);
 
     if (!result.errors) {
       navigate(0);
@@ -211,4 +211,4 @@ function Appointments() {
   );
 }
 
-export default Appointments;
+export default UserAppointments;
