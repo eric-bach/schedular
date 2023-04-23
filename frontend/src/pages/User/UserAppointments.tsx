@@ -1,5 +1,4 @@
 import React, { useEffect } from 'react';
-import { useNavigate } from 'react-router-dom';
 import { Amplify } from 'aws-amplify';
 import { Loader, useAuthenticator } from '@aws-amplify/ui-react';
 import { API, graphqlOperation } from 'aws-amplify';
@@ -41,7 +40,6 @@ Amplify.configure(aws_exports);
 
 function UserAppointments() {
   const { user, authStatus } = useAuthenticator((context) => [context.route]);
-  const navigate = useNavigate();
 
   const [isLoading, setLoading] = React.useState<boolean>(false);
   const [bookings, setBookings] = React.useState<(BookingItem | undefined)[]>();
@@ -72,11 +70,6 @@ function UserAppointments() {
     return result.data?.getBookings?.items;
   };
 
-  async function updateInfo(data: OnCancelBookingResponse) {
-    console.log(bookings);
-    console.log(data);
-  }
-
   // Subscribe to creation of Todo
   useEffect(() => {
     const onCancelBookingListener = API.graphql<GraphQLSubscription<OnCancelBookingResponse>>(
@@ -86,21 +79,11 @@ function UserAppointments() {
         console.log('[USER APPOINTMENTS] Received subscription event', value);
         setOpen(false);
 
-        // TODO Refresh UI from GraphQL Subscription
-        console.log('[USER APPPOINTMENTS]: ', bookings);
-        console.log(
-          'MATCHING BOOKING: ',
-          bookings?.find((b) => b?.pk === value.data.onCancelBooking.pk)
-        );
-
-        let bookingsWithoutCancelled = bookings?.filter((b) => b?.pk !== value.data.onCancelBooking.pk);
-        console.log('BOOKINGS WITHOUT CANCELLED ONE: ', bookingsWithoutCancelled);
-        const newBookings = bookingsWithoutCancelled?.push(value.data.onCancelBooking);
-        console.log('BOOKINGS WITH NEW CANCELLED ONE: ', bookingsWithoutCancelled);
-        setBookings(bookingsWithoutCancelled);
-
-        // TODO Remove this once Subscriptions working
-        //navigate(0);
+        // Update bookings with cancelled booking from GraphQL subscription without calling server
+        let filteredBookings = bookings?.filter((b) => b?.pk !== value.data.onCancelBooking.pk);
+        filteredBookings?.push(value.data.onCancelBooking);
+        console.log('[USER APPOINTMENTS] Updated bookings:', filteredBookings);
+        setBookings(filteredBookings);
       },
       error: (error: any) => setError(true),
     });
@@ -126,7 +109,7 @@ function UserAppointments() {
     const input: CancelBookingInput = {
       bookingId: booking.pk,
       appointmentDetails: booking.appointmentDetails,
-      envName: 'dev',
+      envName: aws_exports.env_name,
     };
 
     console.debug('[USER APPOINTMENTS] Cancel booking:', input);

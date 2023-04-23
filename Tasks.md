@@ -11,7 +11,7 @@
 - [x] Switch resolvers to TypeScript
 - [x] Fix UTC to local date/time
 - [x] Fix email notifications
-- [] Investigate using GraphQL Subscriptions to update Cancelled Bookings
+- [x] Investigate using GraphQL Subscriptions to update Cancelled Bookings
 - [] Investigate why field level permissions are not working - https://aws.amazon.com/blogs/mobile/graphql-security-appsync-amplify/
 - [] Add pagination to bookings/appointments list
 - [] Switch to use SES email templates
@@ -92,9 +92,10 @@ query GetBookings {
       appointmentDetails {
         pk
         sk
-        duration
         type
         category
+        status
+        duration
       }
       customerId
       customerDetails {
