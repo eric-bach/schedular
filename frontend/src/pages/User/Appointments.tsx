@@ -143,20 +143,14 @@ function Appointments() {
                     <ListItemText
                       primary={heading}
                       secondary={
-                        <Stack>
-                          <Typography component='span' variant='subtitle2' color='text.primary' sx={{ display: 'inline' }}>
-                            Type:{' '}
-                            <Typography component='span' variant='body2'>
-                              {booking.appointmentDetails.category}
-                            </Typography>
+                        <React.Fragment>
+                          <Typography component='span' variant='subtitle2' color='text.primary' sx={{ display: 'block' }}>
+                            Type: {booking.appointmentDetails.category}
                           </Typography>
-                          <Typography component='span' variant='subtitle2' color='text.primary' sx={{ display: 'inline' }}>
-                            Confirmation Id:{' '}
-                            <Typography component='span' variant='body2'>
-                              {booking.pk.split('#')[1]}
-                            </Typography>
+                          <Typography component='span' variant='subtitle2' color='text.primary' sx={{ display: 'block' }}>
+                            Confirmation Id: {booking.pk.split('#')[1]}
                           </Typography>
-                        </Stack>
+                        </React.Fragment>
                       }
                     />
                   </ListItem>

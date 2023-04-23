@@ -11,7 +11,7 @@
 - [x] Switch resolvers to TypeScript
 - [x] Fix UTC to local date/time
 - [x] Fix email notifications
-- [] Add pagination to bookings list
+- [] Add pagination to bookings/appointments list
 - [] Clean up styling
 - [] Build out a proper Appointment Confirmation email template
 - [] Verify email domain to remove spoofing warning

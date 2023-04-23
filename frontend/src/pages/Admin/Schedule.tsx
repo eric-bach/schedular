@@ -111,37 +111,30 @@ function Schedule() {
                           secondary={
                             <React.Fragment>
                               {appt?.bookingId ? (
-                                <Stack>
-                                  <Typography component='span' variant='subtitle2' color='text.primary' sx={{ display: 'inline' }}>
+                                <React.Fragment>
+                                  <Typography component='span' variant='subtitle2' color='text.primary' sx={{ display: 'block' }}>
                                     Customer:{' '}
                                     <Typography component='span' variant='body2'>
                                       {appt?.customerDetails?.firstName}
                                     </Typography>
                                   </Typography>
-                                  <Typography component='span' variant='subtitle2' color='text.primary' sx={{ display: 'inline' }}>
+                                  <Typography component='span' variant='subtitle2' color='text.primary' sx={{ display: 'block' }}>
                                     Email:{' '}
                                     <Typography component='span' variant='body2'>
                                       {appt?.customerDetails?.email}
                                     </Typography>
                                   </Typography>
-                                  <Typography component='span' variant='subtitle2' color='text.primary' sx={{ display: 'inline' }}>
+                                  <Typography component='span' variant='subtitle2' color='text.primary' sx={{ display: 'block' }}>
                                     Phone:{' '}
                                     <Typography component='span' variant='body2'>
                                       {appt?.customerDetails?.phone}
                                     </Typography>
                                   </Typography>
-                                </Stack>
+                                </React.Fragment>
                               ) : (
-                                <Stack>
-                                  <Typography
-                                    component='span'
-                                    variant='body2'
-                                    color='green'
-                                    sx={{ fontStyle: 'italic', display: 'inline' }}
-                                  >
-                                    Appointment Available
-                                  </Typography>
-                                </Stack>
+                                <Typography component='span' variant='body2' color='green' sx={{ fontStyle: 'italic', display: 'block' }}>
+                                  Appointment Available
+                                </Typography>
                               )}
                             </React.Fragment>
                           }
