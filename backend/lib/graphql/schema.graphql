@@ -81,7 +81,7 @@ type BookingResponse {
   type: String!
   appointmentDetails: AppointmentDetailsViewModel!
   customerId: String
-  customerDetails: CustomerDetailsViewModel @aws_auth(cognito_groups: ["Admins"])
+  customerDetails: CustomerDetailsViewModel
   createdAt: AWSDateTime
   updatedAt: AWSDateTime
 }
@@ -102,7 +102,7 @@ type AppointmentViewModel {
   category: String!
   duration: Int!
   bookingId: String
-  customerDetails: CustomerDetailsViewModel @aws_auth(cognito_groups: ["Admins"])
+  customerDetails: CustomerDetailsViewModel
   createdAt: AWSDateTime
   updatedAt: AWSDateTime
 }
@@ -120,7 +120,7 @@ type GetAppointmentResponse {
   category: String!
   duration: Int!
   bookingId: String
-  customerDetails: CustomerDetailsViewModel @aws_auth(cognito_groups: ["Admins"])
+  customerDetails: CustomerDetailsViewModel
   createdAt: AWSDateTime
   updatedAt: AWSDateTime
 }
@@ -161,6 +161,26 @@ type GetBookingsResponse {
   lastEvaluatedKey: LastEvaluatedKeyViewModel
 }
 
+type Event {
+  pk: String
+  sk: AWSDateTime
+  type: String
+  category: String
+  duration: Int
+  status: String
+  bookingId: String
+  appointmentId: String
+  appointmentDetails: AppointmentDetailsData
+  customerId: String
+  customerDetails: CustomerDetailsData
+  firstName: String
+  lastName: String
+  email: String
+  phoneNumber: String
+  createdAt: AWSDateTime
+  updatedAt: AWSDateTime
+}
+
 # GraphQL actions
 type Query {
   getAvailableAppointments(from: String!, to: String!, lastEvaluatedKey: LastEvaluatedKey): GetAppointmentsResponse
@@ -178,7 +198,12 @@ type Mutation {
   cancelBooking(input: CancelBookingInput): BookingResponse @aws_auth(cognito_groups: ["Users", "Admins"])
 }
 
+type Subscription {
+  onCancelBooking: BookingResponse @aws_subscribe(mutations: ["cancelBooking"])
+}
+
 schema {
   query: Query
   mutation: Mutation
+  subscription: Subscription
 }

@@ -111,7 +111,7 @@ export class ApiStack extends Stack {
       name: `${props.appName}-table-${props.envName}`,
       serviceRole: new Role(this, `${props.appName}ApiServiceRole`, {
         assumedBy: new ServicePrincipal('appsync.amazonaws.com'),
-        roleName: `${props.appName}-dynamoDb-service-role-2-${props.envName}`,
+        roleName: `${props.appName}-dynamoDb-service-role-${props.envName}`,
         inlinePolicies: {
           name: new PolicyDocument({
             statements: [
