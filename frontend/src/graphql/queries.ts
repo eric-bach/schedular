@@ -128,3 +128,28 @@ export const CANCEL_BOOKING = `mutation CancelBooking($input: CancelBookingInput
     }
   }
 }`;
+
+export const ON_CANCEL_BOOKING = `subscription OnCancelBooking {
+  onCancelBooking {
+    pk
+    sk
+    type
+    appointmentDetails {
+      pk
+      sk
+      type
+      category
+      status
+      duration
+    }
+    customerId
+    customerDetails {
+      id
+      firstName
+      lastName
+      email
+      phone
+    }
+  }  
+} 
+`;

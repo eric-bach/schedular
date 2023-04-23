@@ -147,3 +147,25 @@ export type CancelBookingResponse = {
     };
   };
 };
+
+// OnCancelBooking
+export type OnCancelBookingResponse = {
+  pk: string;
+  sk: string;
+  type: string;
+  appointmentDetails: {
+    pk: string;
+    sk: string;
+    type: string;
+    category: string;
+    status: string;
+    duration: number;
+  };
+  customerDetails: {
+    id: string | undefined;
+    firstName: string | undefined;
+    lastName: string | undefined;
+    email: string | undefined;
+    phone: string | undefined;
+  };
+};

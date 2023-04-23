@@ -11,6 +11,8 @@
 - [x] Switch resolvers to TypeScript
 - [x] Fix UTC to local date/time
 - [x] Fix email notifications
+- [x] Investigate using GraphQL Subscriptions to update Cancelled Bookings
+- [] Investigate why field level permissions are not working - https://aws.amazon.com/blogs/mobile/graphql-security-appsync-amplify/
 - [] Add pagination to bookings/appointments list
 - [] Switch to use SES email templates
 - [] Clean up styling
@@ -39,7 +41,7 @@
 
 ```
 query GetAvailableAppointments {
-  getAvailableAppointments(from: "2023-04-20T06:00:00Z", to: "2023-04-21T06:00:00Z")
+  getAvailableAppointments(from: "2023-04-20T06:00:00Z", to: "2023-04-22T06:00:00Z")
   {
     items {
       pk
@@ -47,7 +49,23 @@ query GetAvailableAppointments {
       status
       type
       category
-      date
+      duration
+      bookingId
+      updatedAt
+      createdAt
+    }
+  }
+}
+
+query GetAppointments {
+  getAppointments(from: "2023-04-21T06:00:00Z", to: "2023-04-22T06:00:00Z")
+  {
+    items {
+      pk
+      sk
+      status
+      type
+      category
       duration
       bookingId
       customerDetails {
@@ -57,24 +75,7 @@ query GetAvailableAppointments {
         email
         phone
       }
-      updatedAt
-      createdAt
-    }
-  }
-}
 
-query GetAppointments {
-  getAppointments(from: "2023-04-20T06:00:00Z", to: "2023-04-21T06:00:00Z")
-  {
-    items {
-      pk
-      sk
-      status
-      type
-      category
-      date
-      duration
-      bookingId
       updatedAt
       createdAt
     }
@@ -87,13 +88,14 @@ query GetBookings {
     items {
       pk
       sk
-      status
       type
       appointmentDetails {
+        pk
         sk
-        duration
         type
         category
+        status
+        duration
       }
       customerId
       customerDetails {
@@ -128,12 +130,15 @@ mutation CreateBooking {
   {
     pk
     sk
-    status
     type
-    category
-    date
-    duration
-    bookingId
+    appointmentDetails {
+      pk
+      sk
+      duration
+      type
+      category
+    }
+    customerId
     customerDetails  {
       id
       firstName

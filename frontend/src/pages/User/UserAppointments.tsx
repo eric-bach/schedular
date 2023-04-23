@@ -1,9 +1,8 @@
 import React, { useEffect } from 'react';
-import { useNavigate } from 'react-router-dom';
 import { Amplify } from 'aws-amplify';
 import { Loader, useAuthenticator } from '@aws-amplify/ui-react';
 import { API, graphqlOperation } from 'aws-amplify';
-import { GraphQLQuery } from '@aws-amplify/api';
+import { GraphQLQuery, GraphQLSubscription } from '@aws-amplify/api';
 import Alert from '@mui/material/Alert';
 import AlertTitle from '@mui/material/AlertTitle';
 import Container from '@mui/material/Container';
@@ -24,8 +23,14 @@ import useMediaQuery from '@mui/material/useMediaQuery';
 import { useTheme } from '@mui/material/styles';
 
 import aws_exports from '../../aws-exports';
-import { CANCEL_BOOKING, GET_BOOKINGS } from '../../graphql/queries';
-import { GetBookingsResponse, BookingItem, CancelBookingInput, CancelBookingResponse } from '../../types/BookingTypes';
+import { CANCEL_BOOKING, GET_BOOKINGS, ON_CANCEL_BOOKING } from '../../graphql/queries';
+import {
+  GetBookingsResponse,
+  BookingItem,
+  CancelBookingInput,
+  CancelBookingResponse,
+  OnCancelBookingResponse,
+} from '../../types/BookingTypes';
 
 import '@aws-amplify/ui-react/styles.css';
 import { formateLocalLongDate, formatLocalTimeString } from '../../helpers/utils';
@@ -35,10 +40,9 @@ Amplify.configure(aws_exports);
 
 function UserAppointments() {
   const { user, authStatus } = useAuthenticator((context) => [context.route]);
-  const navigate = useNavigate();
 
   const [isLoading, setLoading] = React.useState<boolean>(false);
-  const [bookings, setBookings] = React.useState<[BookingItem | undefined]>();
+  const [bookings, setBookings] = React.useState<(BookingItem | undefined)[]>();
   const [selectedBooking, setSelectedBooking] = React.useState<BookingItem>();
   const [isError, setError] = React.useState<boolean>(false);
   const [open, setOpen] = React.useState(false);
@@ -46,7 +50,7 @@ function UserAppointments() {
   const theme = useTheme();
   const fullScreen = useMediaQuery(theme.breakpoints.down('md'));
 
-  const getCustomerAppointments = async (customerId: string) => {
+  const getBookings = async (customerId: string) => {
     //console.debug('[USER APPOINTMENTS] Getting appointments for', customerId);
     console.debug('[USER APPOINTMENTS] Getting appointments for', new Date().toISOString());
 
@@ -58,6 +62,7 @@ function UserAppointments() {
       })
     );
 
+    console.debug('[USER APPOINTMENTS] Found appointments', result);
     setBookings(result.data?.getBookings?.items);
 
     setLoading(false);
@@ -65,9 +70,30 @@ function UserAppointments() {
     return result.data?.getBookings?.items;
   };
 
+  // Subscribe to creation of Todo
+  useEffect(() => {
+    const onCancelBookingListener = API.graphql<GraphQLSubscription<OnCancelBookingResponse>>(
+      graphqlOperation(ON_CANCEL_BOOKING)
+    ).subscribe({
+      next: async ({ provider, value }: any) => {
+        console.log('[USER APPOINTMENTS] Received subscription event', value);
+        setOpen(false);
+
+        // Update bookings with cancelled booking from GraphQL subscription without calling server
+        let filteredBookings = bookings?.filter((b) => b?.pk !== value.data.onCancelBooking.pk);
+        filteredBookings?.push(value.data.onCancelBooking);
+        console.log('[USER APPOINTMENTS] Updated bookings:', filteredBookings);
+        setBookings(filteredBookings);
+      },
+      error: (error: any) => setError(true),
+    });
+
+    return () => onCancelBookingListener.unsubscribe();
+  }, [bookings]);
+
   useEffect(() => {
     if (authStatus === 'authenticated' && user.attributes) {
-      getCustomerAppointments(user.attributes.sub).then((resp) => {
+      getBookings(user.attributes.sub).then((resp) => {
         console.debug('[USER APPOINTMENTS] Found bookings', resp);
       });
     } else {
@@ -83,7 +109,7 @@ function UserAppointments() {
     const input: CancelBookingInput = {
       bookingId: booking.pk,
       appointmentDetails: booking.appointmentDetails,
-      envName: 'dev',
+      envName: aws_exports.env_name,
     };
 
     console.debug('[USER APPOINTMENTS] Cancel booking:', input);
@@ -91,13 +117,6 @@ function UserAppointments() {
     const result = await API.graphql<GraphQLQuery<CancelBookingResponse>>(graphqlOperation(CANCEL_BOOKING, { input: input }));
 
     console.debug('[USER APPOINTMENTS] Cancel booking result:', result);
-
-    if (!result.errors) {
-      navigate(0);
-    } else {
-      setError(true);
-      // TODO display error
-    }
   };
 
   const handleClickOpen = (booking: BookingItem) => {
