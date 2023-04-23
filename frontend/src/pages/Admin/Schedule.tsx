@@ -9,7 +9,6 @@ import ListItem from '@mui/material/ListItem';
 import Divider from '@mui/material/Divider';
 import ListItemText from '@mui/material/ListItemText';
 import Chip from '@mui/material/Chip';
-import Stack from '@mui/material/Stack';
 import { AdapterDayjs } from '@mui/x-date-pickers/AdapterDayjs';
 import { LocalizationProvider } from '@mui/x-date-pickers/LocalizationProvider';
 import { DateCalendar } from '@mui/x-date-pickers';
@@ -36,13 +35,13 @@ function Schedule() {
 
     setLoading(true);
 
-    const appointments = await API.graphql<GraphQLQuery<GetAppointmentsResponse>>(graphqlOperation(GET_APPOINTMENTS, { from, to }));
-    setAppointments(appointments.data?.getAppointments?.items);
-    setDateHeading(`${formatLongDateString(dayjs(d))}`);
+    // const appointments = await API.graphql<GraphQLQuery<GetAppointmentsResponse>>(graphqlOperation(GET_APPOINTMENTS, { from, to }));
+    // setAppointments(appointments.data?.getAppointments?.items);
+    // setDateHeading(`${formatLongDateString(dayjs(d))}`);
 
     setLoading(false);
 
-    return appointments.data?.getAppointments?.items;
+    //return appointments.data?.getAppointments?.items;
   };
 
   async function dateSelected(d: Dayjs | null) {
@@ -85,66 +84,6 @@ function Schedule() {
               <Typography variant='h5' fontWeight='bold' align='left' color='textPrimary' gutterBottom sx={{ mt: 2 }}>
                 Schedule for {dateHeading}:
               </Typography>
-              <List sx={{ bgcolor: 'background.paper' }}>
-                {(!appointments || appointments.length < 1) && <Typography>No Appointments Today 😄</Typography>}
-
-                {appointments?.map((appt) => {
-                  if (!appt) return <></>;
-
-                  const heading = `${formatLocalTimeString(appt.sk, 0)} to ${formatLocalTimeString(appt.sk, appt.duration ?? 0)}`;
-
-                  return (
-                    <React.Fragment key={appt.sk}>
-                      <ListItem
-                        alignItems='flex-start'
-                        secondaryAction={
-                          <Chip
-                            label={appt?.status}
-                            color={appt?.status === 'booked' ? 'primary' : 'success'}
-                            variant={appt?.status === 'cancelled' ? 'outlined' : 'filled'}
-                            sx={{ mb: 1 }}
-                          />
-                        }
-                      >
-                        <ListItemText
-                          primary={heading}
-                          secondary={
-                            <React.Fragment>
-                              {appt?.bookingId ? (
-                                <React.Fragment>
-                                  <Typography component='span' variant='subtitle2' color='text.primary' sx={{ display: 'block' }}>
-                                    Customer:{' '}
-                                    <Typography component='span' variant='body2'>
-                                      {appt?.customerDetails?.firstName}
-                                    </Typography>
-                                  </Typography>
-                                  <Typography component='span' variant='subtitle2' color='text.primary' sx={{ display: 'block' }}>
-                                    Email:{' '}
-                                    <Typography component='span' variant='body2'>
-                                      {appt?.customerDetails?.email}
-                                    </Typography>
-                                  </Typography>
-                                  <Typography component='span' variant='subtitle2' color='text.primary' sx={{ display: 'block' }}>
-                                    Phone:{' '}
-                                    <Typography component='span' variant='body2'>
-                                      {appt?.customerDetails?.phone}
-                                    </Typography>
-                                  </Typography>
-                                </React.Fragment>
-                              ) : (
-                                <Typography component='span' variant='body2' color='green' sx={{ fontStyle: 'italic', display: 'block' }}>
-                                  Appointment Available
-                                </Typography>
-                              )}
-                            </React.Fragment>
-                          }
-                        />
-                      </ListItem>
-                      <Divider component='li' />
-                    </React.Fragment>
-                  );
-                })}
-              </List>
             </>
           )}
         </Grid>

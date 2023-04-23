@@ -12,8 +12,8 @@
 - [x] Fix UTC to local date/time
 - [x] Fix email notifications
 - [] Add pagination to bookings/appointments list
+- [] Switch to use SES email templates
 - [] Clean up styling
-- [] Build out a proper Appointment Confirmation email template
 - [] Verify email domain to remove spoofing warning
 
 # User
@@ -25,13 +25,15 @@
 - [x] As a user I want to see my upcoming appointments
 - [x] Bug: Fix issue with Bookings showing available appointments that have past
 - [x] As a user I want the ability to cancel an appointment
-- [] As a user I want to receive notification email of an upcoming appointment
+- [x] As a user I want to be able to change my password
 - [] As a user I want to see my past appointments
+  - [] Sort appointments
+- [] As a user I want to receive notification email of an upcoming appointment
 
 # Admin
 
 - [x] As a massage therapist I want to be able to see all my daily appointments
-- [] As a massage therapist I want to be able to set my availability
+- [] +++As a massage therapist I want to be able to set my availability
 - [] As a massage therapist I want to require a phone consultation before a massage booking
 - [] As a massage therapist I want to be able to see and manage a users bookings
 
