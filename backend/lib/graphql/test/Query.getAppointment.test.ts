@@ -2,13 +2,14 @@ import { AppSyncClient, EvaluateCodeCommand, EvaluateCodeCommandInput } from '@a
 import { unmarshall } from '@aws-sdk/util-dynamodb';
 import { readFile } from 'fs/promises';
 const appsync = new AppSyncClient({ region: 'us-east-1' });
-const file = './lib/graphql/Query.getAppointments.js';
+const file = './lib/graphql/Query.getAppointment.js';
 
 test('validate a getAppointment request', async () => {
   // Arrange
   const context = {
     arguments: {
-      date: new Date().toISOString().substring(0, 10),
+      pk: 'booking#123',
+      sk: new Date().toISOString(),
     },
   };
   const input: EvaluateCodeCommandInput = {
@@ -29,8 +30,9 @@ test('validate a getAppointment request', async () => {
 
   const result = JSON.parse(response.evaluationResult ?? '{}');
   expect(result.operation).toEqual('Query');
-  expect(result.query.expression).toEqual('#date = :date');
+  expect(result.query.expression).toEqual('pk = :pk AND sk = :sk');
 
   const expressionValues = unmarshall(result.query.expressionValues);
-  expect(expressionValues[':date']).toEqual(`appt#${context.arguments.date}`);
+  expect(expressionValues[':pk']).toEqual(`appt#${context.arguments.pk}`);
+  expect(expressionValues[':sk']).toEqual(`appt#${context.arguments.sk}`);
 });

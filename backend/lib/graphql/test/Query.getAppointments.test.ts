@@ -2,9 +2,9 @@ import { AppSyncClient, EvaluateCodeCommand, EvaluateCodeCommandInput } from '@a
 import { unmarshall } from '@aws-sdk/util-dynamodb';
 import { readFile } from 'fs/promises';
 const appsync = new AppSyncClient({ region: 'us-east-1' });
-const file = './lib/graphql/Query.getAvailableAppointments.js';
+const file = './lib/graphql/Query.getAppointments.js';
 
-test('validate a getAvailableAppointment request', async () => {
+test('validate a getAppointment request', async () => {
   // Arrange
   const today = new Date();
   const context = {
@@ -36,8 +36,4 @@ test('validate a getAvailableAppointment request', async () => {
   const expressionValues = unmarshall(result.query.expressionValues);
   expect(expressionValues[':fromDate']).toEqual(`appt#${context.arguments.from}`);
   expect(expressionValues[':toDate']).toEqual(`appt#${context.arguments.to}`);
-
-  // Status is filtered to 'available'
-  const filterValues = unmarshall(result.filter.expressionValues);
-  expect(filterValues[':s']).toEqual('available');
 });
