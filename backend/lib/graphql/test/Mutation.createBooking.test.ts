@@ -8,8 +8,8 @@ test('validate a getBookings request', async () => {
   // Arrange
   const context = {
     arguments: {
-      bookingInput: {
-        pk: '123',
+      input: {
+        pk: 'appt#123',
         sk: new Date().toISOString(),
         appointmentDetails: {
           duration: 60,
@@ -23,6 +23,7 @@ test('validate a getBookings request', async () => {
           email: 'test@test.com',
           phone: '5555555555',
         },
+        envName: 'dev',
       },
     },
   };

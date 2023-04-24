@@ -9,8 +9,8 @@ test('validate a getAppointment request', async () => {
   const today = new Date();
   const context = {
     arguments: {
-      from: today.toISOString().substring(0, 10),
-      to: new Date(today.setDate(today.getDate() + 1)).toISOString().substring(0, 10),
+      from: today.toISOString(),
+      to: new Date(today.setDate(today.getDate() + 1)).toISOString(),
     },
   };
   const input: EvaluateCodeCommandInput = {
@@ -34,6 +34,6 @@ test('validate a getAppointment request', async () => {
   expect(result.query.expression).toEqual('#type = :type AND sk BETWEEN :fromDate AND :toDate');
 
   const expressionValues = unmarshall(result.query.expressionValues);
-  expect(expressionValues[':fromDate']).toEqual(`appt#${context.arguments.from}`);
-  expect(expressionValues[':toDate']).toEqual(`appt#${context.arguments.to}`);
+  expect(expressionValues[':fromDate']).toEqual(context.arguments.from);
+  expect(expressionValues[':toDate']).toEqual(context.arguments.to);
 });
