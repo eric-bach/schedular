@@ -1,15 +1,31 @@
 import { AppSyncClient, EvaluateCodeCommand, EvaluateCodeCommandInput } from '@aws-sdk/client-appsync';
-import { unmarshall } from '@aws-sdk/util-dynamodb';
 import { readFile } from 'fs/promises';
 const appsync = new AppSyncClient({ region: 'us-east-1' });
-const file = './lib/graphql/Query.getBookings.js';
+const file = './lib/graphql/Mutation.cancelBooking.js';
 
-test('validate a getBookings request', async () => {
+test('validate a cancelBooking request', async () => {
   // Arrange
   const context = {
     arguments: {
-      customerId: '123',
-      datetime: new Date().toISOString(),
+      input: {
+        pk: 'booking#123',
+        sk: new Date().toISOString(),
+        appointmentDetails: {
+          pk: 'appt#123',
+          sk: new Date().toDateString(),
+          duration: 60,
+          type: 'appt',
+          category: 'massage',
+        },
+        customer: {
+          id: '123',
+          firstName: 'Test',
+          lastName: 'Test',
+          email: 'test@test.com',
+          phone: '5555555555',
+        },
+        envName: 'test',
+      },
     },
   };
   const input: EvaluateCodeCommandInput = {
@@ -25,18 +41,10 @@ test('validate a getBookings request', async () => {
   // Assert
   const response = await appsync.send(evaluateCodeCommand);
   expect(response).toBeDefined();
+  expect(response.$metadata.httpStatusCode).toBe(200);
   expect(response.error).toBeUndefined();
   expect(response.evaluationResult).toBeDefined();
 
   const result = JSON.parse(response.evaluationResult ?? '{}');
-  expect(result.operation).toEqual('Query');
-  expect(result.query.expression).toEqual('customerId = :customerId AND sk >= :datetime');
-
-  const expressionValues = unmarshall(result.query.expressionValues);
-  expect(expressionValues[':customerId']).toEqual(`user#${context.arguments.customerId}`);
-  expect(expressionValues[':datetime']).toEqual(context.arguments.datetime);
-
-  // Type is filtered to 'booking'
-  const filterValues = unmarshall(result.filter.expressionValues);
-  expect(filterValues[':type']).toEqual('booking');
+  expect(result.operation).toEqual('TransactWriteItems');
 }, 20000);

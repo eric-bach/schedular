@@ -4,7 +4,7 @@ import { readFile } from 'fs/promises';
 const appsync = new AppSyncClient({ region: 'us-east-1' });
 const file = './lib/graphql/Query.getAppointments.js';
 
-test('validate a getAppointment request', async () => {
+test('validate a getAppointments request', async () => {
   // Arrange
   const today = new Date();
   const context = {
@@ -36,4 +36,4 @@ test('validate a getAppointment request', async () => {
   const expressionValues = unmarshall(result.query.expressionValues);
   expect(expressionValues[':fromDate']).toEqual(context.arguments.from);
   expect(expressionValues[':toDate']).toEqual(context.arguments.to);
-});
+}, 20000);

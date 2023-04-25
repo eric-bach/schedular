@@ -4,7 +4,7 @@ import { readFile } from 'fs/promises';
 const appsync = new AppSyncClient({ region: 'us-east-1' });
 const file = './lib/graphql/Mutation.createBooking.js';
 
-test('validate a getBookings request', async () => {
+test('validate a createBooking request', async () => {
   // Arrange
   const context = {
     arguments: {
@@ -23,7 +23,7 @@ test('validate a getBookings request', async () => {
           email: 'test@test.com',
           phone: '5555555555',
         },
-        envName: 'dev',
+        envName: 'test',
       },
     },
   };
@@ -46,4 +46,13 @@ test('validate a getBookings request', async () => {
 
   const result = JSON.parse(response.evaluationResult ?? '{}');
   expect(result.operation).toEqual('TransactWriteItems');
-});
+
+  const putItemResult = result.transactItems.find((t: any) => t.operation === 'PutItem');
+  expect(putItemResult.table).toEqual(`schedular-${context.arguments.input.envName}-Data`);
+  const putItemKey = unmarshall(putItemResult.key);
+  expect(putItemKey.pk).toContain('booking#');
+  expect(putItemKey.sk).toEqual(context.arguments.input.sk);
+  const putItemValues = unmarshall(putItemResult.attributeValues);
+
+  const updateItemResult = result.transactItems.find((t: any) => t.operation === 'UpdateItem');
+}, 20000);

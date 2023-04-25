@@ -40,4 +40,4 @@ test('validate a getAvailableAppointments request', async () => {
   // Status is filtered to 'available'
   const filterValues = unmarshall(result.filter.expressionValues);
   expect(filterValues[':s']).toEqual('available');
-});
+}, 20000);

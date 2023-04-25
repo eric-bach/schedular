@@ -1,6 +1,8 @@
 import { util } from '@aws-appsync/utils';
 
 export function request(ctx) {
+  console.log('🔔 GetBookings Request: ', ctx);
+
   return {
     version: '2017-02-28',
     operation: 'Query',
