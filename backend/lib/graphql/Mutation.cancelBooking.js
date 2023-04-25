@@ -53,7 +53,7 @@ export function request(ctx) {
 }
 
 export function response(ctx) {
-  console.log('🔔 CancelAppointment Response: ', ctx);
+  console.log('🔔 CancelBooking Response: ', ctx);
 
   if (ctx.error) {
     util.error(ctx.error.message, ctx.error.type, ctx.result);

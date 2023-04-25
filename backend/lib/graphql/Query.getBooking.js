@@ -2,6 +2,7 @@ import { util } from '@aws-appsync/utils';
 
 export function request(ctx) {
   console.log('🔔 GetBooking Request: ', ctx);
+
   const appointment = ctx.prev.result.keys.find((k) => k.pk.startsWith('booking#'));
 
   return {

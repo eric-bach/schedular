@@ -2,6 +2,7 @@ import { util } from '@aws-appsync/utils';
 
 export function request(ctx) {
   console.log('🔔 GetAppointment Request: ', ctx);
+
   const appointment = ctx.prev.result.keys.find((k) => k.pk.startsWith('appt#'));
 
   return {
@@ -18,7 +19,7 @@ export function request(ctx) {
 }
 
 export function response(ctx) {
-  console.log('🔔 GetAppointments Response: ', ctx);
+  console.log('🔔 GetAppointment Response: ', ctx);
 
   if (ctx.error) {
     util.error(ctx.error.message, ctx.error.type, ctx.result);

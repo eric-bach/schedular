@@ -12,7 +12,10 @@
 - [x] Fix UTC to local date/time
 - [x] Fix email notifications
 - [x] Investigate using GraphQL Subscriptions to update Cancelled Bookings
-- [] Investigate why field level permissions are not working - https://aws.amazon.com/blogs/mobile/graphql-security-appsync-amplify/
+- [] Bug: Not showing error when duplicate bookings made
+- [] Investigate why field level permissions are not working
+  https://stackoverflow.com/questions/68520680/field-level-authorization-with-amplify-grraphql  
+   https://aws.amazon.com/blogs/mobile/graphql-security-appsync-amplify/
 - [] Add pagination to bookings/appointments list
 - [] Switch to use SES email templates
 - [] Clean up styling

@@ -78,7 +78,7 @@ export function request(ctx) {
 }
 
 export function response(ctx) {
-  console.log('🔔 CreateAppointment Response: ', ctx);
+  console.log('🔔 CreateBooking Response: ', ctx);
 
   if (ctx.error) {
     util.error(ctx.error.message, ctx.error.type, ctx.result);

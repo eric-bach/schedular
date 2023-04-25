@@ -161,26 +161,6 @@ type GetBookingsResponse {
   lastEvaluatedKey: LastEvaluatedKeyViewModel
 }
 
-type Event {
-  pk: String
-  sk: AWSDateTime
-  type: String
-  category: String
-  duration: Int
-  status: String
-  bookingId: String
-  appointmentId: String
-  appointmentDetails: AppointmentDetailsData
-  customerId: String
-  customerDetails: CustomerDetailsData
-  firstName: String
-  lastName: String
-  email: String
-  phoneNumber: String
-  createdAt: AWSDateTime
-  updatedAt: AWSDateTime
-}
-
 # GraphQL actions
 type Query {
   getAvailableAppointments(from: String!, to: String!, lastEvaluatedKey: LastEvaluatedKey): GetAppointmentsResponse

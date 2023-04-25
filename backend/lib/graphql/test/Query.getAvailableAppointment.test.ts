@@ -4,11 +4,13 @@ import { readFile } from 'fs/promises';
 const appsync = new AppSyncClient({ region: 'us-east-1' });
 const file = './lib/graphql/Query.getAvailableAppointments.js';
 
-test('validate a getAvailableAppointment request', async () => {
+test('validate a getAvailableAppointments request', async () => {
   // Arrange
+  const today = new Date();
   const context = {
     arguments: {
-      date: new Date().toISOString().substring(0, 10),
+      from: today.toISOString(),
+      to: new Date(today.setDate(today.getDate() + 1)).toISOString(),
     },
   };
   const input: EvaluateCodeCommandInput = {
@@ -29,12 +31,13 @@ test('validate a getAvailableAppointment request', async () => {
 
   const result = JSON.parse(response.evaluationResult ?? '{}');
   expect(result.operation).toEqual('Query');
-  expect(result.query.expression).toEqual('#date = :date');
+  expect(result.query.expression).toEqual('#type = :type AND sk BETWEEN :fromDate AND :toDate');
 
   const expressionValues = unmarshall(result.query.expressionValues);
-  expect(expressionValues[':date']).toEqual(`appt#${context.arguments.date}`);
+  expect(expressionValues[':fromDate']).toEqual(context.arguments.from);
+  expect(expressionValues[':toDate']).toEqual(context.arguments.to);
 
   // Status is filtered to 'available'
   const filterValues = unmarshall(result.filter.expressionValues);
   expect(filterValues[':s']).toEqual('available');
-});
+}, 20000);
