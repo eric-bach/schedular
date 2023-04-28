@@ -7,7 +7,7 @@
 <p align="center">
   <a href="#getting-started">Getting Started</a> |
   <a href="#architecture">Architecture</a> |
-  <a href="#deployment">Development</a> |
+  <a href="#deployment">Development</a>
 </p>
 
 <p align="center">
@@ -43,13 +43,18 @@ This quick start guide describes how to get the application running. An `AWS acc
 4.  Copy the `./backend/.env.example` file to `./backend/.env` and fill in the parameter values (if the app has not been deployed to AWS yet, the ARN will be empty for now):
 
     - `SENDER_EMAIL` - Email address for where notifications are sent from
-    - `CERTIFICATE_ARN` - ARN to ACM Certificate for CloudFront Distribution
+    - `CERTIFICATE_ARN` - ARN to ACM Certificate for CloudFront Distribution (used for Production only)
 
 5.  Copy the `./frontend/src/aws-exports.js.example` file to `./frontend/src/aws-exports.js` and fill in the parameter values from the CDK stack outputs in step 2:
 
+    - `aws_project_region` - AWS Region of the application
+    - `aws_cognito_region` - AWS Region of the Cognito User Pool
     - `aws_user_pools_id` - AWS Cognito User Pool Id
     - `aws_user_pools_web_client_id` - AWS Cognito User Pool Client Id
+    - `aws_appsync_region` - AWS Region of AppSync
     - `aws_appsync_graphqlEndpoint` - AWS AppSync GraphQL endpoint URL
+    - `aws_appsync_authenticationType` - AWS AppSync Authentication Type
+    - `env_name` - Application environment name
 
 ## Deploy the app
 
@@ -101,27 +106,6 @@ The Schedular application consists of the CDK backend and React frontend, each o
    $ npm run deploy-frontend dev PROFILE_NAME
    ```
 
-## Deployment via GitHub Actions
-
-1. Create an AWS role that can be assumed by GitHub Actions
-
-   ```
-   $ npm run deploy-cicd prod PROFILE_NAME
-   ```
-
-2. Add the following GitHub Secrets to the repository
-
-   ```
-   AWS_ACCESS_ARN - AWS ARN of the GitHub Actions Role to Assume (from step 1)
-   CDK_DEFAULT_REGION - AWS default region for all resources to be created
-   CERTIFICATE_ARN - ARN to ACM certificate for CloudFront Distribution
-   PRODUCTION_DOMAIN - AWS CloudFront Distribution domain name
-   REACT_APP_COGNITO_USERPOOL_ID - Cognito User Pool Id
-   REACT_APP_COGNITO_CLIENT_ID - Cognito User Pool Client Id
-   REACT_APP_APPSYNC_ENDPOINT - AWS AppSync GraphQL endpoint URL
-   REACT_APP_APPSYNC_REGION - AWS AppSync region
-   ```
-
 # Seed Data
 
 ## Seed Test Data
@@ -139,4 +123,22 @@ To seed test data
 
    ```
    $ npm run seed dev PROFILE_NAME
+   ```
+
+# Testing
+
+## Unit Tests
+
+To run the unit tests
+
+1. Get an AWS token
+
+   ```
+   aws sso login
+   ```
+
+2. Run tests
+
+   ```
+   $ npm run test
    ```
