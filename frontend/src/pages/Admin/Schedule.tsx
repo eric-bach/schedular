@@ -16,13 +16,14 @@ import { DateCalendar } from '@mui/x-date-pickers';
 import { PickersDay, PickersDayProps } from '@mui/x-date-pickers/PickersDay';
 import Grid from '@mui/material/Unstable_Grid2';
 import { TimePicker } from '@mui/x-date-pickers/TimePicker';
+import { Chip, TextField } from '@mui/material';
 import dayjs, { Dayjs } from 'dayjs';
 import isBetweenPlugin from 'dayjs/plugin/isBetween';
 
 import { GET_APPOINTMENTS } from '../../graphql/queries';
 import { GetAppointmentsResponse, AppointmentItem } from '../../types/BookingTypes';
 import { formatLongDateString } from '../../helpers/utils';
-import { Chip, TextField } from '@mui/material';
+import ScheduleDay from './ScheduleDay';
 
 dayjs.extend(isBetweenPlugin);
 
@@ -82,7 +83,7 @@ function Day(props: PickersDayProps<Dayjs> & { selectedDay?: Dayjs | null }) {
 }
 
 function groupByDayOfWeek(items: AppointmentItem[] | undefined) {
-  const map = new Map<string, [AppointmentItem | undefined]>();
+  const map = new Map<string, [AppointmentItem]>();
 
   if (items) {
     items.forEach((item) => {
@@ -115,19 +116,19 @@ function Schedule() {
   const [fromSunday, setFromSunday] = React.useState<Dayjs | null>(dayjs());
 
   const [isLoading, setLoading] = React.useState<boolean>(false);
-  const [appointments, setAppointments] = React.useState<Map<string, [AppointmentItem | undefined]>>();
+  const [appointmentsMap, setAppointmentsMap] = React.useState<Map<string, [AppointmentItem]>>();
 
   const getAppointments = async (from: Dayjs, to: Dayjs) => {
     console.debug(`[SCHEDULE] Getting schedule from ${from} to ${to}`);
 
     setLoading(true);
 
-    const appointments = await API.graphql<GraphQLQuery<GetAppointmentsResponse>>(graphqlOperation(GET_APPOINTMENTS, { from, to }));
-    setAppointments(groupByDayOfWeek(appointments.data?.getAppointments?.items));
+    const result = await API.graphql<GraphQLQuery<GetAppointmentsResponse>>(graphqlOperation(GET_APPOINTMENTS, { from, to }));
+    setAppointmentsMap(groupByDayOfWeek(result.data?.getAppointments?.items));
 
     setLoading(false);
 
-    return appointments.data?.getAppointments?.items;
+    return result.data?.getAppointments?.items;
   };
 
   async function dateSelected(d: Dayjs) {
@@ -136,6 +137,24 @@ function Schedule() {
 
     const result = await getAppointments(d.startOf('week'), d.endOf('week'));
     console.debug('[SCHEDULE] Found appointments', result);
+  }
+
+  function addFields(appointments: any, d: any) {
+    console.log('[SCHEDULE]: Add Fields ', appointments, d);
+
+    // create a new AppointmentItem
+    let newField = {
+      pk: 'asdf',
+      sk: 'asdf',
+      status: 'available',
+      type: 'appt',
+      category: 'massage',
+      duration: 60,
+    };
+
+    // add to the Appointments array
+    //setAppointments().push(newField);
+    // update the UI
   }
 
   useEffect(() => {
@@ -148,7 +167,7 @@ function Schedule() {
     }
   }, []);
 
-  console.log('GROUPED APPOINTMENTS:', appointments);
+  console.log('GROUPED APPOINTMENTS:', appointmentsMap);
 
   return (
     <Container maxWidth='lg' sx={{ mt: 5 }}>
@@ -188,60 +207,12 @@ function Schedule() {
                 return <Typography>{appt?.pk}</Typography>;
               })} */}
 
-              {appointments && (
+              {appointmentsMap && (
                 <LocalizationProvider dateAdapter={AdapterDayjs}>
                   {days.map((d) => {
-                    return (
-                      <React.Fragment>
-                        <Accordion defaultExpanded={appointments?.get(d) != undefined}>
-                          <AccordionSummary expandIcon={<ExpandMoreIcon />} aria-controls='panel1a-content' id='panel1a-header'>
-                            <Typography>{d}</Typography>
-                          </AccordionSummary>
-                          <AccordionDetails>
-                            {appointments?.get(d)?.map((appt: AppointmentItem | undefined) => {
-                              return (
-                                <React.Fragment>
-                                  <Grid container spacing={{ xs: 1 }} columns={{ xs: 10 }}>
-                                    <Grid xs={2}>
-                                      <TimePicker
-                                        label='Start Time'
-                                        value={dayjs(appt?.sk)}
-                                        disabled={appt?.status === 'booked'}
-                                        // onChange={(newValue) => setFromSunday(newValue)}
-                                      />
-                                    </Grid>
-                                    <Grid xs={2}>
-                                      <TimePicker
-                                        label='End Time'
-                                        value={dayjs(appt?.sk).add(appt?.duration ?? 0, 'minutes')}
-                                        disabled={appt?.status === 'booked'}
-                                      />
-                                    </Grid>
-                                    <Grid xs={2}>
-                                      <TextField label='Duration' value={dayjs(appt?.duration)} disabled />
-                                    </Grid>
-                                    <Grid xs={2}>
-                                      <Chip
-                                        label={appt?.status}
-                                        color={appt?.status === 'booked' ? 'primary' : 'success'}
-                                        variant={appt?.status === 'cancelled' ? 'outlined' : 'filled'}
-                                        sx={{ mb: 1 }}
-                                      />
-                                    </Grid>
-                                    {appt?.status === 'available' && (
-                                      <Grid xs={2}>
-                                        <Button>Remove</Button>
-                                      </Grid>
-                                    )}
-                                  </Grid>
-                                </React.Fragment>
-                              );
-                            })}
-                            <Button>Add</Button>
-                          </AccordionDetails>
-                        </Accordion>
-                      </React.Fragment>
-                    );
+                    const appointments = appointmentsMap?.get(d);
+
+                    return <ScheduleDay appointments={appointments} d={d} key={d} />;
                   })}
                 </LocalizationProvider>
               )}

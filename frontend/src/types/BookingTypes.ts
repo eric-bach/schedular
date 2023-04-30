@@ -25,14 +25,14 @@ export type AppointmentItem = {
   type: string;
   category: string;
   duration: number;
-  customerDetails: {
+  customerDetails?: {
     id: string;
     firstName: string;
     lastName: string;
     email: string;
     phone: string;
   };
-  bookingId: string;
+  bookingId?: string;
 };
 export type GetAppointmentsResponse = {
   getAppointments: {
