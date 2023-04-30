@@ -1,0 +1,189 @@
+type Data @model @aws_cognito_user_pools {
+  pk: String
+  sk: AWSDateTime
+  type: String
+  category: String
+  duration: Int
+  status: String
+  bookingId: String
+  appointmentId: String
+  appointmentDetails: AppointmentDetailsData
+  customerId: String
+  customerDetails: CustomerDetailsData
+  firstName: String
+  lastName: String
+  email: String
+  phoneNumber: String
+  createdAt: AWSDateTime
+  updatedAt: AWSDateTime
+}
+type AppointmentDetailsData @model @aws_cognito_user_pools {
+  sk: AWSDateTime
+  duration: Int
+  type: String
+  category: String
+}
+type CustomerDetailsData @model @aws_cognito_user_pools {
+  email: String
+  phone: String
+}
+
+input LastEvaluatedKey {
+  pk: ID
+  sk: AWSDateTime
+}
+
+type LastEvaluatedKeyViewModel {
+  pk: ID!
+  sk: AWSDateTime!
+}
+
+# CreateBooking
+input CustomerInput {
+  id: String!
+  firstName: String!
+  lastName: String!
+  email: String!
+  phone: String!
+}
+input AppointmentInput {
+  duration: Int!
+  type: String!
+  category: String!
+}
+input CreateBookingInput {
+  pk: String!
+  sk: AWSDateTime!
+  customer: CustomerInput!
+  appointmentDetails: AppointmentInput!
+  envName: String!
+}
+
+# CancelBooking
+input AppointmentDetailsInput {
+  pk: String!
+  sk: String!
+  status: String!
+  type: String!
+  category: String!
+  duration: Int!
+}
+input CancelBookingInput {
+  bookingId: String!
+  appointmentDetails: AppointmentDetailsInput!
+  envName: String!
+}
+
+# CreateBooking, CancelBooking response
+type BookingResponse {
+  pk: String!
+  sk: AWSDateTime!
+  type: String!
+  appointmentDetails: AppointmentDetailsViewModel!
+  customerId: String
+  customerDetails: CustomerDetailsViewModel
+  createdAt: AWSDateTime
+  updatedAt: AWSDateTime
+}
+
+# GetAppointments, GetAvailableAppointments
+type CustomerDetailsViewModel {
+  id: String
+  firstName: String
+  lastName: String
+  email: String!
+  phone: String!
+}
+type AppointmentViewModel {
+  pk: String!
+  sk: AWSDateTime!
+  status: String!
+  type: String!
+  category: String!
+  duration: Int!
+  bookingId: String
+  customerDetails: CustomerDetailsViewModel
+  createdAt: AWSDateTime
+  updatedAt: AWSDateTime
+}
+type GetAppointmentsResponse {
+  items: [AppointmentViewModel]
+  lastEvaluatedKey: LastEvaluatedKeyViewModel
+}
+
+# GetAppointment
+type GetAppointmentResponse {
+  pk: String!
+  sk: AWSDateTime!
+  status: String!
+  type: String!
+  category: String!
+  duration: Int!
+  bookingId: String
+  customerDetails: CustomerDetailsViewModel
+  createdAt: AWSDateTime
+  updatedAt: AWSDateTime
+}
+
+# GetBooking
+type GetBookingResponse {
+  pk: String!
+  sk: AWSDateTime!
+  type: String!
+  appointmentDetails: AppointmentDetailsViewModel!
+  customerId: String!
+  customerDetails: CustomerDetailsViewModel!
+  createdAt: AWSDateTime
+  updatedAt: AWSDateTime
+}
+
+# GetBookings
+type AppointmentDetailsViewModel {
+  pk: String!
+  sk: AWSDateTime!
+  type: String!
+  category: String!
+  status: String!
+  duration: Int!
+}
+type BookingsViewModel {
+  pk: String!
+  sk: AWSDateTime!
+  type: String!
+  appointmentDetails: AppointmentDetailsViewModel!
+  customerId: String!
+  customerDetails: CustomerDetailsViewModel!
+  createdAt: AWSDateTime
+  updatedAt: AWSDateTime
+}
+type GetBookingsResponse {
+  items: [BookingsViewModel]
+  lastEvaluatedKey: LastEvaluatedKeyViewModel
+}
+
+# GraphQL actions
+type Query {
+  getAvailableAppointments(from: String!, to: String!, lastEvaluatedKey: LastEvaluatedKey): GetAppointmentsResponse
+    @aws_auth(cognito_groups: ["Users", "Admins"])
+  getAppointment(pk: String!, sk: String!): GetAppointmentResponse @aws_auth(cognito_groups: ["Users", "Admins"])
+  getAppointments(from: String!, to: String!, lastEvaluatedKey: LastEvaluatedKey): GetAppointmentsResponse
+    @aws_auth(cognito_groups: ["Admins"])
+  getBooking(pk: String!, sk: String!): GetBookingResponse @aws_auth(cognito_groups: ["Users", "Admins"])
+  getBookings(customerId: String!, datetime: String!, lastEvaluatedKey: LastEvaluatedKey): GetBookingsResponse
+    @aws_auth(cognito_groups: ["Users", "Admins"])
+}
+
+type Mutation {
+  createBooking(input: CreateBookingInput): BookingResponse @aws_auth(cognito_groups: ["Users", "Admins"])
+  cancelBooking(input: CancelBookingInput): BookingResponse @aws_auth(cognito_groups: ["Users", "Admins"])
+}
+
+type Subscription {
+  onCancelBooking: BookingResponse @aws_subscribe(mutations: ["cancelBooking"])
+}
+
+schema {
+  query: Query
+  mutation: Mutation
+  subscription: Subscription
+}
