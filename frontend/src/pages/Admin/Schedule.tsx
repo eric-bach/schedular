@@ -5,18 +5,11 @@ import { GraphQLQuery } from '@aws-amplify/api';
 import Typography from '@mui/material/Typography';
 import Container from '@mui/material/Container';
 import { styled } from '@mui/material/styles';
-import Accordion from '@mui/material/Accordion';
-import AccordionSummary from '@mui/material/AccordionSummary';
-import AccordionDetails from '@mui/material/AccordionDetails';
-import Button from '@mui/material/Button';
-import ExpandMoreIcon from '@mui/icons-material/ExpandMore';
 import { AdapterDayjs } from '@mui/x-date-pickers/AdapterDayjs';
 import { LocalizationProvider } from '@mui/x-date-pickers/LocalizationProvider';
 import { DateCalendar } from '@mui/x-date-pickers';
 import { PickersDay, PickersDayProps } from '@mui/x-date-pickers/PickersDay';
 import Grid from '@mui/material/Unstable_Grid2';
-import { TimePicker } from '@mui/x-date-pickers/TimePicker';
-import { Chip, TextField } from '@mui/material';
 import dayjs, { Dayjs } from 'dayjs';
 import isBetweenPlugin from 'dayjs/plugin/isBetween';
 
@@ -32,8 +25,6 @@ interface CustomPickerDayProps extends PickersDayProps<Dayjs> {
   isFirstDay: boolean;
   isLastDay: boolean;
 }
-
-const days = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'];
 
 const CustomPickersDay = styled(PickersDay, {
   shouldForwardProp: (prop) => prop !== 'dayIsBetween' && prop !== 'isFirstDay' && prop !== 'isLastDay',
@@ -87,7 +78,7 @@ function groupByDayOfWeek(items: AppointmentItem[] | undefined) {
 
   if (items) {
     items.forEach((item) => {
-      const key = dayjs(item.sk).format('dddd'); //format('dddd, MMMM DD');
+      const key = dayjs(item.sk).format('dddd, MMM D, YYYY'); //format('dddd, MMMM DD');
       const value = map.get(key);
       if (value) {
         value.push(item);
@@ -169,6 +160,12 @@ function Schedule() {
 
   console.log('GROUPED APPOINTMENTS:', appointmentsMap);
 
+  // Get days of week in map
+  let keys: string[] = [];
+  if (appointmentsMap) {
+    keys = Array.from(appointmentsMap.keys());
+  }
+
   return (
     <Container maxWidth='lg' sx={{ mt: 5 }}>
       <Grid container spacing={{ md: 1, lg: 1 }} columns={{ md: 6, lg: 6 }}>
@@ -209,10 +206,10 @@ function Schedule() {
 
               {appointmentsMap && (
                 <LocalizationProvider dateAdapter={AdapterDayjs}>
-                  {days.map((d) => {
-                    const appointments = appointmentsMap?.get(d);
+                  {keys.map((date) => {
+                    const appointments = appointmentsMap?.get(date);
 
-                    return <ScheduleDay appointments={appointments} d={d} key={d} />;
+                    return <ScheduleDay appointments={appointments} date={date} key={date} />;
                   })}
                 </LocalizationProvider>
               )}

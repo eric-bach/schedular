@@ -10,11 +10,25 @@ import Grid from '@mui/material/Unstable_Grid2';
 import { TimePicker } from '@mui/x-date-pickers/TimePicker';
 import dayjs, { Dayjs } from 'dayjs';
 import { v4 as uuidv4 } from 'uuid';
+import { useForm, SubmitHandler } from 'react-hook-form';
 
 import { AppointmentItem } from '../../types/BookingTypes';
 
-export default function ScheduleDay({ appointments, d }: { appointments: [AppointmentItem] | undefined; d: string }) {
+type Inputs = {
+  startTime: Dayjs;
+};
+
+export default function ScheduleDay({ appointments, date }: { appointments: [AppointmentItem] | undefined; date: string }) {
   const [fields, setFields] = useState<[AppointmentItem] | undefined>(appointments);
+  const {
+    register,
+    handleSubmit,
+    watch,
+    formState: { errors },
+  } = useForm<Inputs>();
+  const onSubmit: SubmitHandler<Inputs> = (data) => console.log('onSubmit: ', data);
+
+  console.log(watch('startTime'));
 
   function addField() {
     if (!fields) return;
@@ -34,11 +48,13 @@ export default function ScheduleDay({ appointments, d }: { appointments: [Appoin
     console.log('ADDED NEW FIELDS', fields);
   }
 
-  function removeField() {
+  function removeField(index: number) {
     if (!fields) return;
 
     const values: [AppointmentItem] | undefined = [...fields];
-    values.pop();
+    values[index].status = 'pending*';
+    // Remove from state
+    // values.pop();
     setFields(values);
 
     console.log('REMOVED FIELDS', fields);
@@ -59,13 +75,14 @@ export default function ScheduleDay({ appointments, d }: { appointments: [Appoin
   }
 
   return (
-    <React.Fragment key={d}>
+    <React.Fragment key={date}>
       <Accordion defaultExpanded={appointments != undefined}>
         <AccordionSummary expandIcon={<ExpandMoreIcon />} aria-controls='panel1a-content' id='panel1a-header'>
-          <Typography>{d}</Typography>
+          <Typography>{date}</Typography>
         </AccordionSummary>
+
         <AccordionDetails>
-          <form>
+          <form onSubmit={handleSubmit(onSubmit)}>
             {fields?.map((appt: AppointmentItem | undefined, index) => {
               return (
                 <React.Fragment key={appt?.pk}>
@@ -75,6 +92,7 @@ export default function ScheduleDay({ appointments, d }: { appointments: [Appoin
                         label='Start Time'
                         value={dayjs(appt?.sk)}
                         disabled={appt?.status === 'booked'}
+                        {...register('startTime')}
                         onChange={(e) => handleChangeInput(index, e ?? new Dayjs())}
                       />
                     </Grid>
@@ -88,22 +106,29 @@ export default function ScheduleDay({ appointments, d }: { appointments: [Appoin
                       {appt?.status && (
                         <Chip
                           label={appt?.status}
-                          color={appt?.status === 'booked' ? 'primary' : 'success'}
+                          color={appt?.status === 'available' ? 'success' : 'primary'}
                           variant={appt?.status === 'cancelled' ? 'outlined' : 'filled'}
-                          sx={{ mb: 1 }}
+                          sx={{ mb: 1, mt: 1.5 }}
                         />
                       )}
                     </Grid>
                     {appt?.status !== 'booked' && (
                       <Grid xs={2}>
-                        <Button onClick={(e) => removeField()}>Remove</Button>
+                        <Button onClick={(e) => removeField(index)} variant='contained' color='error' sx={{ m: 1 }}>
+                          Remove
+                        </Button>
                       </Grid>
                     )}
                   </Grid>
                 </React.Fragment>
               );
             })}
-            <Button onClick={(e) => addField()}>Add</Button>
+            <Button onClick={(e) => addField()} variant='contained' color='success' sx={{ m: 1 }}>
+              Add
+            </Button>
+            <Button type='submit' variant='contained' sx={{ m: 1 }}>
+              Save
+            </Button>
           </form>
         </AccordionDetails>
       </Accordion>
