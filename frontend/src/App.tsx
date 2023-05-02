@@ -14,6 +14,7 @@ import UserAppointments from './pages/User/UserAppointments';
 import Profile from './pages/User/Profile';
 import Appointments from './pages/Admin/Appointments';
 import Schedule from './pages/Admin/Schedule';
+import Test from './pages/Admin/Test';
 
 function App() {
   return (
@@ -69,6 +70,14 @@ function App() {
               element={
                 <RequireAdminAuth>
                   <Schedule />
+                </RequireAdminAuth>
+              }
+            />
+            <Route
+              path='/admin/test'
+              element={
+                <RequireAdminAuth>
+                  <Test />
                 </RequireAdminAuth>
               }
             />
