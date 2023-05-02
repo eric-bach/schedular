@@ -10,7 +10,7 @@ import { TimePicker } from '@mui/x-date-pickers/TimePicker';
 import Grid from '@mui/material/Unstable_Grid2';
 import dayjs, { Dayjs } from 'dayjs';
 import isBetweenPlugin from 'dayjs/plugin/isBetween';
-import { useFormik, ErrorMessage } from 'formik';
+import { ErrorMessage, FieldArray, Form, Formik } from 'formik';
 import * as yup from 'yup';
 import { v4 as uuidv4 } from 'uuid';
 
@@ -74,49 +74,36 @@ function Schedule() {
     console.debug('[SCHEDULE] Found appointments', result);
   }
 
-  const initialValues: InputValues[] = [];
   useEffect(() => {
     if (authStatus === 'authenticated') {
       getAppointments(dayjs(), dayjs().add(1, 'day')).then((result) => {
         console.debug('[SCHEDULE] Loaded initial appointments', result);
-
-        result?.map((r) => {
-          const v = {
-            pk: r.pk,
-            sk: dayjs(r.sk),
-            status: r.status,
-            type: r.type,
-            category: r.category,
-            duration: r.duration,
-          };
-
-          initialValues.push(v);
-        });
       });
     } else {
       // TODO Return error
     }
   }, []);
 
-  function addField() {
+  function addField(values: InputValues[]) {
     const appt = {
       // TODO Temporarily set GUID so key is unique in map
       pk: `appt#${uuidv4()}`,
       sk: dayjs().hour(0).minute(0).second(0).millisecond(0),
       type: 'appt',
       category: 'massage',
-      duration: 0,
+      duration: 60,
       status: 'new',
     };
 
-    formik.values.appointments.push(appt);
-    setAppointments([...appointments, appt]);
+    values.push(appt);
+    console.log('ADDED APPOINTMENT', values);
 
-    console.log('ADDED APPOINTMENT', formik.values.appointments);
+    setAppointments([...appointments, appt]);
+    console.log('ADDED APPOINTMENT', [...appointments, appt]);
   }
 
-  function removeField(index: number) {
-    formik.values.appointments[index].status = 'pending*';
+  function removeField(values: InputValues[], index: number) {
+    values[index].status = 'pending*';
     appointments[index].status = 'pending*';
     // Remove from state
     // values.pop();
@@ -125,31 +112,15 @@ function Schedule() {
     console.log('REMOVED APPOINTMENT', appointments);
   }
 
-  const handleSubmit = () => {
-    console.log('Submit');
-  };
-
-  const formik = useFormik({
-    initialValues: {
-      appointments: initialValues,
-    },
-    validationSchema: yup.object({
-      appointments: yup.array().of(
-        yup.object().shape({
-          sk: yup.date().required('Please enter a start time').min(dayjs().set('hour', 2)),
-          duration: yup.number().required('Please enter a duration').moreThan(0),
-        })
-      ),
-    }),
-    onSubmit: (values) => {
-      console.log('values', values);
-      console.log('errors', formik.errors);
-      handleSubmit();
-    },
+  const schema = yup.object({
+    appointments: yup.array().of(
+      yup.object().shape({
+        // TODO Remove for testing
+        sk: yup.date().required('🔴').min(dayjs().set('hour', 2), '🔴'),
+        duration: yup.number().required('🔴').moreThan(0, '🔴'),
+      })
+    ),
   });
-
-  // TODO
-  console.log('Errors ', formik.errors.appointments);
 
   return (
     <Container maxWidth='lg' sx={{ mt: 5 }}>
@@ -169,88 +140,108 @@ function Schedule() {
           {isLoading ? (
             <Loader variation='linear' />
           ) : (
-            <>
+            <React.Fragment>
               <Typography variant='h5' fontWeight='bold' align='left' color='textPrimary' gutterBottom sx={{ mt: 2 }}>
                 Schedule for {formatLongDateString(date)}
               </Typography>
 
-              <form onSubmit={formik.handleSubmit}>
-                {appointments?.map((appt: InputValues, index: number) => {
-                  return (
-                    <React.Fragment key={appt?.pk}>
-                      <Grid container spacing={{ xs: 1 }} columns={{ xs: 12 }}>
-                        <Grid xs={2}>
-                          <LocalizationProvider dateAdapter={AdapterDayjs}>
-                            <TimePicker
-                              label='Start Time'
-                              value={formik.values.appointments[index].sk}
-                              disabled={formik.values.appointments[index].status === 'booked'}
-                              onChange={(value) =>
-                                formik.setFieldValue(`appointments[${index}].sk`, value ?? new Dayjs())
-                              }
-                              //renderInput={(params: any) => <TextField {...params} />}
-                            />
-                          </LocalizationProvider>
-                        </Grid>
-                        {/* <Grid xs={2}>
-                            <TimePicker label='End Time' value={dayjs(appt?.sk).add(appt?.duration ?? 0, 'minutes')} disabled={appt?.status === 'booked'} />
-                        </Grid> */}
-                        <Grid xs={2}>
-                          <TextField
-                            label='Duration'
-                            value={formik.values.appointments[index].duration}
-                            disabled
-                            error={
-                              formik.touched.appointments &&
-                              formik.touched.appointments[index].duration &&
-                              Boolean(formik.errors.appointments && formik.errors.appointments[index])
-                            }
-                            helperText={
-                              formik.touched.appointments && formik.errors && formik.errors.appointments?.toString()
-                            }
-                          />
-                          {/* <ErrorMessage name="name"/> */}
-                        </Grid>
-                        <Grid xs={2}>
-                          {appt?.status && (
-                            <Chip
-                              label={appt?.status}
-                              color={appt?.status === 'available' ? 'success' : 'primary'}
-                              variant={appt?.status === 'cancelled' ? 'outlined' : 'filled'}
-                              sx={{ mb: 1, mt: 1.5 }}
-                            />
-                          )}
-                        </Grid>
-                        {appt?.status !== 'booked' && (
-                          <Grid xs={2}>
-                            <Button onClick={(e) => removeField(index)} variant='contained' color='error' sx={{ m: 1 }}>
-                              Remove
-                            </Button>
-                          </Grid>
-                        )}
-                      </Grid>
-                    </React.Fragment>
-                  );
-                })}
-                <Button onClick={(e) => addField()} variant='contained' color='success' sx={{ m: 1 }}>
-                  Add
-                </Button>
-                <Button
-                  id='save'
-                  name='save'
-                  type='submit'
-                  variant='contained'
-                  onClick={(e) => {
-                    console.log('Save');
-                    formik.handleSubmit();
-                    console.log('Saved');
-                  }}
-                  sx={{ m: 1 }}
-                >
-                  Save
-                </Button>
-              </form>
-            </>
+              <Formik
+                initialValues={{ appointments: appointments }}
+                validationSchema={schema}
+                onSubmit={(values) => {
+                  console.log('[SCHEDULE] VALIDATION PASSED! SAVING VALUES', values);
+                }}
+              >
+                {({ values }) => (
+                  <Form>
+                    <FieldArray name='friends'>
+                      {({ insert, remove, push }) => (
+                        <React.Fragment>
+                          {values.appointments.length > 0 &&
+                            values.appointments.map((appt, index) => (
+                              <React.Fragment key={index}>
+                                <Grid container spacing={{ xs: 1 }} columns={{ xs: 12 }}>
+                                  <Grid xs={2}>
+                                    <LocalizationProvider dateAdapter={AdapterDayjs}>
+                                      <TimePicker
+                                        label='Start Time'
+                                        value={values.appointments[index].sk}
+                                        disabled={values.appointments[index].status === 'booked'}
+                                        onChange={(value) => (values.appointments[index].sk = value ?? new Dayjs())}
+                                      />
+                                      <ErrorMessage
+                                        name={`appointments.${index}.sk`}
+                                        component='div'
+                                        className='field-error'
+                                      />
+                                    </LocalizationProvider>
+                                  </Grid>
+
+                                  <Grid xs={2}>
+                                    <TextField
+                                      label='Duration'
+                                      name={`appointments.${index}.duration`}
+                                      value={values.appointments[index].duration}
+
+                                      // TODO Cannot make this editable
+                                      //onChange={handleChange}
+                                      //onChange={(value) => setFieldValue(`appointments[${index}].duration`, value ?? 0)}
+                                      //disabled
+                                    />
+                                    <ErrorMessage
+                                      name={`appointments.${index}.duration`}
+                                      component='div'
+                                      className='field-error'
+                                    />
+                                  </Grid>
+
+                                  <Grid xs={2}>
+                                    {values.appointments[index].status && (
+                                      <Chip
+                                        label={values.appointments[index].status}
+                                        color={
+                                          values.appointments[index].status === 'available' ? 'success' : 'primary'
+                                        }
+                                        variant={
+                                          values.appointments[index].status === 'cancelled' ? 'outlined' : 'filled'
+                                        }
+                                        sx={{ mb: 1, mt: 1.5 }}
+                                      />
+                                    )}
+                                  </Grid>
+
+                                  <Grid xs={2}>
+                                    <Button
+                                      color='error'
+                                      variant='contained'
+                                      onClick={() => removeField(values.appointments, index)}
+                                      sx={{ m: 1 }}
+                                    >
+                                      X
+                                    </Button>
+                                  </Grid>
+                                </Grid>
+                              </React.Fragment>
+                            ))}
+                          <Button
+                            variant='contained'
+                            color='success'
+                            type='button'
+                            onClick={() => addField(values.appointments)}
+                            sx={{ m: 1 }}
+                          >
+                            Add
+                          </Button>
+                        </React.Fragment>
+                      )}
+                    </FieldArray>
+                    <Button type='submit' variant='contained' color='primary' sx={{ m: 1 }}>
+                      Save
+                    </Button>
+                  </Form>
+                )}
+              </Formik>
+            </React.Fragment>
           )}
         </Grid>
       </Grid>
