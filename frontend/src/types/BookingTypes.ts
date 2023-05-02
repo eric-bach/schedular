@@ -36,7 +36,7 @@ export type AppointmentItem = {
 };
 export type GetAppointmentsResponse = {
   getAppointments: {
-    items: [AppointmentItem];
+    items: AppointmentItem[];
   };
   lastEvaluatedKey: Base;
 };

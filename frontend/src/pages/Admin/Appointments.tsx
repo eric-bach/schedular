@@ -23,7 +23,7 @@ function Appointments() {
   const { authStatus } = useAuthenticator((context) => [context.route]);
 
   const [isLoading, setLoading] = React.useState<boolean>(false);
-  const [appointments, setAppointments] = React.useState<[AppointmentItem | undefined]>();
+  const [appointments, setAppointments] = React.useState<AppointmentItem[]>([]);
   const [dateHeading, setDateHeading] = React.useState<string | undefined>();
   const [date, setDate] = React.useState<Dayjs | null>(dayjs());
 
@@ -36,7 +36,7 @@ function Appointments() {
     setLoading(true);
 
     const appointments = await API.graphql<GraphQLQuery<GetAppointmentsResponse>>(graphqlOperation(GET_APPOINTMENTS, { from, to }));
-    setAppointments(appointments.data?.getAppointments?.items);
+    setAppointments(appointments.data?.getAppointments?.items ?? []);
     setDateHeading(`${formatLongDateString(dayjs(d))}`);
 
     setLoading(false);
@@ -67,12 +67,7 @@ function Appointments() {
       <Grid container spacing={{ md: 1, lg: 1 }} columns={{ md: 6, lg: 6 }}>
         <Grid md={2} lg={2}>
           <LocalizationProvider dateAdapter={AdapterDayjs}>
-            <DateCalendar
-              value={date}
-              minDate={dayjs()}
-              maxDate={dayjs().add(1, 'month')}
-              onChange={(newValue) => dateSelected(newValue)}
-            />
+            <DateCalendar value={date} minDate={dayjs()} maxDate={dayjs().add(1, 'month')} onChange={(newValue) => dateSelected(newValue)} />
           </LocalizationProvider>
         </Grid>
 
