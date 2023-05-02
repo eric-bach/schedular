@@ -56,7 +56,9 @@ function Schedule() {
 
     setLoading(true);
 
-    const result = await API.graphql<GraphQLQuery<GetAppointmentsResponse>>(graphqlOperation(GET_APPOINTMENTS, { from, to }));
+    const result = await API.graphql<GraphQLQuery<GetAppointmentsResponse>>(
+      graphqlOperation(GET_APPOINTMENTS, { from, to })
+    );
     setAppointments(convertToInputValues(result.data?.getAppointments?.items) ?? []);
 
     setLoading(false);
@@ -132,7 +134,7 @@ function Schedule() {
     },
     validationSchema: yup.array().of(
       yup.object().shape({
-        startTime: yup.date().required('Please enter a start time'),
+        sk: yup.date().required('Please enter a start time'),
       })
     ),
     onSubmit: (values) => {
@@ -142,14 +144,17 @@ function Schedule() {
     },
   });
 
-  console.log(formik.values.appointments);
-
   return (
     <Container maxWidth='lg' sx={{ mt: 5 }}>
       <Grid container spacing={{ md: 1, lg: 1 }} columns={{ md: 6, lg: 6 }}>
         <Grid md={2} lg={2}>
           <LocalizationProvider dateAdapter={AdapterDayjs}>
-            <DateCalendar value={date} minDate={dayjs()} maxDate={dayjs().add(1, 'year')} onChange={(newDate) => dateSelected(newDate ?? dayjs())} />
+            <DateCalendar
+              value={date}
+              minDate={dayjs()}
+              maxDate={dayjs().add(1, 'year')}
+              onChange={(newDate) => dateSelected(newDate ?? dayjs())}
+            />
           </LocalizationProvider>
         </Grid>
 
@@ -173,7 +178,10 @@ function Schedule() {
                               label='Start Time'
                               value={formik.values.appointments[index].sk}
                               disabled={formik.values.appointments[index].status === 'booked'}
-                              onChange={(e) => formik.setFieldValue('startTime', e ?? new Dayjs())}
+                              onChange={(value) =>
+                                formik.setFieldValue(`appointments[${index}].sk`, value ?? new Dayjs())
+                              }
+                              //renderInput={(params: any) => <TextField {...params} />}
                             />
                           </LocalizationProvider>
                         </Grid>
