@@ -17,7 +17,6 @@ import { v4 as uuidv4 } from 'uuid';
 import { GET_APPOINTMENTS } from '../../graphql/queries';
 import { GetAppointmentsResponse, AppointmentItem } from '../../types/BookingTypes';
 import { formatLongDateString } from '../../helpers/utils';
-import Appointments from './Appointments';
 
 dayjs.extend(isBetweenPlugin);
 
@@ -73,10 +72,24 @@ function Schedule() {
     console.debug('[SCHEDULE] Found appointments', result);
   }
 
+  const initialValues: InputValues[] = [];
   useEffect(() => {
     if (authStatus === 'authenticated') {
       getAppointments(dayjs(), dayjs().add(1, 'day')).then((result) => {
         console.debug('[SCHEDULE] Loaded initial appointments', result);
+
+        result?.map((r) => {
+          const v = {
+            pk: r.pk,
+            sk: dayjs(r.sk),
+            status: r.status,
+            type: r.type,
+            category: r.category,
+            duration: r.duration,
+          };
+
+          initialValues.push(v);
+        });
       });
     } else {
       // TODO Return error
@@ -115,7 +128,7 @@ function Schedule() {
 
   const formik = useFormik({
     initialValues: {
-      appointments: appointments,
+      appointments: initialValues,
     },
     validationSchema: yup.array().of(
       yup.object({
@@ -128,6 +141,8 @@ function Schedule() {
       handleSubmit();
     },
   });
+
+  console.log(formik.values.appointments);
 
   return (
     <Container maxWidth='lg' sx={{ mt: 5 }}>
