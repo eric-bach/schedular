@@ -2,7 +2,7 @@ import React, { useEffect } from 'react';
 import { Loader, useAuthenticator } from '@aws-amplify/ui-react';
 import { API, graphqlOperation } from 'aws-amplify';
 import { GraphQLQuery } from '@aws-amplify/api';
-import { Button, Container, Chip, TextField, Typography } from '@mui/material';
+import { Button, Container, Chip, TextField, Typography, Alert } from '@mui/material';
 import { AdapterDayjs } from '@mui/x-date-pickers/AdapterDayjs';
 import { LocalizationProvider } from '@mui/x-date-pickers/LocalizationProvider';
 import { DateCalendar } from '@mui/x-date-pickers';
@@ -10,7 +10,7 @@ import { TimePicker } from '@mui/x-date-pickers/TimePicker';
 import Grid from '@mui/material/Unstable_Grid2';
 import dayjs, { Dayjs } from 'dayjs';
 import isBetweenPlugin from 'dayjs/plugin/isBetween';
-import { useFormik } from 'formik';
+import { useFormik, ErrorMessage } from 'formik';
 import * as yup from 'yup';
 import { v4 as uuidv4 } from 'uuid';
 
@@ -105,7 +105,7 @@ function Schedule() {
       sk: dayjs().hour(0).minute(0).second(0).millisecond(0),
       type: 'appt',
       category: 'massage',
-      duration: 60,
+      duration: 0,
       status: 'new',
     };
 
@@ -116,6 +116,7 @@ function Schedule() {
   }
 
   function removeField(index: number) {
+    formik.values.appointments[index].status = 'pending*';
     appointments[index].status = 'pending*';
     // Remove from state
     // values.pop();
@@ -132,17 +133,23 @@ function Schedule() {
     initialValues: {
       appointments: initialValues,
     },
-    validationSchema: yup.array().of(
-      yup.object().shape({
-        sk: yup.date().required('Please enter a start time'),
-      })
-    ),
+    validationSchema: yup.object({
+      appointments: yup.array().of(
+        yup.object().shape({
+          sk: yup.date().required('Please enter a start time').min(dayjs().set('hour', 2)),
+          duration: yup.number().required('Please enter a duration').moreThan(0),
+        })
+      ),
+    }),
     onSubmit: (values) => {
       console.log('values', values);
-
+      console.log('errors', formik.errors);
       handleSubmit();
     },
   });
+
+  // TODO
+  console.log('Errors ', formik.errors.appointments);
 
   return (
     <Container maxWidth='lg' sx={{ mt: 5 }}>
@@ -189,7 +196,20 @@ function Schedule() {
                             <TimePicker label='End Time' value={dayjs(appt?.sk).add(appt?.duration ?? 0, 'minutes')} disabled={appt?.status === 'booked'} />
                         </Grid> */}
                         <Grid xs={2}>
-                          <TextField label='Duration' value={formik.values.appointments[index].duration} disabled />
+                          <TextField
+                            label='Duration'
+                            value={formik.values.appointments[index].duration}
+                            disabled
+                            error={
+                              formik.touched.appointments &&
+                              formik.touched.appointments[index].duration &&
+                              Boolean(formik.errors.appointments && formik.errors.appointments[index])
+                            }
+                            helperText={
+                              formik.touched.appointments && formik.errors && formik.errors.appointments?.toString()
+                            }
+                          />
+                          {/* <ErrorMessage name="name"/> */}
                         </Grid>
                         <Grid xs={2}>
                           {appt?.status && (

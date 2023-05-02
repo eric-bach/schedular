@@ -73,7 +73,7 @@ function Test() {
       yup.object().shape({
         name: yup.string().required('Name is required'),
         surname: yup.string().required('Surname is required'),
-        startTime: yup.string().required('Time is required'),
+        startTime: yup.date().required('Time is required').min(dayjs().set('hour', 2)),
       })
     ),
   });
