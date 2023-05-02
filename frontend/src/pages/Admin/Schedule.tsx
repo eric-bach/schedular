@@ -131,7 +131,7 @@ function Schedule() {
       appointments: initialValues,
     },
     validationSchema: yup.array().of(
-      yup.object({
+      yup.object().shape({
         startTime: yup.date().required('Please enter a start time'),
       })
     ),
