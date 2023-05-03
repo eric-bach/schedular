@@ -116,10 +116,29 @@ function Schedule() {
     console.log('REMOVED APPOINTMENT', values);
   }
 
+  function handleSubmit(values: InputValues[]) {
+    // Get start and end times
+    const startTimes: Dayjs[] = values.map((v) => v.sk);
+    const durations: number[] = values.map((v) => v.duration);
+    const endTimes: Dayjs[] = [];
+    for (let i = 0; i < startTimes.length; i++) {
+      let s = startTimes[i];
+      let d = durations[i];
+      const endTime = dayjs(s).add(d, 'minute');
+
+      endTimes.push(endTime);
+    }
+
+    // TODO Convert start and end times to epoch
+
+    // TODO Check for overlaps
+
+    console.log('[SCHEDULE] VALIDATION PASSED! SAVING VALUES', values);
+  }
+
   const schema = yup.object({
     appointments: yup.array().of(
       yup.object().shape({
-        // TODO Remove for testing
         sk: yup.date().required('Required'),
         duration: yup.number().required('Required').moreThan(0, 'Invalid'),
       })
@@ -161,7 +180,7 @@ function Schedule() {
                 initialValues={{ appointments: appointments }}
                 validationSchema={schema}
                 onSubmit={(values) => {
-                  console.log('[SCHEDULE] VALIDATION PASSED! SAVING VALUES', values);
+                  handleSubmit(values.appointments);
                 }}
               >
                 {({ values, errors, touched, handleChange, handleBlur }) => (
@@ -172,13 +191,6 @@ function Schedule() {
                         There are some invalid values in the schedule. Please correct them before proceeding.
                       </Alert>
                     )}
-                    {!getIn(errors, `appointments`) &&
-                      (getIn(touched, `appointments`) ||
-                        values.appointments.filter((v) => v.status === 'new').length > 0) && (
-                        <Alert color='info' sx={{ mb: 2 }}>
-                          There are pending changes to the schedule. Please save before proceeding.
-                        </Alert>
-                      )}
 
                     <FieldArray name='appointments'>
                       {({ insert, remove, push }) => (
@@ -270,7 +282,7 @@ function Schedule() {
                             onClick={() => addField(values.appointments)}
                             sx={{ m: 1 }}
                           >
-                            Add
+                            +
                           </Button>
                         </React.Fragment>
                       )}
