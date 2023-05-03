@@ -114,11 +114,15 @@ function Schedule() {
     appointments: yup.array().of(
       yup.object().shape({
         // TODO Remove for testing
-        sk: yup.date().required('Required').min(dayjs().set('hour', 2), 'Invalid'),
+        sk: yup.date().required('Required'),
         duration: yup.number().required('Required').moreThan(0, 'Invalid'),
       })
     ),
   });
+
+  const InvalidTimeComponent = () => {
+    return <Typography sx={{ color: '#d32f2f', fontSize: '0.75rem', marginTop: '3px', marginLeft: '14px' }}>Invalid Time</Typography>;
+  };
 
   return (
     <Container maxWidth='lg' sx={{ mt: 5 }}>
@@ -165,14 +169,18 @@ function Schedule() {
                                       <ErrorMessage name={`appointments.${index}.sk`} component='div' className='field-error' /> */}
                                       <Field
                                         component={TimePicker}
+                                        type='time'
                                         name={`appointments.${index}.sk`}
                                         value={values.appointments[index].sk}
-                                        onChange={handleChange}
+                                        onChange={(value: any) => {
+                                          values.appointments[index].sk = value;
+                                        }}
                                         onBlur={handleBlur}
-                                        error={Boolean(getIn(errors, `appointments[${index}].sk`)) && getIn(touched, `appointments[${index}].sk`)}
-                                        helperText={getIn(errors, `appointments[${index}].sk`)}
+                                        error={getIn(errors, `appointments.${index}.sk`) && getIn(touched, `appointments.${index}.duration`)}
+                                        helperText={getIn(errors, `appointments.${index}.sk`)}
                                       />
-                                      {/* <ErrorMessage name={`appointments.${index}.sk`} component='div' className='field-error' /> */}
+                                      {/* TODO Field error/helperText does not work so using ErrorMessage with a custom styled component */}
+                                      <ErrorMessage name={`appointments.${index}.sk`} component={InvalidTimeComponent} className='field-error' />
                                     </LocalizationProvider>
                                   </Grid>
 
@@ -183,8 +191,8 @@ function Schedule() {
                                       value={values.appointments[index].duration}
                                       onChange={handleChange}
                                       onBlur={handleBlur}
-                                      error={getIn(errors, `appointments[${index}].duration`) && getIn(touched, `appointments[${index}].duration`)}
-                                      helperText={getIn(errors, `appointments[${index}].duration`)}
+                                      error={getIn(errors, `appointments.${index}.duration`) && getIn(touched, `appointments.${index}.duration`)}
+                                      helperText={getIn(errors, `appointments.${index}.duration`)}
                                     />
                                   </Grid>
 
