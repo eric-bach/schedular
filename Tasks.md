@@ -37,8 +37,8 @@
 - [x] As a massage therapist I want to be able to see all my daily appointments
 - [] +++As a massage therapist I want to be able to set my availability
   - [x] Build dynamic form
+  - [x] Add validation to form
   - [] Call backend APIs to create/remove appointments
-  - [] Add validation to form
 - [] +++As a massage therapist I want to manually approve users to be added in the Users group
 - [] As a massage therapist I want to require a phone consultation before a massage booking
 - [] As a massage therapist I want to be able to see and manage a users bookings
