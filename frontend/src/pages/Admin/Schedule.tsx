@@ -47,6 +47,7 @@ function convertToInputValues(items: AppointmentItem[] | undefined): InputValues
 function Schedule() {
   const { authStatus } = useAuthenticator((context) => [context.route]);
 
+  const [error, setError] = React.useState<string>();
   const [date, setDate] = React.useState<Dayjs | null>(dayjs());
   const [isLoading, setLoading] = React.useState<boolean>(false);
   const [appointments, setAppointments] = React.useState<InputValues[]>([]);
@@ -74,7 +75,7 @@ function Schedule() {
 
   useEffect(() => {
     if (authStatus === 'authenticated') {
-      getAppointments(dayjs(), dayjs().add(1, 'day')).then((result) => {
+      getAppointments(dayjs().hour(0).minute(0).second(0), dayjs().hour(0).minute(0).second(0).add(1, 'day')).then((result) => {
         console.debug('[SCHEDULE] Loaded initial appointments', result);
       });
     } else {
@@ -115,22 +116,31 @@ function Schedule() {
   }
 
   function handleSubmit(values: InputValues[]) {
+    // Sort by sk
+    values.sort(function (a: InputValues, b: InputValues) {
+      if (a.sk < b.sk) return -1;
+      if (a.sk > b.sk) return 1;
+      return 0;
+    });
+
     // Get start and end times
+    const times: Dayjs[] = [];
     const startTimes: Dayjs[] = values.map((v) => v.sk);
     const durations: number[] = values.map((v) => v.duration);
-    const endTimes: Dayjs[] = [];
     for (let i = 0; i < startTimes.length; i++) {
-      let s = startTimes[i];
-      let d = durations[i];
-      const endTime = dayjs(s).add(d, 'minute');
-
-      endTimes.push(endTime);
+      times.push(startTimes[i]);
+      times.push(dayjs(startTimes[i]).add(durations[i], 'minute'));
     }
 
-    // TODO Convert start and end times to epoch
+    // Check for overlaps
+    for (let j = 0; j < times.length - 1; j++) {
+      if (times[j] > times[j + 1]) {
+        setError('The schedule has overlapping time slots. Please correct before proceeding.');
+        break;
+      }
+    }
 
-    // TODO Check for overlaps
-
+    console.log('[SCHEDULE] TIMES', times);
     console.log('[SCHEDULE] VALIDATION PASSED! SAVING VALUES', values);
   }
 
@@ -183,6 +193,11 @@ function Schedule() {
                     {getIn(errors, `appointments`) && (
                       <Alert color='error' sx={{ mb: 2 }}>
                         There are some invalid values in the schedule. Please correct them before proceeding.
+                      </Alert>
+                    )}
+                    {error && (
+                      <Alert color='error' sx={{ mb: 2 }}>
+                        {error}
                       </Alert>
                     )}
 

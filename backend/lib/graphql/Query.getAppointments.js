@@ -18,6 +18,7 @@ export function request(ctx) {
         ':toDate': util.dynamodb.toDynamoDB(ctx.args.to),
       },
     },
+    scanIndexForward: true,
   };
 }
 

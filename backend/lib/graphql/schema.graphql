@@ -1,33 +1,3 @@
-type Data @model @aws_cognito_user_pools {
-  pk: String
-  sk: AWSDateTime
-  type: String
-  category: String
-  duration: Int
-  status: String
-  bookingId: String
-  appointmentId: String
-  appointmentDetails: AppointmentDetailsData
-  customerId: String
-  customerDetails: CustomerDetailsData
-  firstName: String
-  lastName: String
-  email: String
-  phoneNumber: String
-  createdAt: AWSDateTime
-  updatedAt: AWSDateTime
-}
-type AppointmentDetailsData @model @aws_cognito_user_pools {
-  sk: AWSDateTime
-  duration: Int
-  type: String
-  category: String
-}
-type CustomerDetailsData @model @aws_cognito_user_pools {
-  email: String
-  phone: String
-}
-
 input LastEvaluatedKey {
   pk: ID
   sk: AWSDateTime
