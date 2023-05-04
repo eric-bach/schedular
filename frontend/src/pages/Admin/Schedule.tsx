@@ -56,9 +56,7 @@ function Schedule() {
 
     setLoading(true);
 
-    const result = await API.graphql<GraphQLQuery<GetAppointmentsResponse>>(
-      graphqlOperation(GET_APPOINTMENTS, { from, to })
-    );
+    const result = await API.graphql<GraphQLQuery<GetAppointmentsResponse>>(graphqlOperation(GET_APPOINTMENTS, { from, to }));
     setAppointments(convertToInputValues(result.data?.getAppointments?.items) ?? []);
 
     setLoading(false);
@@ -146,11 +144,7 @@ function Schedule() {
   });
 
   const InvalidTimeComponent = () => {
-    return (
-      <Typography sx={{ color: '#d32f2f', fontSize: '0.75rem', marginTop: '3px', marginLeft: '14px' }}>
-        Invalid Time
-      </Typography>
-    );
+    return <Typography sx={{ color: '#d32f2f', fontSize: '0.75rem', marginTop: '3px', marginLeft: '14px' }}>Invalid Time</Typography>;
   };
 
   return (
@@ -217,10 +211,7 @@ function Schedule() {
                                           values.appointments[index].sk = value;
                                         }}
                                         onBlur={handleBlur}
-                                        error={
-                                          getIn(errors, `appointments.${index}.sk`) &&
-                                          getIn(touched, `appointments.${index}.sk`)
-                                        }
+                                        error={getIn(errors, `appointments.${index}.sk`) && getIn(touched, `appointments.${index}.sk`)}
                                         helperText={getIn(errors, `appointments.${index}.sk`)}
                                       />
                                       {/* TODO Field error/helperText does not work so using ErrorMessage with a custom styled component */}
@@ -240,8 +231,7 @@ function Schedule() {
                                       onChange={handleChange}
                                       onBlur={handleBlur}
                                       error={
-                                        getIn(errors, `appointments.${index}.duration`) &&
-                                        getIn(touched, `appointments.${index}.duration`)
+                                        getIn(errors, `appointments.${index}.duration`) && getIn(touched, `appointments.${index}.duration`)
                                       }
                                       helperText={getIn(errors, `appointments.${index}.duration`)}
                                     />
@@ -251,12 +241,8 @@ function Schedule() {
                                     {values.appointments[index].status && (
                                       <Chip
                                         label={values.appointments[index].status}
-                                        color={
-                                          values.appointments[index].status === 'available' ? 'success' : 'primary'
-                                        }
-                                        variant={
-                                          values.appointments[index].status === 'cancelled' ? 'outlined' : 'filled'
-                                        }
+                                        color={values.appointments[index].status === 'available' ? 'success' : 'primary'}
+                                        variant={values.appointments[index].status === 'cancelled' ? 'outlined' : 'filled'}
                                         sx={{ mb: 1, mt: 1.5 }}
                                       />
                                     )}

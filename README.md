@@ -7,7 +7,8 @@
 <p align="center">
   <a href="#getting-started">Getting Started</a> |
   <a href="#architecture">Architecture</a> |
-  <a href="#deployment">Development</a>
+  <a href="#deployment">Development</a> |
+  <a href="#testing">Testing</a>
 </p>
 
 <p align="center">
@@ -137,7 +138,7 @@ To run the unit tests
    aws sso login
    ```
 
-2. Run tests
+2. Run tests in the backend folder
 
    ```
    $ npm run test
