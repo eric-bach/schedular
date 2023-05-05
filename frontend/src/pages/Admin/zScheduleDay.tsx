@@ -40,6 +40,11 @@ export default function ScheduleDay({ appointments, date }: { appointments: [App
       sk: '',
       type: 'appt',
       category: 'massage',
+      administratorDetails: {
+        id: '',
+        firstName: '',
+        lastName: '',
+      },
       duration: 0,
       status: '',
     });

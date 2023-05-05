@@ -41,7 +41,9 @@ export default function Confirmation() {
       <Typography variant='body1' gutterBottom>
         Date: {formateLocalLongDate(state.appointment.sk)} at {formatLocalTimeString(state.appointment.sk, 0)}
       </Typography>
-
+      <Typography variant='body1' gutterBottom>
+        Therapist: {state.appointment.administratorDetails.firstName} {state.appointment.administratorDetails.lastName}
+      </Typography>
       <Typography variant='h6' gutterBottom>
         Booking Reference:
       </Typography>

@@ -4,7 +4,7 @@ export function request(ctx) {
   console.log('🔔 CreateBooking Request: ', ctx);
 
   const bookingId = util.autoId();
-  const { envName, pk, sk, appointmentDetails, customer } = ctx.args.input;
+  const { envName, pk, sk, administratorDetails, appointmentDetails, customer } = ctx.args.input;
 
   return {
     operation: 'TransactWriteItems',
@@ -25,6 +25,11 @@ export function request(ctx) {
             type: appointmentDetails.type,
             category: appointmentDetails.category,
             duration: appointmentDetails.duration,
+          }),
+          administratorDetails: util.dynamodb.toDynamoDB({
+            id: administratorDetails.id,
+            firstName: administratorDetails.firstName,
+            lastName: administratorDetails.lastName,
           }),
           customerId: util.dynamodb.toDynamoDB(`user#${customer.id}`),
           customerDetails: util.dynamodb.toDynamoDB({

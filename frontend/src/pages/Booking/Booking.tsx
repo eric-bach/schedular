@@ -19,12 +19,7 @@ import Button from '@mui/material/Button';
 
 import aws_exports from '../../aws-exports';
 import { GET_AVAILABLE_APPOINTMENTS, CREATE_BOOKING } from '../../graphql/queries';
-import {
-  GetAvailableAppointmentsResponse,
-  AvailableAppointmentItem,
-  CreateBookingResponse,
-  CreateBookingInput,
-} from '../../types/BookingTypes';
+import { GetAvailableAppointmentsResponse, AvailableAppointmentItem, CreateBookingResponse, CreateBookingInput } from '../../types/BookingTypes';
 import { formatLocalTimeSpanString, formatLongDateString } from '../../helpers/utils';
 
 import '@aws-amplify/ui-react/styles.css';
@@ -50,9 +45,7 @@ function Booking() {
 
     setLoading(true);
 
-    const appointments = await API.graphql<GraphQLQuery<GetAvailableAppointmentsResponse>>(
-      graphqlOperation(GET_AVAILABLE_APPOINTMENTS, { from, to })
-    );
+    const appointments = await API.graphql<GraphQLQuery<GetAvailableAppointmentsResponse>>(graphqlOperation(GET_AVAILABLE_APPOINTMENTS, { from, to }));
     setAvailableAppointments(appointments.data?.getAvailableAppointments?.items);
 
     setLoading(false);
@@ -94,6 +87,11 @@ function Booking() {
         lastName: user.attributes?.family_name,
         email: user.attributes?.email,
         phone: user.attributes?.phone_number,
+      },
+      administratorDetails: {
+        id: appointment.administratorDetails.id,
+        firstName: appointment.administratorDetails.firstName,
+        lastName: appointment.administratorDetails.lastName,
       },
       appointmentDetails: {
         type: appointment.type,
@@ -158,12 +156,7 @@ function Booking() {
         <Grid xs={0} sm={0} md={0} lg={3} />
         <Grid xs={6} sm={6} md={6} lg={3}>
           <LocalizationProvider dateAdapter={AdapterDayjs}>
-            <DateCalendar
-              value={date}
-              minDate={dayjs()}
-              maxDate={dayjs().add(1, 'month')}
-              onChange={(newValue) => dateSelected(newValue)}
-            />
+            <DateCalendar value={date} minDate={dayjs()} maxDate={dayjs().add(1, 'month')} onChange={(newValue) => dateSelected(newValue)} />
           </LocalizationProvider>
         </Grid>
         <Grid xs={6} sm={6} md={6} lg={3}>

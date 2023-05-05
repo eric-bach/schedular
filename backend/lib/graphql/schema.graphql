@@ -21,11 +21,17 @@ input AppointmentInput {
   type: String!
   category: String!
 }
+input AdministratorInput {
+  id: String!
+  firstName: String!
+  lastName: String!
+}
 input CreateBookingInput {
   pk: String!
   sk: AWSDateTime!
   customer: CustomerInput!
   appointmentDetails: AppointmentInput!
+  administratorDetails: AdministratorInput!
   envName: String!
 }
 
@@ -49,6 +55,7 @@ type BookingResponse {
   pk: String!
   sk: AWSDateTime!
   type: String!
+  administratorDetails: AdministratorDetailsViewModel!
   appointmentDetails: AppointmentDetailsViewModel!
   customerId: String
   customerDetails: CustomerDetailsViewModel
@@ -57,6 +64,11 @@ type BookingResponse {
 }
 
 # GetAppointments, GetAvailableAppointments
+type AdministratorDetailsViewModel {
+  id: String
+  firstName: String
+  lastName: String
+}
 type CustomerDetailsViewModel {
   id: String
   firstName: String
@@ -71,6 +83,7 @@ type AppointmentViewModel {
   type: String!
   category: String!
   duration: Int!
+  administratorDetails: AdministratorDetailsViewModel
   bookingId: String
   customerDetails: CustomerDetailsViewModel
   createdAt: AWSDateTime
@@ -89,20 +102,10 @@ type GetAppointmentResponse {
   type: String!
   category: String!
   duration: Int!
+  administratorId: String!
+  administratorDetails: AdministratorDetailsViewModel
   bookingId: String
   customerDetails: CustomerDetailsViewModel
-  createdAt: AWSDateTime
-  updatedAt: AWSDateTime
-}
-
-# GetBooking
-type GetBookingResponse {
-  pk: String!
-  sk: AWSDateTime!
-  type: String!
-  appointmentDetails: AppointmentDetailsViewModel!
-  customerId: String!
-  customerDetails: CustomerDetailsViewModel!
   createdAt: AWSDateTime
   updatedAt: AWSDateTime
 }
@@ -121,6 +124,7 @@ type BookingsViewModel {
   sk: AWSDateTime!
   type: String!
   appointmentDetails: AppointmentDetailsViewModel!
+  administratorDetails: AdministratorDetailsViewModel!
   customerId: String!
   customerDetails: CustomerDetailsViewModel!
   createdAt: AWSDateTime
@@ -131,16 +135,27 @@ type GetBookingsResponse {
   lastEvaluatedKey: LastEvaluatedKeyViewModel
 }
 
+# GetBooking
+type GetBookingResponse {
+  pk: String!
+  sk: AWSDateTime!
+  type: String!
+  appointmentDetails: AppointmentDetailsViewModel!
+  administratorDetails: AdministratorDetailsViewModel!
+  customerId: String!
+  customerDetails: CustomerDetailsViewModel!
+  createdAt: AWSDateTime
+  updatedAt: AWSDateTime
+}
+
 # GraphQL actions
 type Query {
   getAvailableAppointments(from: String!, to: String!, lastEvaluatedKey: LastEvaluatedKey): GetAppointmentsResponse
     @aws_auth(cognito_groups: ["Users", "Admins"])
   getAppointment(pk: String!, sk: String!): GetAppointmentResponse @aws_auth(cognito_groups: ["Users", "Admins"])
-  getAppointments(from: String!, to: String!, lastEvaluatedKey: LastEvaluatedKey): GetAppointmentsResponse
-    @aws_auth(cognito_groups: ["Admins"])
+  getAppointments(from: String!, to: String!, lastEvaluatedKey: LastEvaluatedKey): GetAppointmentsResponse @aws_auth(cognito_groups: ["Admins"])
   getBooking(pk: String!, sk: String!): GetBookingResponse @aws_auth(cognito_groups: ["Users", "Admins"])
-  getBookings(customerId: String!, datetime: String!, lastEvaluatedKey: LastEvaluatedKey): GetBookingsResponse
-    @aws_auth(cognito_groups: ["Users", "Admins"])
+  getBookings(customerId: String!, datetime: String!, lastEvaluatedKey: LastEvaluatedKey): GetBookingsResponse @aws_auth(cognito_groups: ["Users", "Admins"])
 }
 
 type Mutation {

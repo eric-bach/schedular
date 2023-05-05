@@ -8,6 +8,11 @@ export type AvailableAppointmentItem = {
   type: string;
   category: string;
   duration: number;
+  administratorDetails: {
+    id: string;
+    firstName: string;
+    lastName: string;
+  };
   bookingId: string;
 };
 export type GetAvailableAppointmentsResponse = {
@@ -25,6 +30,12 @@ export type AppointmentItem = {
   type: string;
   category: string;
   duration: number;
+  administratorDetails: {
+    id: string;
+    firstName: string;
+    lastName: string;
+  };
+  bookingId?: string;
   customerDetails?: {
     id: string;
     firstName: string;
@@ -32,7 +43,6 @@ export type AppointmentItem = {
     email: string;
     phone: string;
   };
-  bookingId?: string;
 };
 export type GetAppointmentsResponse = {
   getAppointments: {
@@ -52,6 +62,11 @@ export type CreateBookingInput = {
     email: string | undefined;
     phone: string | undefined;
   };
+  administratorDetails: {
+    id: string;
+    firstName: string;
+    lastName: string;
+  };
   appointmentDetails: {
     duration: number;
     type: string;
@@ -64,6 +79,11 @@ export type CreateBookingResponse = {
     pk: string;
     sk: string;
     type: string;
+    administratorDetails: {
+      id: string;
+      firstName: string;
+      lastName: string;
+    };
     appointmentDetails: {
       pk: string;
       sk: string;
@@ -95,6 +115,11 @@ export type BookingItem = {
     category: string;
     status: string;
     duration: number;
+  };
+  administratorDetails: {
+    id: string;
+    firstName: string;
+    lastName: string;
   };
   customerId: String;
   customerDetails: {
@@ -130,6 +155,11 @@ export type CancelBookingResponse = {
     pk: string;
     sk: string;
     type: string;
+    administratorDetails: {
+      id: string;
+      firstName: string;
+      lastName: string;
+    };
     appointmentDetails: {
       pk: string;
       sk: string;
@@ -153,6 +183,11 @@ export type OnCancelBookingResponse = {
   pk: string;
   sk: string;
   type: string;
+  administratorDetails: {
+    id: string;
+    firstName: string;
+    lastName: string;
+  };
   appointmentDetails: {
     pk: string;
     sk: string;

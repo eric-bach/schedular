@@ -1,6 +1,6 @@
 ```
 query GetAvailableAppointments {
-  getAvailableAppointments(from: "2023-04-20T06:00:00Z", to: "2023-04-22T06:00:00Z")
+  getAvailableAppointments(from: "2023-05-04T06:00:00Z", to: "2023-05-05T06:00:00Z")
   {
     items {
       pk
@@ -9,6 +9,11 @@ query GetAvailableAppointments {
       type
       category
       duration
+      administratorDetails {
+        id
+      	firstName
+				lastName
+      }
       bookingId
       updatedAt
       createdAt
@@ -17,7 +22,7 @@ query GetAvailableAppointments {
 }
 
 query GetAppointments {
-  getAppointments(from: "2023-04-21T06:00:00Z", to: "2023-04-22T06:00:00Z")
+  getAppointments(from: "2023-05-04T06:00:00Z", to: "2023-05-05T06:00:00Z")
   {
     items {
       pk
@@ -26,6 +31,11 @@ query GetAppointments {
       type
       category
       duration
+      administratorDetails {
+        id
+      	firstName
+				lastName
+      }
       bookingId
       customerDetails {
         id
@@ -34,7 +44,6 @@ query GetAppointments {
         email
         phone
       }
-
       updatedAt
       createdAt
     }
@@ -70,14 +79,19 @@ query GetBookings {
 
 mutation CreateBooking {
   createBooking(input: {
-		pk: "appt#a8680d6a-4011-4805-a79e-5a201137ce66",
-		sk: "2023-04-21T18:00:00.000Z"
+		pk: "appt#fed83827-550e-4964-8ab0-6e9f74efcf42",
+		sk: "2023-06-01T14:00:00.000Z"
 		customer: {
       id: "79aea011-a655-447a-92d4-1d17be6d0ea4",
       firstName: "Eric",
       lastName: "Test",
       email: "test@test.com",
       phone: "123"
+    },
+    administratorDetails: {
+      id: "28a9cf0c-971a-4765-9721-64a338e57858",
+      firstName: "Jane"
+      lastName: "Doe"
     },
     appointmentDetails: {
       duration: 60,
@@ -90,6 +104,11 @@ mutation CreateBooking {
     pk
     sk
     type
+    administratorDetails {
+      id
+      firstName
+      lastName
+    }
     appointmentDetails {
       pk
       sk
@@ -116,10 +135,29 @@ mutation CancelBooking {
     envName: "dev"
   })
   {
-    cancellationReasons
-    keys {
+    pk
+    sk
+    type
+    administratorDetails {
+      id
+      firstName
+      lastName
+    }
+    appointmentDetails {
       pk
       sk
+      type
+      category
+      status
+      duration
+    }
+    customerId
+    customerDetails {
+      id
+      firstName
+      lastName
+      email
+      phone
     }
   }
 }
