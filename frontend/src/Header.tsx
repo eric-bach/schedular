@@ -18,7 +18,7 @@ import SpaIcon from '@mui/icons-material/Spa';
 
 const pages = ['Services', 'Pricing', 'Book Appointment'];
 const settings = ['Profile', 'Appointments', 'Logout'];
-const adminPages = ['My Customers', 'My Appointments', 'Manage Schedule', 'Test'];
+const adminPages = ['My Customers', 'My Appointments', 'Manage Schedule'];
 
 export function Header() {
   const { authStatus, user, signOut } = useAuthenticator((context) => [context.route, context.signOut]);
@@ -73,8 +73,6 @@ export function Header() {
       navigate('/admin/appointments');
     } else if (e.target.textContent === 'Manage Schedule') {
       navigate('/admin/schedule');
-    } else if (e.target.textContent === 'Test') {
-      navigate('/admin/test');
     }
   };
 

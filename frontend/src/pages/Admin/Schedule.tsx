@@ -115,7 +115,7 @@ function Schedule() {
     console.log('REMOVED APPOINTMENT', values);
   }
 
-  function handleSubmit(values: InputValues[]) {
+  function validSchedule(values: InputValues[]) {
     // Sort by sk
     values.sort(function (a: InputValues, b: InputValues) {
       if (a.sk < b.sk) return -1;
@@ -133,16 +133,28 @@ function Schedule() {
     }
 
     // Check for overlaps
+    let isValid = true;
     setError(undefined);
     for (let j = 0; j < times.length - 1; j++) {
       if (times[j] > times[j + 1]) {
+        isValid = false;
         setError('The schedule has overlapping time slots. Please correct before proceeding.');
         break;
       }
     }
 
-    console.log('[SCHEDULE] TIMES', times);
-    console.log('[SCHEDULE] VALIDATION PASSED! SAVING VALUES', values);
+    if (isValid) {
+      console.log('[SCHEDULE] VALIDATION PASSED! SAVING VALUES', values);
+    }
+
+    return isValid;
+  }
+
+  function handleSubmit(values: InputValues[]) {
+    if (validSchedule(values)) {
+      // TODO Call createAppointments
+      console.log('Ready to post');
+    }
   }
 
   const schema = yup.object({
@@ -163,7 +175,12 @@ function Schedule() {
       <Grid container spacing={{ md: 1, lg: 1 }} columns={{ md: 6, lg: 6 }}>
         <Grid md={2} lg={2}>
           <LocalizationProvider dateAdapter={AdapterDayjs}>
-            <DateCalendar value={date} minDate={dayjs()} maxDate={dayjs().add(1, 'year')} onChange={(newDate) => dateSelected(newDate ?? dayjs())} />
+            <DateCalendar
+              value={date}
+              minDate={dayjs()}
+              maxDate={dayjs().add(1, 'year')}
+              onChange={(newDate) => dateSelected(newDate ?? dayjs())}
+            />
           </LocalizationProvider>
         </Grid>
 
@@ -226,7 +243,11 @@ function Schedule() {
                                         helperText={getIn(errors, `appointments.${index}.sk`)}
                                       />
                                       {/* TODO Field error/helperText does not work so using ErrorMessage with a custom styled component */}
-                                      <ErrorMessage name={`appointments.${index}.sk`} component={InvalidTimeComponent} className='field-error' />
+                                      <ErrorMessage
+                                        name={`appointments.${index}.sk`}
+                                        component={InvalidTimeComponent}
+                                        className='field-error'
+                                      />
                                     </LocalizationProvider>
                                   </Grid>
 
@@ -237,7 +258,9 @@ function Schedule() {
                                       value={values.appointments[index].duration}
                                       onChange={handleChange}
                                       onBlur={handleBlur}
-                                      error={getIn(errors, `appointments.${index}.duration`) && getIn(touched, `appointments.${index}.duration`)}
+                                      error={
+                                        getIn(errors, `appointments.${index}.duration`) && getIn(touched, `appointments.${index}.duration`)
+                                      }
                                       helperText={getIn(errors, `appointments.${index}.duration`)}
                                     />
                                   </Grid>
@@ -254,14 +277,25 @@ function Schedule() {
                                   </Grid>
 
                                   <Grid xs={2}>
-                                    <Button color='error' variant='contained' onClick={() => removeField(values.appointments, index)} sx={{ m: 1 }}>
+                                    <Button
+                                      color='error'
+                                      variant='contained'
+                                      onClick={() => removeField(values.appointments, index)}
+                                      sx={{ m: 1 }}
+                                    >
                                       X
                                     </Button>
                                   </Grid>
                                 </Grid>
                               </React.Fragment>
                             ))}
-                          <Button variant='contained' color='success' type='button' onClick={() => addField(values.appointments)} sx={{ m: 1 }}>
+                          <Button
+                            variant='contained'
+                            color='success'
+                            type='button'
+                            onClick={() => addField(values.appointments)}
+                            sx={{ m: 1 }}
+                          >
                             +
                           </Button>
                         </React.Fragment>

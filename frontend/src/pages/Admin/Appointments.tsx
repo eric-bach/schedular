@@ -67,7 +67,12 @@ function Appointments() {
       <Grid container spacing={{ md: 1, lg: 1 }} columns={{ md: 6, lg: 6 }}>
         <Grid md={2} lg={2}>
           <LocalizationProvider dateAdapter={AdapterDayjs}>
-            <DateCalendar value={date} minDate={dayjs()} maxDate={dayjs().add(1, 'month')} onChange={(newValue) => dateSelected(newValue)} />
+            <DateCalendar
+              value={date}
+              minDate={dayjs()}
+              maxDate={dayjs().add(1, 'month')}
+              onChange={(newValue) => dateSelected(newValue)}
+            />
           </LocalizationProvider>
         </Grid>
 
@@ -109,7 +114,7 @@ function Appointments() {
                                   <Typography component='span' variant='subtitle2' color='text.primary' sx={{ display: 'block' }}>
                                     Customer:{' '}
                                     <Typography component='span' variant='body2'>
-                                      {appt?.customerDetails?.firstName}
+                                      {appt?.customerDetails?.firstName} {appt?.customerDetails?.lastName}
                                     </Typography>
                                   </Typography>
                                   <Typography component='span' variant='subtitle2' color='text.primary' sx={{ display: 'block' }}>
