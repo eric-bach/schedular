@@ -97,7 +97,7 @@ function Schedule() {
   function addField(values: InputValues[]) {
     const appt: InputValues = {
       pk: `appt#${uuidv4()}`,
-      sk: dayjs().hour(0).minute(0).second(0).millisecond(0),
+      sk: dayjs(date).hour(0).minute(0).second(0).millisecond(0),
       status: 'available*',
       type: 'appt',
       category: 'massage',
@@ -113,7 +113,7 @@ function Schedule() {
     console.log('ADDED APPOINTMENT', values);
 
     setAppointments([...appointments, appt]);
-    console.log('ADDED APPOINTMENT', [...appointments, appt]);
+    // console.log('ADDED APPOINTMENT', [...appointments, appt]);
   }
 
   function removeField(values: InputValues[], index: number) {
@@ -175,6 +175,8 @@ function Schedule() {
         graphqlOperation(UPSERT_DELETE_APPOINTMENTS, { input: { appointments: values } })
       );
       console.log('[SCHEDULE] UpsertDelete Response:', result);
+
+      dateSelected(date ?? dayjs());
     }
   }
 
@@ -196,12 +198,7 @@ function Schedule() {
       <Grid container spacing={{ md: 1, lg: 1 }} columns={{ md: 6, lg: 6 }}>
         <Grid md={2} lg={2}>
           <LocalizationProvider dateAdapter={AdapterDayjs}>
-            <DateCalendar
-              value={date}
-              minDate={dayjs()}
-              maxDate={dayjs().add(1, 'year')}
-              onChange={(newDate) => dateSelected(newDate ?? dayjs())}
-            />
+            <DateCalendar value={date} minDate={dayjs()} maxDate={dayjs().add(1, 'year')} onChange={(newDate) => dateSelected(newDate ?? dayjs())} />
           </LocalizationProvider>
         </Grid>
 
@@ -264,11 +261,7 @@ function Schedule() {
                                         helperText={getIn(errors, `appointments.${index}.sk`)}
                                       />
                                       {/* TODO Field error/helperText does not work so using ErrorMessage with a custom styled component */}
-                                      <ErrorMessage
-                                        name={`appointments.${index}.sk`}
-                                        component={InvalidTimeComponent}
-                                        className='field-error'
-                                      />
+                                      <ErrorMessage name={`appointments.${index}.sk`} component={InvalidTimeComponent} className='field-error' />
                                     </LocalizationProvider>
                                   </Grid>
 
@@ -279,9 +272,7 @@ function Schedule() {
                                       value={values.appointments[index].duration}
                                       onChange={handleChange}
                                       onBlur={handleBlur}
-                                      error={
-                                        getIn(errors, `appointments.${index}.duration`) && getIn(touched, `appointments.${index}.duration`)
-                                      }
+                                      error={getIn(errors, `appointments.${index}.duration`) && getIn(touched, `appointments.${index}.duration`)}
                                       helperText={getIn(errors, `appointments.${index}.duration`)}
                                     />
                                   </Grid>
@@ -298,25 +289,14 @@ function Schedule() {
                                   </Grid>
 
                                   <Grid xs={2}>
-                                    <Button
-                                      color='error'
-                                      variant='contained'
-                                      onClick={() => removeField(values.appointments, index)}
-                                      sx={{ m: 1 }}
-                                    >
+                                    <Button color='error' variant='contained' onClick={() => removeField(values.appointments, index)} sx={{ m: 1 }}>
                                       X
                                     </Button>
                                   </Grid>
                                 </Grid>
                               </React.Fragment>
                             ))}
-                          <Button
-                            variant='contained'
-                            color='success'
-                            type='button'
-                            onClick={() => addField(values.appointments)}
-                            sx={{ m: 1 }}
-                          >
+                          <Button variant='contained' color='success' type='button' onClick={() => addField(values.appointments)} sx={{ m: 1 }}>
                             +
                           </Button>
                         </React.Fragment>
