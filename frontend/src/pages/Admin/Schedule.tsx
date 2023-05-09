@@ -14,8 +14,8 @@ import { ErrorMessage, Field, FieldArray, Form, Formik, getIn } from 'formik';
 import * as yup from 'yup';
 import { v4 as uuidv4 } from 'uuid';
 
-import { GET_APPOINTMENTS } from '../../graphql/queries';
-import { GetAppointmentsResponse, AppointmentItem } from '../../types/BookingTypes';
+import { GET_APPOINTMENTS, UPSERT_DELETE_APPOINTMENTS } from '../../graphql/queries';
+import { GetAppointmentsResponse, AppointmentItem, UpsertDeleteAppointmentsResponse } from '../../types/BookingTypes';
 import { formatLongDateString } from '../../helpers/utils';
 
 dayjs.extend(isBetweenPlugin);
@@ -27,9 +27,14 @@ type InputValues = {
   type: string;
   category: string;
   duration: number;
+  administratorDetails: {
+    id: string;
+    firstName: string;
+    lastName: string;
+  };
 };
 
-function convertToInputValues(items: AppointmentItem[] | undefined): InputValues[] {
+function convertToInputValues(userAttributes: any, items: AppointmentItem[] | undefined): InputValues[] {
   if (!items) return [];
 
   return items.map((item) => {
@@ -40,12 +45,17 @@ function convertToInputValues(items: AppointmentItem[] | undefined): InputValues
       type: item.type,
       category: item.category,
       duration: item.duration,
+      administratorDetails: {
+        id: userAttributes.sub,
+        firstName: userAttributes.given_name,
+        lastName: userAttributes.family_name,
+      },
     };
   });
 }
 
 function Schedule() {
-  const { authStatus } = useAuthenticator((context) => [context.route]);
+  const { user, authStatus } = useAuthenticator((context) => [context.route]);
 
   const [error, setError] = React.useState<string>();
   const [date, setDate] = React.useState<Dayjs | null>(dayjs());
@@ -58,7 +68,7 @@ function Schedule() {
     setLoading(true);
 
     const result = await API.graphql<GraphQLQuery<GetAppointmentsResponse>>(graphqlOperation(GET_APPOINTMENTS, { from, to }));
-    setAppointments(convertToInputValues(result.data?.getAppointments?.items) ?? []);
+    setAppointments(convertToInputValues(user.attributes!, result.data?.getAppointments?.items) ?? []);
 
     setLoading(false);
 
@@ -84,14 +94,18 @@ function Schedule() {
   }, []);
 
   function addField(values: InputValues[]) {
-    const appt = {
-      // TODO Temporarily set GUID so key is unique in map
+    const appt: InputValues = {
       pk: `appt#${uuidv4()}`,
       sk: dayjs().hour(0).minute(0).second(0).millisecond(0),
+      status: 'available*',
       type: 'appt',
       category: 'massage',
       duration: 60,
-      status: 'available*',
+      administratorDetails: {
+        id: user.attributes?.sub!,
+        firstName: user.attributes?.given_name!,
+        lastName: user.attributes?.family_name!,
+      },
     };
 
     values.push(appt);
@@ -150,13 +164,16 @@ function Schedule() {
     return isValid;
   }
 
-  function handleSubmit(values: InputValues[]) {
+  async function handleSubmit(values: InputValues[]) {
     if (validSchedule(values)) {
-      console.log('Ready to post');
-
-      // TODO change any values with status = available* to available
+      values = values.map((p) => (p.status === 'available*' ? { ...p, status: 'available' } : p));
+      console.log('Ready to save', values);
 
       // TODO Call upsertDeleteAppointments
+      const result = await API.graphql<GraphQLQuery<UpsertDeleteAppointmentsResponse>>(
+        graphqlOperation(UPSERT_DELETE_APPOINTMENTS, { input: { appointments: values } })
+      );
+      console.log('[SCHEDULE] UpsertDelete Response:', result);
     }
   }
 

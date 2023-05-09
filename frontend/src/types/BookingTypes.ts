@@ -202,3 +202,22 @@ export type OnCancelBookingResponse = {
     phone: string | undefined;
   };
 };
+
+// UpsertDeleteAppointments
+export type UpsertedAppointmentsResponse = {
+  pk: string;
+  sk: string;
+  status: string;
+  type: string;
+  category: string;
+  duration: number;
+  administratorDetails: {
+    id: string;
+    firstName: string;
+    lastName: string;
+  };
+};
+export type UpsertDeleteAppointmentsResponse = {
+  upserted: [UpsertedAppointmentsResponse];
+  deleted: [Base];
+};

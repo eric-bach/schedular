@@ -154,6 +154,28 @@ export const CANCEL_BOOKING = `mutation CancelBooking($input: CancelBookingInput
   }
 }`;
 
+export const UPSERT_DELETE_APPOINTMENTS = `mutation UpsertDeleteAppointments($input: UpsertAppointmentsInput!) {
+  upsertDeleteAppointments(input: $input) {
+    upserted {
+      pk
+      sk
+      status
+      type
+      category
+      duration
+      administratorDetails {
+        id
+        firstName
+        lastName
+      }
+    }
+    deleted {
+      pk
+      sk
+    }
+  }
+}`;
+
 export const ON_CANCEL_BOOKING = `subscription OnCancelBooking {
   onCancelBooking {
     pk

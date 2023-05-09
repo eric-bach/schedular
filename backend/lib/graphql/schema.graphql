@@ -21,23 +21,27 @@ input UpsertAppointmentInput {
   type: String!
   category: String!
   duration: Int!
-  administratorDetails: AdministratorDetailsInput
+  administratorDetails: AdministratorDetailsInput!
 }
 input UpsertAppointmentsInput {
   appointments: [UpsertAppointmentInput]
 }
 type UpsertAppointmentResponse {
-  pk: ID!
-  sk: AWSDateTime!
-  status: String!
-  type: String!
-  category: String!
-  duration: Int!
+  pk: ID
+  sk: AWSDateTime
+  status: String
+  type: String
+  category: String
+  duration: Int
   administratorDetails: AdministratorDetailsViewModel
+}
+type DeleteAppointmentResponse {
+  pk: ID
+  sk: AWSDateTime
 }
 type UpsertDeleteAppointmentsResponse {
   upserted: [UpsertAppointmentResponse]
-  deleted: [LastEvaluatedKeyViewModel]
+  deleted: [DeleteAppointmentResponse]
 }
 
 # CreateBooking

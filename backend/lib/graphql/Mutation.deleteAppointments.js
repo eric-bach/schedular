@@ -1,14 +1,19 @@
-import { util } from '@aws-appsync/utils';
+import { util, runtime } from '@aws-appsync/utils';
 
 export function request(ctx) {
   console.log('🔔 DeleteAppointments Request: ', ctx);
 
   const { appointments } = ctx.args.input;
-  const createAppointments = appointments.filter((x) => x.status === 'pending*');
+  const deleteAppointments = appointments.filter((x) => x.status === 'pending*');
+
+  // Early Return if no records to delete
+  if (deleteAppointments.length <= 0) {
+    runtime.earlyReturn({ upserted: ctx.prev.result.data['schedular-Data'], deleted: [{}] });
+  }
 
   let data = [];
-  for (var index in createAppointments) {
-    data.push(util.dynamodb.toMapValues({ pk: createAppointments[index].pk, sk: createAppointments[index].sk }));
+  for (var index in deleteAppointments) {
+    data.push(util.dynamodb.toMapValues({ pk: deleteAppointments[index].pk, sk: deleteAppointments[index].sk }));
   }
 
   return {
