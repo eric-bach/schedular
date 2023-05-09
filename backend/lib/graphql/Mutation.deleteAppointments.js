@@ -27,7 +27,7 @@ export function request(ctx) {
 export function response(ctx) {
   console.log('🔔 DeleteAppointments Response: ', ctx);
 
-  const upsertResponse = ctx.prev.result.data['schedular-Data'];
+  const upsertResponse = ctx.prev.result.data ? ctx.prev.result.data['schedular-Data'] : [{}];
   const deleteResponse = ctx.result.data['schedular-Data'];
 
   if (ctx.error) {

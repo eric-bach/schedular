@@ -78,6 +78,7 @@ function Schedule() {
   async function dateSelected(d: Dayjs) {
     console.log('[SCHEDULE] Date selected', d);
     setDate(d);
+    setError(undefined);
 
     const result = await getAppointments(d.hour(0).minute(0).second(0), d.hour(0).minute(0).second(0).add(1, 'day'));
     console.debug('[SCHEDULE] Found appointments', result);
