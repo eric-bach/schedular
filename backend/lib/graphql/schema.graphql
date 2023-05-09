@@ -26,6 +26,19 @@ input UpsertAppointmentInput {
 input UpsertAppointmentsInput {
   appointments: [UpsertAppointmentInput]
 }
+type UpsertAppointmentResponse {
+  pk: ID!
+  sk: AWSDateTime!
+  status: String!
+  type: String!
+  category: String!
+  duration: Int!
+  administratorDetails: AdministratorDetailsViewModel
+}
+type UpsertDeleteAppointmentsResponse {
+  upserted: [UpsertAppointmentResponse]
+  deleted: [LastEvaluatedKeyViewModel]
+}
 
 # CreateBooking
 input CustomerInput {
@@ -170,13 +183,15 @@ type Query {
   getAvailableAppointments(from: String!, to: String!, lastEvaluatedKey: LastEvaluatedKey): GetAppointmentsResponse
     @aws_auth(cognito_groups: ["Users", "Admins"])
   getAppointment(pk: String!, sk: String!): GetAppointmentResponse @aws_auth(cognito_groups: ["Users", "Admins"])
-  getAppointments(from: String!, to: String!, lastEvaluatedKey: LastEvaluatedKey): GetAppointmentsResponse @aws_auth(cognito_groups: ["Admins"])
+  getAppointments(from: String!, to: String!, lastEvaluatedKey: LastEvaluatedKey): GetAppointmentsResponse
+    @aws_auth(cognito_groups: ["Admins"])
   getBooking(pk: String!, sk: String!): GetBookingResponse @aws_auth(cognito_groups: ["Users", "Admins"])
-  getBookings(customerId: String!, datetime: String!, lastEvaluatedKey: LastEvaluatedKey): GetBookingsResponse @aws_auth(cognito_groups: ["Users", "Admins"])
+  getBookings(customerId: String!, datetime: String!, lastEvaluatedKey: LastEvaluatedKey): GetBookingsResponse
+    @aws_auth(cognito_groups: ["Users", "Admins"])
 }
 
 type Mutation {
-  upsertAppointments(input: UpsertAppointmentsInput): GetAppointmentResponse @aws_auth(cognito_groups: ["Admins"])
+  upsertDeleteAppointments(input: UpsertAppointmentsInput): UpsertDeleteAppointmentsResponse @aws_auth(cognito_groups: ["Admins"])
   createBooking(input: CreateBookingInput): BookingResponse @aws_auth(cognito_groups: ["Users", "Admins"])
   cancelBooking(input: CancelBookingInput): BookingResponse @aws_auth(cognito_groups: ["Users", "Admins"])
 }

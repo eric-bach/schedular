@@ -162,8 +162,8 @@ mutation CancelBooking {
   }
 }
 
-mutation UpsertAppointments {
-  upsertAppointments(input: {
+mutation UpsertDeleteAppointments {
+  upsertDeleteAppointments(input: {
     appointments: [{
       pk: "12345",
 			sk: "2023-06-01T14:00:00.000Z",
@@ -178,35 +178,37 @@ mutation UpsertAppointments {
       }
     },
     {
-      pk: "appt#0035a30f-d1cd-4e2f-84dc-cb88815a9149",
-      sk: "2023-06-06T21:00:00.000Z",
-      status: "available",
+      pk: "appt#5d0cf170-dfe1-4d87-8a03-fa62cee9d573",
+ 			sk: "2023-05-09T14:00:00.000Z",
+ 			status: "pending*",
       type: "appt",
       category: "massage",
       duration: 60,
       administratorDetails: {
-        id: "user#44bf2fd7-45d0-4223-a5c5-21c12bc5168d",
-        firstName: "Jane",
-        lastName: "Doe"
-      }
-    },
-    {
-      pk: "appt#0116a934-ecd0-4e67-8c21-444ea3ca1a81",
-      sk: "2023-05-12T14:00:00.000Z",
-      status: "pending*",
-      type: "appt",
-      category: "massage",
-      duration: 60,
-      administratorDetails: {
-        id: "user#44bf2fd7-45d0-4223-a5c5-21c12bc5168d",
+        id: "123",
         firstName: "Jane",
         lastName: "Doe"
       }
     }]
   })
   {
-    pk
-    sk
+    upserted {
+      pk
+      sk
+      status
+      type
+      category
+      duration
+      administratorDetails {
+        id
+        firstName
+        lastName
+      }
+    }
+    deleted {
+      pk
+      sk
+    }
   }
 }
 

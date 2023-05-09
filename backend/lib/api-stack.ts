@@ -85,27 +85,6 @@ export class ApiStack extends Stack {
       eventSourceArn: emailQueue.queueArn,
     });
 
-    // Resolver for upsertAppointments
-    const upsertAppointmentsFunction = new NodejsFunction(this, 'upsertAppointments', {
-      functionName: `${props.appName}-${props.envName}-upsertAppointments`,
-      runtime: Runtime.NODEJS_18_X,
-      handler: 'handler',
-      entry: path.resolve(__dirname, '../src/lambda/upsertAppointments/main.ts'),
-      memorySize: 512,
-      timeout: Duration.seconds(10),
-      environment: {
-        DATA_TABLE_NAME: dataTable.tableName,
-        REGION: this.region,
-      },
-    });
-    upsertAppointmentsFunction.addToRolePolicy(
-      new PolicyStatement({
-        effect: Effect.ALLOW,
-        actions: ['dynamodb:BatchWriteItem'],
-        resources: [dataTable.tableArn + '*'],
-      })
-    );
-
     // AppSync API
     const api = new GraphqlApi(this, `${props.appName}Api`, {
       name: `${props.appName}-${props.envName}-api`,
@@ -124,9 +103,6 @@ export class ApiStack extends Stack {
     });
 
     // AppSync DataSources
-    const upsertAppointmentsDataSource = api.addLambdaDataSource('upsertAppointmentsDataSource', upsertAppointmentsFunction, {
-      name: 'upsertAppointmentsDataSource',
-    });
     const dynamoDbDataSource = new DynamoDbDataSource(this, `dynamoDBDataSource`, {
       api: api,
       table: dataTable,
@@ -172,10 +148,6 @@ export class ApiStack extends Stack {
     emailQueue.grantSendMessages(httpDataSource.grantPrincipal);
 
     // AppSync JS Resolvers
-    upsertAppointmentsDataSource.createResolver(`${props.appName}-${props.envName}-upsertAppointmentsResolver`, {
-      typeName: 'Mutation',
-      fieldName: 'upsertAppointments',
-    });
     const getAvailableAppointmentsFunc = new AppsyncFunction(this, 'getAvailableAppointmentsFunction', {
       name: 'getAvailableAppointmentsFunction',
       api: api,
@@ -261,6 +233,20 @@ export class ApiStack extends Stack {
       `),
       runtime: FunctionRuntime.JS_1_0_0,
     });
+    const upsertAppointmentsFunction = new AppsyncFunction(this, 'upsertAppointmentsFunction', {
+      name: 'upsertAppointmentsFunction',
+      api: api,
+      dataSource: dynamoDbDataSource,
+      code: Code.fromAsset(path.join(__dirname, '/graphql/Mutation.createAppointments.js')),
+      runtime: FunctionRuntime.JS_1_0_0,
+    });
+    const deleteAppointmentsFunction = new AppsyncFunction(this, 'deleteAppointmentsFunction', {
+      name: 'deleteAppointmentsFunction',
+      api: api,
+      dataSource: dynamoDbDataSource,
+      code: Code.fromAsset(path.join(__dirname, '/graphql/Mutation.deleteAppointments.js')),
+      runtime: FunctionRuntime.JS_1_0_0,
+    });
 
     const passthrough = InlineCode.fromInline(`
         // The before step
@@ -322,6 +308,14 @@ export class ApiStack extends Stack {
       fieldName: 'cancelBooking',
       runtime: FunctionRuntime.JS_1_0_0,
       pipelineConfig: [cancelBookingFunction, getBookingFunc, sqsSendEMailFunction],
+      code: passthrough,
+    });
+    const upsertDeleteAppointmentsResolver = new Resolver(this, 'upsertDeleteAppointmentsResolver', {
+      api: api,
+      typeName: 'Mutation',
+      fieldName: 'upsertDeleteAppointments',
+      runtime: FunctionRuntime.JS_1_0_0,
+      pipelineConfig: [upsertAppointmentsFunction, deleteAppointmentsFunction],
       code: passthrough,
     });
 
