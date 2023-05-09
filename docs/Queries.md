@@ -161,4 +161,53 @@ mutation CancelBooking {
     }
   }
 }
+
+mutation UpsertAppointments {
+  upsertAppointments(input: {
+    appointments: [{
+      pk: "12345",
+			sk: "2023-06-01T14:00:00.000Z",
+      status: "new*",
+      type: "appt",
+      category: "massage",
+      duration: 60,
+      administratorDetails: {
+        id: "123",
+        firstName: "Jane",
+        lastName: "Doe"
+      }
+    },
+    {
+      pk: "appt#0035a30f-d1cd-4e2f-84dc-cb88815a9149",
+      sk: "2023-06-06T21:00:00.000Z",
+      status: "available",
+      type: "appt",
+      category: "massage",
+      duration: 60,
+      administratorDetails: {
+        id: "user#44bf2fd7-45d0-4223-a5c5-21c12bc5168d",
+        firstName: "Jane",
+        lastName: "Doe"
+      }
+    },
+    {
+      pk: "appt#0116a934-ecd0-4e67-8c21-444ea3ca1a81",
+      sk: "2023-05-12T14:00:00.000Z",
+      status: "pending*",
+      type: "appt",
+      category: "massage",
+      duration: 60,
+      administratorDetails: {
+        id: "user#44bf2fd7-45d0-4223-a5c5-21c12bc5168d",
+        firstName: "Jane",
+        lastName: "Doe"
+      }
+    }]
+  })
+  {
+    pk
+    sk
+  }
+}
+
 ```

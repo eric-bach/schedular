@@ -72,7 +72,6 @@ export type CreateBookingInput = {
     type: string;
     category: string;
   };
-  envName: string;
 };
 export type CreateBookingResponse = {
   createBooking: {
@@ -148,7 +147,6 @@ export type CancelBookingInput = {
     status: string;
     duration: number;
   };
-  envName: string;
 };
 export type CancelBookingResponse = {
   cancelBooking: {

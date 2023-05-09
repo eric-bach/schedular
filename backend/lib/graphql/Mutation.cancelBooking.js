@@ -3,13 +3,13 @@ import { util } from '@aws-appsync/utils';
 export function request(ctx) {
   console.log('🔔 CancelBooking Request: ', ctx);
 
-  const { envName, bookingId, appointmentDetails } = ctx.args.input;
+  const {  bookingId, appointmentDetails } = ctx.args.input;
 
   return {
     operation: 'TransactWriteItems',
     transactItems: [
       {
-        table: `schedular-${envName}-Data`,
+        table: `schedular-Data`,
         operation: 'UpdateItem',
         key: {
           pk: util.dynamodb.toDynamoDB(bookingId),
@@ -31,7 +31,7 @@ export function request(ctx) {
         },
       },
       {
-        table: `schedular-${envName}-Data`,
+        table: `schedular-Data`,
         operation: 'UpdateItem',
         key: {
           pk: util.dynamodb.toDynamoDB(appointmentDetails.pk),

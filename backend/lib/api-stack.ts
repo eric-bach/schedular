@@ -51,7 +51,7 @@ export class ApiStack extends Stack {
       },
     });
 
-    // Lambda
+    // Lambdas
     const sendEmailFunction = new NodejsFunction(this, 'SendEmailFunction', {
       functionName: `${props.appName}-${props.envName}-send-email`,
       runtime: Runtime.NODEJS_16_X,
@@ -78,13 +78,33 @@ export class ApiStack extends Stack {
         resources: [`arn:aws:ses:${this.region}:${this.account}:identity/*`],
       })
     );
-
     // Event Source Mapping to SQS
     new EventSourceMapping(this, 'SendEmailSQSEvent', {
       target: sendEmailFunction,
       batchSize: 10,
       eventSourceArn: emailQueue.queueArn,
     });
+
+    // Resolver for upsertAppointments
+    const upsertAppointmentsFunction = new NodejsFunction(this, 'upsertAppointments', {
+      functionName: `${props.appName}-${props.envName}-upsertAppointments`,
+      runtime: Runtime.NODEJS_18_X,
+      handler: 'handler',
+      entry: path.resolve(__dirname, '../src/lambda/upsertAppointments/main.ts'),
+      memorySize: 512,
+      timeout: Duration.seconds(10),
+      environment: {
+        DATA_TABLE_NAME: dataTable.tableName,
+        REGION: this.region,
+      },
+    });
+    upsertAppointmentsFunction.addToRolePolicy(
+      new PolicyStatement({
+        effect: Effect.ALLOW,
+        actions: ['dynamodb:BatchWriteItem'],
+        resources: [dataTable.tableArn + '*'],
+      })
+    );
 
     // AppSync API
     const api = new GraphqlApi(this, `${props.appName}Api`, {
@@ -104,11 +124,14 @@ export class ApiStack extends Stack {
     });
 
     // AppSync DataSources
-    const dynamoDbDataSource = new DynamoDbDataSource(this, `${props.appName}ApiDynamoDBDataSource`, {
+    const upsertAppointmentsDataSource = api.addLambdaDataSource('upsertAppointmentsDataSource', upsertAppointmentsFunction, {
+      name: 'upsertAppointmentsDataSource',
+    });
+    const dynamoDbDataSource = new DynamoDbDataSource(this, `dynamoDBDataSource`, {
       api: api,
       table: dataTable,
       description: 'DynamoDbDataSource',
-      name: `${props.appName}-table-${props.envName}`,
+      name: 'dynamoDBDataSource',
       serviceRole: new Role(this, `${props.appName}ApiServiceRole`, {
         assumedBy: new ServicePrincipal('appsync.amazonaws.com'),
         roleName: `${props.appName}-dynamoDb-service-role-${props.envName}`,
@@ -138,8 +161,8 @@ export class ApiStack extends Stack {
         },
       }),
     });
-    const httpDataSource = api.addHttpDataSource(`${props.appName}-endpoint-${props.envName}`, `https://sqs.${this.region}.amazonaws.com`, {
-      name: `${props.appName}ApiHttpDataSource`,
+    const httpDataSource = api.addHttpDataSource('httpDataSource', `https://sqs.${this.region}.amazonaws.com`, {
+      name: 'httpDataSource',
       authorizationConfig: {
         signingRegion: this.region,
         signingServiceName: 'sqs',
@@ -149,6 +172,10 @@ export class ApiStack extends Stack {
     emailQueue.grantSendMessages(httpDataSource.grantPrincipal);
 
     // AppSync JS Resolvers
+    upsertAppointmentsDataSource.createResolver(`${props.appName}-${props.envName}-upsertAppointmentsResolver`, {
+      typeName: 'Mutation',
+      fieldName: 'upsertAppointments',
+    });
     const getAvailableAppointmentsFunc = new AppsyncFunction(this, 'getAvailableAppointmentsFunction', {
       name: 'getAvailableAppointmentsFunction',
       api: api,

@@ -4,13 +4,13 @@ export function request(ctx) {
   console.log('🔔 CreateBooking Request: ', ctx);
 
   const bookingId = util.autoId();
-  const { envName, pk, sk, administratorDetails, appointmentDetails, customer } = ctx.args.input;
+  const { pk, sk, administratorDetails, appointmentDetails, customer } = ctx.args.input;
 
   return {
     operation: 'TransactWriteItems',
     transactItems: [
       {
-        table: `schedular-${envName}-Data`,
+        table: `schedular-Data`,
         operation: 'PutItem',
         key: {
           pk: util.dynamodb.toDynamoDB(`booking#${bookingId}`),
@@ -44,7 +44,7 @@ export function request(ctx) {
         },
       },
       {
-        table: `schedular-${envName}-Data`,
+        table: `schedular-Data`,
         operation: 'UpdateItem',
         key: {
           pk: util.dynamodb.toDynamoDB(pk),

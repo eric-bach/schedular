@@ -23,9 +23,9 @@
   "devDependencies": {
     "@aws-appsync/eslint-plugin": "^1.1.0",
     "@aws-appsync/utils": "^1.1.0",
-    "@aws-sdk/client-appsync": "^3.309.0",
+    "@aws-sdk/client-appsync": "^3.329.0",
     "@aws-sdk/client-cloudformation": "^3.287.0",
-    "@aws-sdk/client-dynamodb": "^3.287.0",
+    "@aws-sdk/client-dynamodb": "^3.329.0",
     "@aws-sdk/client-ses": "^3.300.0",
     "@aws-sdk/credential-providers": "^3.293.0",
     "@aws-sdk/util-dynamodb": "^3.287.0",

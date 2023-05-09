@@ -8,6 +8,25 @@ type LastEvaluatedKeyViewModel {
   sk: AWSDateTime!
 }
 
+# UpsertAppointments
+input AdministratorDetailsInput {
+  id: String!
+  firstName: String!
+  lastName: String!
+}
+input UpsertAppointmentInput {
+  pk: ID!
+  sk: AWSDateTime!
+  status: String!
+  type: String!
+  category: String!
+  duration: Int!
+  administratorDetails: AdministratorDetailsInput
+}
+input UpsertAppointmentsInput {
+  appointments: [UpsertAppointmentInput]
+}
+
 # CreateBooking
 input CustomerInput {
   id: String!
@@ -32,7 +51,6 @@ input CreateBookingInput {
   customer: CustomerInput!
   appointmentDetails: AppointmentInput!
   administratorDetails: AdministratorInput!
-  envName: String!
 }
 
 # CancelBooking
@@ -47,7 +65,6 @@ input AppointmentDetailsInput {
 input CancelBookingInput {
   bookingId: String!
   appointmentDetails: AppointmentDetailsInput!
-  envName: String!
 }
 
 # CreateBooking, CancelBooking response
@@ -153,15 +170,13 @@ type Query {
   getAvailableAppointments(from: String!, to: String!, lastEvaluatedKey: LastEvaluatedKey): GetAppointmentsResponse
     @aws_auth(cognito_groups: ["Users", "Admins"])
   getAppointment(pk: String!, sk: String!): GetAppointmentResponse @aws_auth(cognito_groups: ["Users", "Admins"])
-  getAppointments(from: String!, to: String!, lastEvaluatedKey: LastEvaluatedKey): GetAppointmentsResponse
-    @aws_auth(cognito_groups: ["Admins"])
+  getAppointments(from: String!, to: String!, lastEvaluatedKey: LastEvaluatedKey): GetAppointmentsResponse @aws_auth(cognito_groups: ["Admins"])
   getBooking(pk: String!, sk: String!): GetBookingResponse @aws_auth(cognito_groups: ["Users", "Admins"])
-  getBookings(customerId: String!, datetime: String!, lastEvaluatedKey: LastEvaluatedKey): GetBookingsResponse
-    @aws_auth(cognito_groups: ["Users", "Admins"])
+  getBookings(customerId: String!, datetime: String!, lastEvaluatedKey: LastEvaluatedKey): GetBookingsResponse @aws_auth(cognito_groups: ["Users", "Admins"])
 }
 
 type Mutation {
-  createAppointments(input: CreateAppointmentsInput): GetAppointmentResponse @aws_auth(cognito_groups: ["Admins"])
+  upsertAppointments(input: UpsertAppointmentsInput): GetAppointmentResponse @aws_auth(cognito_groups: ["Admins"])
   createBooking(input: CreateBookingInput): BookingResponse @aws_auth(cognito_groups: ["Users", "Admins"])
   cancelBooking(input: CancelBookingInput): BookingResponse @aws_auth(cognito_groups: ["Users", "Admins"])
 }

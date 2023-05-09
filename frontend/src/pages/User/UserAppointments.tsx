@@ -101,7 +101,6 @@ function UserAppointments() {
     const input: CancelBookingInput = {
       bookingId: booking.pk,
       appointmentDetails: booking.appointmentDetails,
-      envName: aws_exports.env_name,
     };
 
     console.debug('[USER APPOINTMENTS] Cancel booking:', input);
