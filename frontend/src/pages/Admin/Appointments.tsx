@@ -23,7 +23,7 @@ function Appointments() {
   const { authStatus } = useAuthenticator((context) => [context.route]);
 
   const [isLoading, setLoading] = React.useState<boolean>(false);
-  const [appointments, setAppointments] = React.useState<[AppointmentItem | undefined]>();
+  const [appointments, setAppointments] = React.useState<AppointmentItem[]>([]);
   const [dateHeading, setDateHeading] = React.useState<string | undefined>();
   const [date, setDate] = React.useState<Dayjs | null>(dayjs());
 
@@ -36,7 +36,7 @@ function Appointments() {
     setLoading(true);
 
     const appointments = await API.graphql<GraphQLQuery<GetAppointmentsResponse>>(graphqlOperation(GET_APPOINTMENTS, { from, to }));
-    setAppointments(appointments.data?.getAppointments?.items);
+    setAppointments(appointments.data?.getAppointments?.items ?? []);
     setDateHeading(`${formatLongDateString(dayjs(d))}`);
 
     setLoading(false);
@@ -114,7 +114,7 @@ function Appointments() {
                                   <Typography component='span' variant='subtitle2' color='text.primary' sx={{ display: 'block' }}>
                                     Customer:{' '}
                                     <Typography component='span' variant='body2'>
-                                      {appt?.customerDetails?.firstName}
+                                      {appt?.customerDetails?.firstName} {appt?.customerDetails?.lastName}
                                     </Typography>
                                   </Typography>
                                   <Typography component='span' variant='subtitle2' color='text.primary' sx={{ display: 'block' }}>

@@ -2,169 +2,203 @@ import React, { useEffect } from 'react';
 import { Loader, useAuthenticator } from '@aws-amplify/ui-react';
 import { API, graphqlOperation } from 'aws-amplify';
 import { GraphQLQuery } from '@aws-amplify/api';
-import Typography from '@mui/material/Typography';
-import Container from '@mui/material/Container';
-import { styled } from '@mui/material/styles';
-import Accordion from '@mui/material/Accordion';
-import AccordionSummary from '@mui/material/AccordionSummary';
-import AccordionDetails from '@mui/material/AccordionDetails';
-import Button from '@mui/material/Button';
-import ExpandMoreIcon from '@mui/icons-material/ExpandMore';
+import { Button, Container, Chip, TextField, Typography, Alert } from '@mui/material';
 import { AdapterDayjs } from '@mui/x-date-pickers/AdapterDayjs';
 import { LocalizationProvider } from '@mui/x-date-pickers/LocalizationProvider';
 import { DateCalendar } from '@mui/x-date-pickers';
-import { PickersDay, PickersDayProps } from '@mui/x-date-pickers/PickersDay';
-import Grid from '@mui/material/Unstable_Grid2';
 import { TimePicker } from '@mui/x-date-pickers/TimePicker';
+import Grid from '@mui/material/Unstable_Grid2';
 import dayjs, { Dayjs } from 'dayjs';
 import isBetweenPlugin from 'dayjs/plugin/isBetween';
+import { ErrorMessage, Field, FieldArray, Form, Formik, getIn } from 'formik';
+import * as yup from 'yup';
+import { v4 as uuidv4 } from 'uuid';
 
-import { GET_APPOINTMENTS } from '../../graphql/queries';
-import { GetAppointmentsResponse, AppointmentItem } from '../../types/BookingTypes';
+import { GET_APPOINTMENTS, UPSERT_DELETE_APPOINTMENTS } from '../../graphql/queries';
+import { GetAppointmentsResponse, AppointmentItem, UpsertDeleteAppointmentsResponse } from '../../types/BookingTypes';
 import { formatLongDateString } from '../../helpers/utils';
-import { Chip, TextField } from '@mui/material';
 
 dayjs.extend(isBetweenPlugin);
 
-interface CustomPickerDayProps extends PickersDayProps<Dayjs> {
-  dayIsBetween: boolean;
-  isFirstDay: boolean;
-  isLastDay: boolean;
-}
+type InputValues = {
+  pk: string;
+  sk: Dayjs;
+  status: string;
+  type: string;
+  category: string;
+  duration: number;
+  administratorDetails: {
+    id: string;
+    firstName: string;
+    lastName: string;
+  };
+};
 
-const days = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'];
+function convertToInputValues(userAttributes: any, items: AppointmentItem[] | undefined): InputValues[] {
+  if (!items) return [];
 
-const CustomPickersDay = styled(PickersDay, {
-  shouldForwardProp: (prop) => prop !== 'dayIsBetween' && prop !== 'isFirstDay' && prop !== 'isLastDay',
-})<CustomPickerDayProps>(({ theme, dayIsBetween, isFirstDay, isLastDay }) => ({
-  ...(dayIsBetween && {
-    borderRadius: 0,
-    backgroundColor: theme.palette.primary.main,
-    color: theme.palette.common.white,
-    '&:hover, &:focus': {
-      backgroundColor: theme.palette.primary.dark,
-    },
-  }),
-  ...(isFirstDay && {
-    borderTopLeftRadius: '50%',
-    borderBottomLeftRadius: '50%',
-  }),
-  ...(isLastDay && {
-    borderTopRightRadius: '50%',
-    borderBottomRightRadius: '50%',
-  }),
-})) as React.ComponentType<CustomPickerDayProps>;
-
-function Day(props: PickersDayProps<Dayjs> & { selectedDay?: Dayjs | null }) {
-  const { day, selectedDay, ...other } = props;
-
-  if (selectedDay == null) {
-    return <PickersDay day={day} {...other} />;
-  }
-
-  const start = selectedDay.startOf('week');
-  const end = selectedDay.endOf('week');
-
-  const dayIsBetween = day.isBetween(start, end, null, '[]');
-  const isFirstDay = day.isSame(start, 'day');
-  const isLastDay = day.isSame(end, 'day');
-
-  return (
-    <CustomPickersDay
-      {...other}
-      day={day}
-      sx={dayIsBetween ? { px: 2.5, mx: 0 } : {}}
-      dayIsBetween={dayIsBetween}
-      isFirstDay={isFirstDay}
-      isLastDay={isLastDay}
-    />
-  );
-}
-
-function groupByDayOfWeek(items: AppointmentItem[] | undefined) {
-  const map = new Map<string, [AppointmentItem | undefined]>();
-
-  if (items) {
-    items.forEach((item) => {
-      const key = dayjs(item.sk).format('dddd'); //format('dddd, MMMM DD');
-      const value = map.get(key);
-      if (value) {
-        value.push(item);
-      } else {
-        map.set(key, [item]);
-      }
-    });
-  }
-
-  console.log('[SCHEDULE] Mapping by day of week', map);
-  // map?.forEach((values) => {
-  //   {
-  //     values.map((v) => {
-  //       console.log(v?.sk);
-  //     });
-  //   }
-  // });
-
-  return map;
+  return items.map((item) => {
+    return {
+      pk: item.pk,
+      sk: dayjs(item.sk),
+      status: item.status,
+      type: item.type,
+      category: item.category,
+      duration: item.duration,
+      administratorDetails: {
+        id: userAttributes.sub,
+        firstName: userAttributes.given_name,
+        lastName: userAttributes.family_name,
+      },
+    };
+  });
 }
 
 function Schedule() {
-  const { authStatus } = useAuthenticator((context) => [context.route]);
+  const { user, authStatus } = useAuthenticator((context) => [context.route]);
 
+  const [error, setError] = React.useState<string>();
   const [date, setDate] = React.useState<Dayjs | null>(dayjs());
-  const [fromSunday, setFromSunday] = React.useState<Dayjs | null>(dayjs());
-
   const [isLoading, setLoading] = React.useState<boolean>(false);
-  const [appointments, setAppointments] = React.useState<Map<string, [AppointmentItem | undefined]>>();
+  const [appointments, setAppointments] = React.useState<InputValues[]>([]);
 
   const getAppointments = async (from: Dayjs, to: Dayjs) => {
     console.debug(`[SCHEDULE] Getting schedule from ${from} to ${to}`);
 
     setLoading(true);
 
-    const appointments = await API.graphql<GraphQLQuery<GetAppointmentsResponse>>(graphqlOperation(GET_APPOINTMENTS, { from, to }));
-    setAppointments(groupByDayOfWeek(appointments.data?.getAppointments?.items));
+    const result = await API.graphql<GraphQLQuery<GetAppointmentsResponse>>(graphqlOperation(GET_APPOINTMENTS, { from, to }));
+    setAppointments(convertToInputValues(user.attributes!, result.data?.getAppointments?.items) ?? []);
 
     setLoading(false);
 
-    return appointments.data?.getAppointments?.items;
+    return result.data?.getAppointments?.items;
   };
 
   async function dateSelected(d: Dayjs) {
     console.log('[SCHEDULE] Date selected', d);
     setDate(d);
+    setError(undefined);
 
-    const result = await getAppointments(d.startOf('week'), d.endOf('week'));
+    const result = await getAppointments(d.hour(0).minute(0).second(0), d.hour(0).minute(0).second(0).add(1, 'day'));
     console.debug('[SCHEDULE] Found appointments', result);
   }
 
   useEffect(() => {
     if (authStatus === 'authenticated') {
-      getAppointments(dayjs().startOf('week'), dayjs().endOf('week')).then((resp) => {
-        console.debug('[SCHEDULE] Loaded initial appointments', resp);
+      getAppointments(dayjs().hour(0).minute(0).second(0), dayjs().hour(0).minute(0).second(0).add(1, 'day')).then((result) => {
+        console.debug('[SCHEDULE] Loaded initial appointments', result);
       });
     } else {
       // TODO Return error
     }
   }, []);
 
-  console.log('GROUPED APPOINTMENTS:', appointments);
+  function addField(values: InputValues[]) {
+    const appt: InputValues = {
+      pk: `appt#${uuidv4()}`,
+      sk: dayjs(date).hour(0).minute(0).second(0).millisecond(0),
+      status: 'available*',
+      type: 'appt',
+      category: 'massage',
+      duration: 60,
+      administratorDetails: {
+        id: user.attributes?.sub!,
+        firstName: user.attributes?.given_name!,
+        lastName: user.attributes?.family_name!,
+      },
+    };
+
+    values.push(appt);
+    console.log('ADDED APPOINTMENT', values);
+
+    setAppointments([...appointments, appt]);
+    // console.log('ADDED APPOINTMENT', [...appointments, appt]);
+  }
+
+  function removeField(values: InputValues[], index: number) {
+    // Remove from state
+    if (values[index].status === 'available*') {
+      values.splice(index, 1);
+      appointments.splice(index, 1);
+    } else {
+      values[index].status = 'pending*';
+      appointments[index].status = 'pending*';
+    }
+
+    setAppointments([...appointments]);
+    console.log('REMOVED APPOINTMENT', values);
+  }
+
+  function validSchedule(values: InputValues[]) {
+    // Sort by sk
+    values.sort(function (a: InputValues, b: InputValues) {
+      if (a.sk < b.sk) return -1;
+      if (a.sk > b.sk) return 1;
+      return 0;
+    });
+
+    // Get start and end times
+    const times: Dayjs[] = [];
+    const startTimes: Dayjs[] = values.map((v) => v.sk);
+    const durations: number[] = values.map((v) => v.duration);
+    for (let i = 0; i < startTimes.length; i++) {
+      times.push(startTimes[i]);
+      times.push(dayjs(startTimes[i]).add(durations[i], 'minute'));
+    }
+
+    // Check for overlaps
+    let isValid = true;
+    setError(undefined);
+    for (let j = 0; j < times.length - 1; j++) {
+      if (times[j] > times[j + 1]) {
+        isValid = false;
+        setError('The schedule has overlapping time slots. Please correct before proceeding.');
+        break;
+      }
+    }
+
+    if (isValid) {
+      console.log('[SCHEDULE] VALIDATION PASSED! SAVING VALUES', values);
+    }
+
+    return isValid;
+  }
+
+  async function handleSubmit(values: InputValues[]) {
+    if (validSchedule(values)) {
+      values = values.map((p) => (p.status === 'available*' ? { ...p, status: 'available' } : p));
+      console.log('Ready to save', values);
+
+      // TODO Call upsertDeleteAppointments
+      const result = await API.graphql<GraphQLQuery<UpsertDeleteAppointmentsResponse>>(
+        graphqlOperation(UPSERT_DELETE_APPOINTMENTS, { input: { appointments: values } })
+      );
+      console.log('[SCHEDULE] UpsertDelete Response:', result);
+
+      dateSelected(date ?? dayjs());
+    }
+  }
+
+  const schema = yup.object({
+    appointments: yup.array().of(
+      yup.object().shape({
+        sk: yup.date().required('Required'),
+        duration: yup.number().required('Required').moreThan(0, 'Invalid'),
+      })
+    ),
+  });
+
+  const InvalidTimeComponent = () => {
+    return <Typography sx={{ color: '#d32f2f', fontSize: '0.75rem', marginTop: '3px', marginLeft: '14px' }}>Invalid Time</Typography>;
+  };
 
   return (
     <Container maxWidth='lg' sx={{ mt: 5 }}>
       <Grid container spacing={{ md: 1, lg: 1 }} columns={{ md: 6, lg: 6 }}>
         <Grid md={2} lg={2}>
           <LocalizationProvider dateAdapter={AdapterDayjs}>
-            <DateCalendar
-              value={date}
-              onChange={(newDate) => dateSelected(newDate ?? dayjs())}
-              slots={{ day: Day }}
-              slotProps={{
-                day: {
-                  selectedDay: date,
-                } as any,
-              }}
-            />
+            <DateCalendar value={date} minDate={dayjs()} maxDate={dayjs().add(1, 'year')} onChange={(newDate) => dateSelected(newDate ?? dayjs())} />
           </LocalizationProvider>
         </Grid>
 
@@ -172,80 +206,109 @@ function Schedule() {
           {isLoading ? (
             <Loader variation='linear' />
           ) : (
-            <>
+            <React.Fragment>
               <Typography variant='h5' fontWeight='bold' align='left' color='textPrimary' gutterBottom sx={{ mt: 2 }}>
-                Week of {formatLongDateString(date!.startOf('week'))} to {formatLongDateString(date!.endOf('week'))}
+                Schedule for {formatLongDateString(date)}
               </Typography>
 
-              {/* {appointments?.forEach((values) => {
-                values.map((appt: AppointmentItem | undefined) => {
-                  return <Typography>{appt?.pk}</Typography>;
-                });
-              })} */}
+              <Formik
+                initialValues={{ appointments: appointments }}
+                validationSchema={schema}
+                onSubmit={(values) => {
+                  handleSubmit(values.appointments);
+                }}
+              >
+                {({ values, errors, touched, handleChange, handleBlur }) => (
+                  <Form>
+                    {/* Display */}
+                    {getIn(errors, `appointments`) && (
+                      <Alert color='error' sx={{ mb: 2 }}>
+                        There are some invalid values in the schedule. Please correct them before proceeding.
+                      </Alert>
+                    )}
+                    {error && (
+                      <Alert color='error' sx={{ mb: 2 }}>
+                        {error}
+                      </Alert>
+                    )}
 
-              {/* This works */}
-              {/* {appointments?.get('Thursday')?.map((appt: AppointmentItem | undefined) => {
-                return <Typography>{appt?.pk}</Typography>;
-              })} */}
-
-              {appointments && (
-                <LocalizationProvider dateAdapter={AdapterDayjs}>
-                  {days.map((d) => {
-                    return (
-                      <React.Fragment>
-                        <Accordion defaultExpanded={appointments?.get(d) != undefined}>
-                          <AccordionSummary expandIcon={<ExpandMoreIcon />} aria-controls='panel1a-content' id='panel1a-header'>
-                            <Typography>{d}</Typography>
-                          </AccordionSummary>
-                          <AccordionDetails>
-                            {appointments?.get(d)?.map((appt: AppointmentItem | undefined) => {
-                              return (
-                                <React.Fragment>
-                                  <Grid container spacing={{ xs: 1 }} columns={{ xs: 10 }}>
-                                    <Grid xs={2}>
-                                      <TimePicker
+                    <FieldArray name='appointments'>
+                      {({ insert, remove, push }) => (
+                        <React.Fragment>
+                          {values.appointments.length > 0 &&
+                            values.appointments.map((appt, index) => (
+                              <React.Fragment key={index}>
+                                <Grid container spacing={{ xs: 1 }} columns={{ xs: 12 }}>
+                                  <Grid xs={2}>
+                                    <LocalizationProvider dateAdapter={AdapterDayjs}>
+                                      {/* <TimePicker
                                         label='Start Time'
-                                        value={dayjs(appt?.sk)}
-                                        disabled={appt?.status === 'booked'}
-                                        // onChange={(newValue) => setFromSunday(newValue)}
+                                        value={values.appointments[index].sk}
+                                        disabled={values.appointments[index].status === 'booked'}
+                                        onChange={(value) => (values.appointments[index].sk = value ?? new Dayjs())}
                                       />
-                                    </Grid>
-                                    <Grid xs={2}>
-                                      <TimePicker
-                                        label='End Time'
-                                        value={dayjs(appt?.sk).add(appt?.duration ?? 0, 'minutes')}
-                                        disabled={appt?.status === 'booked'}
+                                      <ErrorMessage name={`appointments.${index}.sk`} component='div' className='field-error' /> */}
+                                      <Field
+                                        component={TimePicker}
+                                        type='time'
+                                        name={`appointments.${index}.sk`}
+                                        value={values.appointments[index].sk}
+                                        onChange={(value: any) => {
+                                          values.appointments[index].sk = value;
+                                        }}
+                                        onBlur={handleBlur}
+                                        error={getIn(errors, `appointments.${index}.sk`) && getIn(touched, `appointments.${index}.sk`)}
+                                        helperText={getIn(errors, `appointments.${index}.sk`)}
                                       />
-                                    </Grid>
-                                    <Grid xs={2}>
-                                      <TextField label='Duration' value={dayjs(appt?.duration)} disabled />
-                                    </Grid>
-                                    <Grid xs={2}>
+                                      {/* TODO Field error/helperText does not work so using ErrorMessage with a custom styled component */}
+                                      <ErrorMessage name={`appointments.${index}.sk`} component={InvalidTimeComponent} className='field-error' />
+                                    </LocalizationProvider>
+                                  </Grid>
+
+                                  <Grid xs={2}>
+                                    <Field
+                                      as={TextField}
+                                      name={`appointments.${index}.duration`}
+                                      value={values.appointments[index].duration}
+                                      onChange={handleChange}
+                                      onBlur={handleBlur}
+                                      error={getIn(errors, `appointments.${index}.duration`) && getIn(touched, `appointments.${index}.duration`)}
+                                      helperText={getIn(errors, `appointments.${index}.duration`)}
+                                    />
+                                  </Grid>
+
+                                  <Grid xs={2}>
+                                    {values.appointments[index].status && (
                                       <Chip
-                                        label={appt?.status}
-                                        color={appt?.status === 'booked' ? 'primary' : 'success'}
-                                        variant={appt?.status === 'cancelled' ? 'outlined' : 'filled'}
-                                        sx={{ mb: 1 }}
+                                        label={values.appointments[index].status}
+                                        color={values.appointments[index].status === 'available' ? 'success' : 'primary'}
+                                        variant={values.appointments[index].status === 'cancelled' ? 'outlined' : 'filled'}
+                                        sx={{ mb: 1, mt: 1.5 }}
                                       />
-                                    </Grid>
-                                    {appt?.status === 'available' && (
-                                      <Grid xs={2}>
-                                        <Button>Remove</Button>
-                                      </Grid>
                                     )}
                                   </Grid>
-                                </React.Fragment>
-                              );
-                            })}
-                            <Button>Add</Button>
-                          </AccordionDetails>
-                        </Accordion>
-                      </React.Fragment>
-                    );
-                  })}
-                </LocalizationProvider>
-              )}
-            </>
+
+                                  <Grid xs={2}>
+                                    <Button color='error' variant='contained' onClick={() => removeField(values.appointments, index)} sx={{ m: 1 }}>
+                                      X
+                                    </Button>
+                                  </Grid>
+                                </Grid>
+                              </React.Fragment>
+                            ))}
+                          <Button variant='contained' color='success' type='button' onClick={() => addField(values.appointments)} sx={{ m: 1 }}>
+                            +
+                          </Button>
+                        </React.Fragment>
+                      )}
+                    </FieldArray>
+                    <Button type='submit' variant='contained' color='primary' sx={{ m: 1 }}>
+                      Save
+                    </Button>
+                  </Form>
+                )}
+              </Formik>
+            </React.Fragment>
           )}
         </Grid>
       </Grid>

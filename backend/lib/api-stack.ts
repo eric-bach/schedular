@@ -51,7 +51,7 @@ export class ApiStack extends Stack {
       },
     });
 
-    // Lambda
+    // Lambdas
     const sendEmailFunction = new NodejsFunction(this, 'SendEmailFunction', {
       functionName: `${props.appName}-${props.envName}-send-email`,
       runtime: Runtime.NODEJS_16_X,
@@ -78,7 +78,6 @@ export class ApiStack extends Stack {
         resources: [`arn:aws:ses:${this.region}:${this.account}:identity/*`],
       })
     );
-
     // Event Source Mapping to SQS
     new EventSourceMapping(this, 'SendEmailSQSEvent', {
       target: sendEmailFunction,
@@ -104,11 +103,11 @@ export class ApiStack extends Stack {
     });
 
     // AppSync DataSources
-    const dynamoDbDataSource = new DynamoDbDataSource(this, `${props.appName}ApiDynamoDBDataSource`, {
+    const dynamoDbDataSource = new DynamoDbDataSource(this, `dynamoDBDataSource`, {
       api: api,
       table: dataTable,
       description: 'DynamoDbDataSource',
-      name: `${props.appName}-table-${props.envName}`,
+      name: 'dynamoDBDataSource',
       serviceRole: new Role(this, `${props.appName}ApiServiceRole`, {
         assumedBy: new ServicePrincipal('appsync.amazonaws.com'),
         roleName: `${props.appName}-dynamoDb-service-role-${props.envName}`,
@@ -138,8 +137,8 @@ export class ApiStack extends Stack {
         },
       }),
     });
-    const httpDataSource = api.addHttpDataSource(`${props.appName}-endpoint-${props.envName}`, `https://sqs.${this.region}.amazonaws.com`, {
-      name: `${props.appName}ApiHttpDataSource`,
+    const httpDataSource = api.addHttpDataSource('httpDataSource', `https://sqs.${this.region}.amazonaws.com`, {
+      name: 'httpDataSource',
       authorizationConfig: {
         signingRegion: this.region,
         signingServiceName: 'sqs',
@@ -234,6 +233,20 @@ export class ApiStack extends Stack {
       `),
       runtime: FunctionRuntime.JS_1_0_0,
     });
+    const upsertAppointmentsFunction = new AppsyncFunction(this, 'upsertAppointmentsFunction', {
+      name: 'upsertAppointmentsFunction',
+      api: api,
+      dataSource: dynamoDbDataSource,
+      code: Code.fromAsset(path.join(__dirname, '/graphql/Mutation.createAppointments.js')),
+      runtime: FunctionRuntime.JS_1_0_0,
+    });
+    const deleteAppointmentsFunction = new AppsyncFunction(this, 'deleteAppointmentsFunction', {
+      name: 'deleteAppointmentsFunction',
+      api: api,
+      dataSource: dynamoDbDataSource,
+      code: Code.fromAsset(path.join(__dirname, '/graphql/Mutation.deleteAppointments.js')),
+      runtime: FunctionRuntime.JS_1_0_0,
+    });
 
     const passthrough = InlineCode.fromInline(`
         // The before step
@@ -295,6 +308,14 @@ export class ApiStack extends Stack {
       fieldName: 'cancelBooking',
       runtime: FunctionRuntime.JS_1_0_0,
       pipelineConfig: [cancelBookingFunction, getBookingFunc, sqsSendEMailFunction],
+      code: passthrough,
+    });
+    const upsertDeleteAppointmentsResolver = new Resolver(this, 'upsertDeleteAppointmentsResolver', {
+      api: api,
+      typeName: 'Mutation',
+      fieldName: 'upsertDeleteAppointments',
+      runtime: FunctionRuntime.JS_1_0_0,
+      pipelineConfig: [upsertAppointmentsFunction, deleteAppointmentsFunction],
       code: passthrough,
     });
 

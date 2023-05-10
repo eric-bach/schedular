@@ -76,6 +76,7 @@ function generateRandomSeedData() {
         type: 'appt',
         category: 'massage',
         duration,
+        administratorDetails: { id: `user#${uuidv4()}`, firstName: 'Jane', lastName: 'Doe' },
       });
     }
   }

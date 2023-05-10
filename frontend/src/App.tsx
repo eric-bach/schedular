@@ -15,6 +15,8 @@ import Profile from './pages/User/Profile';
 import Appointments from './pages/Admin/Appointments';
 import Schedule from './pages/Admin/Schedule';
 
+import './style.css';
+
 function App() {
   return (
     <Authenticator.Provider>

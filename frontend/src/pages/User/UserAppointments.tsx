@@ -24,13 +24,7 @@ import { useTheme } from '@mui/material/styles';
 
 import aws_exports from '../../aws-exports';
 import { CANCEL_BOOKING, GET_BOOKINGS, ON_CANCEL_BOOKING } from '../../graphql/queries';
-import {
-  GetBookingsResponse,
-  BookingItem,
-  CancelBookingInput,
-  CancelBookingResponse,
-  OnCancelBookingResponse,
-} from '../../types/BookingTypes';
+import { GetBookingsResponse, BookingItem, CancelBookingInput, CancelBookingResponse, OnCancelBookingResponse } from '../../types/BookingTypes';
 
 import '@aws-amplify/ui-react/styles.css';
 import { formateLocalLongDate, formatLocalTimeString } from '../../helpers/utils';
@@ -72,9 +66,7 @@ function UserAppointments() {
 
   // Subscribe to creation of Todo
   useEffect(() => {
-    const onCancelBookingListener = API.graphql<GraphQLSubscription<OnCancelBookingResponse>>(
-      graphqlOperation(ON_CANCEL_BOOKING)
-    ).subscribe({
+    const onCancelBookingListener = API.graphql<GraphQLSubscription<OnCancelBookingResponse>>(graphqlOperation(ON_CANCEL_BOOKING)).subscribe({
       next: async ({ provider, value }: any) => {
         console.log('[USER APPOINTMENTS] Received subscription event', value);
         setOpen(false);
@@ -109,7 +101,6 @@ function UserAppointments() {
     const input: CancelBookingInput = {
       bookingId: booking.pk,
       appointmentDetails: booking.appointmentDetails,
-      envName: aws_exports.env_name,
     };
 
     console.debug('[USER APPOINTMENTS] Cancel booking:', input);
@@ -165,11 +156,7 @@ function UserAppointments() {
                     alignItems='flex-start'
                     secondaryAction={
                       <Stack direction='row' spacing={1}>
-                        <Chip
-                          label={status}
-                          variant={status === 'booked' ? 'filled' : 'outlined'}
-                          sx={{ mb: 1, backgroundColor: chipColor, color: 'white' }}
-                        />
+                        <Chip label={status} variant={status === 'booked' ? 'filled' : 'outlined'} sx={{ mb: 1, backgroundColor: chipColor, color: 'white' }} />
                         {status === 'booked' && (
                           <Chip
                             label='cancel'
@@ -190,6 +177,9 @@ function UserAppointments() {
                             Type: {booking.appointmentDetails.category}
                           </Typography>
                           <Typography component='span' variant='subtitle2' color='text.primary' sx={{ display: 'block' }}>
+                            Therapist: {booking.administratorDetails.firstName} {booking.administratorDetails.lastName}
+                          </Typography>
+                          <Typography component='span' variant='subtitle2' color='text.primary' sx={{ display: 'block' }}>
                             Confirmation Id: {booking.pk.split('#')[1]}
                           </Typography>
                         </React.Fragment>
@@ -200,8 +190,8 @@ function UserAppointments() {
                         <DialogTitle id='responsive-dialog-title'>{'Cancel appointment?'}</DialogTitle>
                         <DialogContent>
                           <DialogContentText>
-                            Are you sure you want to cancel your appointment on{' '}
-                            {formateLocalLongDate(selectedBooking.appointmentDetails.sk)} at {formatLocalTimeString(selectedBooking.sk, 0)}?
+                            Are you sure you want to cancel your appointment on {formateLocalLongDate(selectedBooking.appointmentDetails.sk)} at{' '}
+                            {formatLocalTimeString(selectedBooking.sk, 0)}?
                           </DialogContentText>
                         </DialogContent>
                         <DialogActions>
