@@ -7,8 +7,9 @@ export function request(ctx) {
   const deleteAppointments = appointments.filter((x) => x.status === 'pending*');
 
   // Early Return if no records to delete
-  if (deleteAppointments.length <= 0) {
-    runtime.earlyReturn({ upserted: ctx.prev.result.data['schedular-Data'], deleted: [{}] });
+  if (deleteAppointments.length === 0) {
+    const upserted = ctx.prev?.result?.data ? ctx.prev.result.data['schedular-Data'] : [{}];
+    runtime.earlyReturn({ upserted: upserted, deleted: [{}] });
   }
 
   let data = [];
@@ -27,12 +28,12 @@ export function request(ctx) {
 export function response(ctx) {
   console.log('🔔 DeleteAppointments Response: ', ctx);
 
-  const upsertResponse = ctx.prev.result.data ? ctx.prev.result.data['schedular-Data'] : [{}];
-  const deleteResponse = ctx.result.data['schedular-Data'];
-
   if (ctx.error) {
     util.error(ctx.error.message, ctx.error.type, ctx.result);
   }
 
-  return { upserted: upsertResponse, deleted: deleteResponse };
+  const upserted = ctx.prev?.result?.data ? ctx.prev.result.data['schedular-Data'] : [{}];
+  const deleted = ctx.result.data['schedular-Data'];
+
+  return { upserted, deleted };
 }

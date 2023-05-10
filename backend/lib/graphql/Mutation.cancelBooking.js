@@ -3,7 +3,7 @@ import { util } from '@aws-appsync/utils';
 export function request(ctx) {
   console.log('🔔 CancelBooking Request: ', ctx);
 
-  const {  bookingId, appointmentDetails } = ctx.args.input;
+  const { bookingId, appointmentDetails } = ctx.args.input;
 
   return {
     operation: 'TransactWriteItems',
