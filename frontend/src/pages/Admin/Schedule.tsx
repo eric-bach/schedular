@@ -235,6 +235,7 @@ function Schedule() {
                     <FieldArray name='appointments'>
                       {({ insert, remove, push }) => (
                         <React.Fragment>
+                          {values.appointments.length === 0 && <Typography>No scheduled appointments today. Click below to create one.</Typography>}
                           {values.appointments.length > 0 &&
                             values.appointments.map((appt, index) => (
                               <React.Fragment key={index}>

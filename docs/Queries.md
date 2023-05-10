@@ -98,7 +98,6 @@ mutation CreateBooking {
       type: "appt",
       category: "massage"
     },
-    envName: "dev"
   })
   {
     pk
@@ -132,7 +131,6 @@ mutation CancelBooking {
     bookingId: "booking#4265920a-db4a-439e-a922-fd575d7c2871",
     appointmentId: "appt#dba247d8-86f8-4a97-859c-95a292416879",
     sk: "2023-04-20T14:00:00.000Z",
-    envName: "dev"
   })
   {
     pk
