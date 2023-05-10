@@ -24,7 +24,6 @@ test('validate a cancelBooking request', async () => {
           email: 'test@test.com',
           phone: '5555555555',
         },
-        envName: 'test',
       },
     },
   };

@@ -16,6 +16,11 @@ test('validate a createBooking request', async () => {
           type: 'appt',
           category: 'massage',
         },
+        administratorDetails: {
+          id: '123',
+          firstName: 'user',
+          lastName: 'test',
+        },
         customer: {
           id: '123',
           firstName: 'Test',
@@ -23,7 +28,6 @@ test('validate a createBooking request', async () => {
           email: 'test@test.com',
           phone: '5555555555',
         },
-        envName: 'test',
       },
     },
   };
@@ -48,7 +52,7 @@ test('validate a createBooking request', async () => {
   expect(result.operation).toEqual('TransactWriteItems');
 
   const putItemResult = result.transactItems.find((t: any) => t.operation === 'PutItem');
-  expect(putItemResult.table).toEqual(`schedular-${context.arguments.input.envName}-Data`);
+  expect(putItemResult.table).toEqual(`schedular-Data`);
   const putItemKey = unmarshall(putItemResult.key);
   expect(putItemKey.pk).toContain('booking#');
   expect(putItemKey.sk).toEqual(context.arguments.input.sk);

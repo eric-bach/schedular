@@ -13,7 +13,9 @@ export function request(ctx) {
 
   let data = [];
   for (var index in createAppointments) {
-    data.push(util.dynamodb.toMapValues(createAppointments[index]));
+    const auditDates = { createdAt: util.time.nowISO8601(), updatedAt: util.time.nowISO8601() };
+
+    data.push(util.dynamodb.toMapValues({ ...createAppointments[index], ...auditDates }));
   }
 
   return {
