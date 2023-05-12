@@ -182,6 +182,13 @@ type GetBookingResponse {
   updatedAt: AWSDateTime
 }
 
+# GetUsers
+type GetUsersResponse {
+  id: String!
+  firstName: String!
+  lastName: String!
+}
+
 # GraphQL actions
 type Query {
   getAvailableAppointments(from: String!, to: String!, lastEvaluatedKey: LastEvaluatedKey): GetAppointmentsResponse
@@ -192,6 +199,7 @@ type Query {
   getBooking(pk: String!, sk: String!): GetBookingResponse @aws_auth(cognito_groups: ["Users", "Admins"])
   getBookings(customerId: String!, datetime: String!, lastEvaluatedKey: LastEvaluatedKey): GetBookingsResponse
     @aws_auth(cognito_groups: ["Users", "Admins"])
+  getUsers(test: String): GetUsersResponse @aws_auth(cognito_groups: ["Admins"])
 }
 
 type Mutation {
