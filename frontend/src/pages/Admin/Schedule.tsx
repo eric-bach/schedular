@@ -108,12 +108,10 @@ function Schedule() {
         lastName: user.attributes?.family_name!,
       },
     };
-
     values.push(appt);
-    console.log('ADDED APPOINTMENT', values);
 
     setAppointments([...appointments, appt]);
-    // console.log('ADDED APPOINTMENT', [...appointments, appt]);
+    console.log('ADDED APPOINTMENT', values);
   }
 
   function removeField(values: InputValues[], index: number) {
