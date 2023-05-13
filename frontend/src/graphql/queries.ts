@@ -176,6 +176,16 @@ export const UPSERT_DELETE_APPOINTMENTS = `mutation UpsertDeleteAppointments($in
   }
 }`;
 
+export const GET_USERS = `query GetUsers {
+  getUsers {
+    id
+    firstName
+    lastName
+    email
+    phoneNumber
+  }
+}`;
+
 export const ON_CANCEL_BOOKING = `subscription OnCancelBooking {
   onCancelBooking {
     pk

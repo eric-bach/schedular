@@ -210,4 +210,15 @@ mutation UpsertDeleteAppointments {
   }
 }
 
+query GetUsers {
+  getUsers {
+    id
+    firstName
+    lastName
+		email
+    phoneNumber
+  }
+}
+
+
 ```

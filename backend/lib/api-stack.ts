@@ -95,8 +95,16 @@ export class ApiStack extends Stack {
       timeout: Duration.seconds(10),
       environment: {
         REGION: this.region,
+        USER_POOL_ID: userPool.userPoolId,
       },
     });
+    userServiceFunction.addToRolePolicy(
+      new PolicyStatement({
+        effect: Effect.ALLOW,
+        actions: ['cognito-idp:ListUsersInGroup'],
+        resources: [userPool.userPoolArn],
+      })
+    );
 
     // AppSync API
     const api = new GraphqlApi(this, `${props.appName}Api`, {
