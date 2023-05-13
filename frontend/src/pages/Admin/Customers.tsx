@@ -3,7 +3,7 @@ import { Avatar, Container, IconButton, List, ListItem, ListItemAvatar, ListItem
 import AddTaskIcon from '@mui/icons-material/AddTask';
 import { API, graphqlOperation } from 'aws-amplify';
 
-import { GET_USERS } from '../../graphql/queries';
+import { LIST_USERS_IN_GROUP } from '../../graphql/queries';
 import { GraphQLQuery } from '@aws-amplify/api';
 import { Divider } from '@aws-amplify/ui-react';
 
@@ -14,8 +14,8 @@ type Users = {
   email: string;
   phoneNumber: string;
 };
-type GetUsersResponse = {
-  getUsers: Users[];
+type ListUsersResponse = {
+  listUsersInGroup: Users[];
 };
 
 function stringAvatar(name: string) {
@@ -27,15 +27,15 @@ function stringAvatar(name: string) {
 function Customers() {
   const [users, setUsers] = useState<Users[]>([]);
 
-  const getUsers = async () => {
-    const result = await API.graphql<GraphQLQuery<GetUsersResponse>>(graphqlOperation(GET_USERS));
+  const listUsersInGroup = async () => {
+    const result = await API.graphql<GraphQLQuery<ListUsersResponse>>(graphqlOperation(LIST_USERS_IN_GROUP, { groupName: 'Pending' }));
 
-    setUsers(result.data?.getUsers ?? []);
+    setUsers(result.data?.listUsersInGroup ?? []);
     console.log('[CUSTOMERS] Users:', result);
   };
 
   useEffect(() => {
-    getUsers();
+    listUsersInGroup();
   }, []);
 
   function addToGroup(index: number) {
@@ -54,8 +54,8 @@ function Customers() {
             <ListItem
               alignItems='flex-start'
               secondaryAction={
-                <IconButton edge='end' aria-label='delete'>
-                  <AddTaskIcon onClick={(e) => addToGroup(index)} />
+                <IconButton edge='end' aria-label='delete' onClick={(e) => addToGroup(index)}>
+                  <AddTaskIcon />
                 </IconButton>
               }
             >

@@ -176,8 +176,8 @@ export const UPSERT_DELETE_APPOINTMENTS = `mutation UpsertDeleteAppointments($in
   }
 }`;
 
-export const GET_USERS = `query GetUsers {
-  getUsers {
+export const LIST_USERS_IN_GROUP = `query ListUsersInGroup($groupName: String!) {
+  listUsersInGroup(groupName: $groupName) {
     id
     firstName
     lastName

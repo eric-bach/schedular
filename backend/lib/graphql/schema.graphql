@@ -199,13 +199,16 @@ type Query {
   getAppointments(from: String!, to: String!, lastEvaluatedKey: LastEvaluatedKey): GetAppointmentsResponse @aws_auth(cognito_groups: ["Admins"])
   getBooking(pk: String!, sk: String!): GetBookingResponse @aws_auth(cognito_groups: ["Users", "Admins"])
   getBookings(customerId: String!, datetime: String!, lastEvaluatedKey: LastEvaluatedKey): GetBookingsResponse @aws_auth(cognito_groups: ["Users", "Admins"])
-  getUsers: [GetUsersResponse] @aws_auth(cognito_groups: ["Admins"])
+
+  listUsersInGroup(groupName: String!): [GetUsersResponse] @aws_auth(cognito_groups: ["Admins"])
 }
 
 type Mutation {
   upsertDeleteAppointments(input: UpsertAppointmentsInput): UpsertDeleteAppointmentsResponse @aws_auth(cognito_groups: ["Admins"])
   createBooking(input: CreateBookingInput): BookingResponse @aws_auth(cognito_groups: ["Users", "Admins"])
   cancelBooking(input: CancelBookingInput): BookingResponse @aws_auth(cognito_groups: ["Users", "Admins"])
+
+  addUserToGroup(userId: String!, groupName: String!): GetUsersResponse @aws_auth(cognito_groups: ["Admins"])
 }
 
 type Subscription {

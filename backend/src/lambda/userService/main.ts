@@ -1,37 +1,34 @@
-import { ListUsersInGroupRequest, ListUsersInGroupCommand, CognitoIdentityProviderClient } from '@aws-sdk/client-cognito-identity-provider';
+import addUserToGroup from './addUserToGroup';
+import listUsersInGroup from './listUsersInGroup';
 
-type User = {
-  id: string | undefined;
-  firstName: string | undefined;
-  lastName: string | undefined;
-  email: string | undefined;
-  phoneNumber: string | undefined;
+type AppSyncEvent = {
+  info: {
+    fieldName: string;
+  };
+  arguments: {
+    userId: string;
+    groupName: string;
+  };
 };
 
-exports.handler = async (event: any) => {
-  const client = new CognitoIdentityProviderClient({});
-  const input: ListUsersInGroupRequest = {
-    UserPoolId: process.env.USER_POOL_ID,
-    GroupName: 'Pending',
-  };
+exports.handler = async (event: AppSyncEvent) => {
+  console.debug(`🕧 AppSync event: ${JSON.stringify(event)}`);
+  console.debug(`🕧 AppSync info: ${JSON.stringify(event.info)}`);
+  console.debug(`🕧 AppSync arguments: ${JSON.stringify(event.arguments)}`);
 
-  const command = new ListUsersInGroupCommand(input);
-  const response = await client.send(command);
+  switch (event.info.fieldName) {
+    // Queries
+    case 'listUsersInGroup':
+      console.debug(`🔔 ListUsersInGroup: ${JSON.stringify(event.arguments.groupName)}`);
+      return await listUsersInGroup(event.arguments.groupName);
 
-  const users: User[] = [];
-  response.Users?.map((u) => {
-    const user = {
-      id: u.Username,
-      firstName: u.Attributes?.find((s) => s.Name === 'given_name')?.Value,
-      lastName: u.Attributes?.find((s) => s.Name === 'family_name')?.Value,
-      email: u.Attributes?.find((s) => s.Name === 'email')?.Value,
-      phoneNumber: u.Attributes?.find((s) => s.Name === 'phone_number')?.Value,
-    };
+    // Mutations
+    case 'addUserToGroup':
+      console.debug(`🔔 AddUserToGroup ${event.info.fieldName}`);
+      return await addUserToGroup(event.arguments.userId, event.arguments.groupName);
 
-    console.log(user);
-    users.push(user);
-  });
-
-  console.log('✅ Retrieved users', users);
-  return users;
+    default:
+      console.error(`🛑 No AppSync resolver defined for ${event.info.fieldName}`);
+      return null;
+  }
 };

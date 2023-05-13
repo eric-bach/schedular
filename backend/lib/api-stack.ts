@@ -101,7 +101,7 @@ export class ApiStack extends Stack {
     userServiceFunction.addToRolePolicy(
       new PolicyStatement({
         effect: Effect.ALLOW,
-        actions: ['cognito-idp:ListUsersInGroup'],
+        actions: ['cognito-idp:ListUsersInGroup', 'cognito-idp:AdminAddUserToGroup'],
         resources: [userPool.userPoolArn],
       })
     );
@@ -271,9 +271,13 @@ export class ApiStack extends Stack {
       code: Code.fromAsset(path.join(__dirname, '/graphql/Mutation.deleteAppointments.js')),
       runtime: FunctionRuntime.JS_1_0_0,
     });
-    userServiceLambdaDataSource.createResolver(`${props.appName}-${props.envName}-userServiceResolver`, {
+    userServiceLambdaDataSource.createResolver(`${props.appName}-${props.envName}-listUsersInGroupResolver`, {
       typeName: 'Query',
-      fieldName: 'getUsers',
+      fieldName: 'listUsersInGroup',
+    });
+    userServiceLambdaDataSource.createResolver(`${props.appName}-${props.envName}-addUserToGroupResolver`, {
+      typeName: 'Mutation',
+      fieldName: 'addUserToGroup',
     });
 
     const passthrough = InlineCode.fromInline(`

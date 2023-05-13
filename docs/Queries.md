@@ -210,8 +210,8 @@ mutation UpsertDeleteAppointments {
   }
 }
 
-query GetUsers {
-  getUsers {
+query ListUsersInGroup {
+  listUsersInGroup(groupName: "Pending") {
     id
     firstName
     lastName
