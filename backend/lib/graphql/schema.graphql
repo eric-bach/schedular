@@ -196,9 +196,11 @@ type Query {
   getAvailableAppointments(from: String!, to: String!, lastEvaluatedKey: LastEvaluatedKey): GetAppointmentsResponse
     @aws_auth(cognito_groups: ["Users", "Admins"])
   getAppointment(pk: String!, sk: String!): GetAppointmentResponse @aws_auth(cognito_groups: ["Users", "Admins"])
-  getAppointments(from: String!, to: String!, lastEvaluatedKey: LastEvaluatedKey): GetAppointmentsResponse @aws_auth(cognito_groups: ["Admins"])
+  getAppointments(from: String!, to: String!, lastEvaluatedKey: LastEvaluatedKey): GetAppointmentsResponse
+    @aws_auth(cognito_groups: ["Admins"])
   getBooking(pk: String!, sk: String!): GetBookingResponse @aws_auth(cognito_groups: ["Users", "Admins"])
-  getBookings(customerId: String!, datetime: String!, lastEvaluatedKey: LastEvaluatedKey): GetBookingsResponse @aws_auth(cognito_groups: ["Users", "Admins"])
+  getBookings(customerId: String!, datetime: String!, lastEvaluatedKey: LastEvaluatedKey): GetBookingsResponse
+    @aws_auth(cognito_groups: ["Users", "Admins"])
 
   listUsersInGroup(groupName: String!): [GetUsersResponse] @aws_auth(cognito_groups: ["Admins"])
 }
@@ -208,7 +210,7 @@ type Mutation {
   createBooking(input: CreateBookingInput): BookingResponse @aws_auth(cognito_groups: ["Users", "Admins"])
   cancelBooking(input: CancelBookingInput): BookingResponse @aws_auth(cognito_groups: ["Users", "Admins"])
 
-  addUserToGroup(userId: String!, groupName: String!): GetUsersResponse @aws_auth(cognito_groups: ["Admins"])
+  addUserToGroup(userId: String!, groupName: String!): Boolean @aws_auth(cognito_groups: ["Admins"])
 }
 
 type Subscription {

@@ -1,4 +1,8 @@
-import { CognitoIdentityProviderClient, AdminAddUserToGroupCommand, AdminAddUserToGroupCommandInput } from '@aws-sdk/client-cognito-identity-provider';
+import {
+  CognitoIdentityProviderClient,
+  AdminAddUserToGroupCommand,
+  AdminAddUserToGroupCommandInput,
+} from '@aws-sdk/client-cognito-identity-provider';
 import { Handler, PostConfirmationTriggerEvent, Context, Callback } from 'aws-lambda';
 
 export const handler: Handler = async (event: PostConfirmationTriggerEvent, _context: Context, callback: Callback): Promise<void> => {
@@ -11,7 +15,7 @@ export const handler: Handler = async (event: PostConfirmationTriggerEvent, _con
   await adminAddUserToGroup({
     userPoolId,
     username: userName,
-    groupName: 'Pending',
+    groupName: 'Public',
   });
 
   return callback(null, event);
@@ -32,7 +36,15 @@ export const handler: Handler = async (event: PostConfirmationTriggerEvent, _con
     */
 };
 
-export async function adminAddUserToGroup({ userPoolId, username, groupName }: { userPoolId: string; username: string; groupName: string }) {
+export async function adminAddUserToGroup({
+  userPoolId,
+  username,
+  groupName,
+}: {
+  userPoolId: string;
+  username: string;
+  groupName: string;
+}) {
   const client = new CognitoIdentityProviderClient({ region: 'us-east-1' });
 
   const params: AdminAddUserToGroupCommandInput = {

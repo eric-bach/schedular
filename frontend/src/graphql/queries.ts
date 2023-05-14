@@ -186,6 +186,10 @@ export const LIST_USERS_IN_GROUP = `query ListUsersInGroup($groupName: String!) 
   }
 }`;
 
+export const ADD_USER_TO_GROUP = `mutation AddUserToGroup($userId: String!, $groupName: String!) {
+  addUserToGroup(userId: $userId, groupName: $groupName) 
+}`;
+
 export const ON_CANCEL_BOOKING = `subscription OnCancelBooking {
   onCancelBooking {
     pk

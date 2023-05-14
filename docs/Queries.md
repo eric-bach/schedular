@@ -211,7 +211,7 @@ mutation UpsertDeleteAppointments {
 }
 
 query ListUsersInGroup {
-  listUsersInGroup(groupName: "Pending") {
+  listUsersInGroup(groupName: "Public") {
     id
     firstName
     lastName
@@ -220,5 +220,13 @@ query ListUsersInGroup {
   }
 }
 
-
+mutation AddUserToGroup {
+  addUserToGroup(userId: "123", groupName: "Clients") {
+    id
+    firstName
+    lastName
+		email
+    phoneNumber
+  }
+}
 ```

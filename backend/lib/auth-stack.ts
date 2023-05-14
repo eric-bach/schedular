@@ -52,21 +52,21 @@ export class AuthStack extends Stack {
     });
 
     // Cognito user pool group
-    new CfnUserPoolGroup(this, `${props.appName}AdminGroup`, {
+    new CfnUserPoolGroup(this, `${props.appName}AdminsGroup`, {
       userPoolId: userPool.userPoolId,
       groupName: 'Admins',
       description: 'Aministrators',
     });
 
-    new CfnUserPoolGroup(this, `${props.appName}PendingGroup`, {
+    new CfnUserPoolGroup(this, `${props.appName}PublicGroup`, {
       userPoolId: userPool.userPoolId,
-      groupName: 'Pending',
-      description: 'Users not confirmed yet',
+      groupName: 'Public',
+      description: 'Public users - not confirmed',
     });
 
-    new CfnUserPoolGroup(this, `${props.appName}UserGroup`, {
+    new CfnUserPoolGroup(this, `${props.appName}ClientsGroup`, {
       userPoolId: userPool.userPoolId,
-      groupName: 'Users',
+      groupName: 'Clients',
       description: 'Confirmed users',
     });
 

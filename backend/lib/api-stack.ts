@@ -101,7 +101,7 @@ export class ApiStack extends Stack {
     userServiceFunction.addToRolePolicy(
       new PolicyStatement({
         effect: Effect.ALLOW,
-        actions: ['cognito-idp:ListUsersInGroup', 'cognito-idp:AdminAddUserToGroup'],
+        actions: ['cognito-idp:ListUsersInGroup', 'cognito-idp:AdminAddUserToGroup', 'cognito-idp:AdminRemoveUserFromGroup'],
         resources: [userPool.userPoolArn],
       })
     );
