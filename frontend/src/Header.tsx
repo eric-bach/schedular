@@ -69,7 +69,9 @@ export function Header() {
   const handleCloseAdminMenu = (e: any) => {
     setAnchorElAdmin(null);
 
-    if (e.target.textContent === 'My Appointments') {
+    if (e.target.textContent === 'My Customers') {
+      navigate('/admin/customers');
+    } else if (e.target.textContent === 'My Appointments') {
       navigate('/admin/appointments');
     } else if (e.target.textContent === 'Manage Schedule') {
       navigate('/admin/schedule');

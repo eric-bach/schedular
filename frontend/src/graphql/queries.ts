@@ -176,6 +176,20 @@ export const UPSERT_DELETE_APPOINTMENTS = `mutation UpsertDeleteAppointments($in
   }
 }`;
 
+export const LIST_USERS_IN_GROUP = `query ListUsersInGroup($groupName: String!) {
+  listUsersInGroup(groupName: $groupName) {
+    id
+    firstName
+    lastName
+    email
+    phoneNumber
+  }
+}`;
+
+export const ADD_USER_TO_GROUP = `mutation AddUserToGroup($userId: String!, $groupName: String!) {
+  addUserToGroup(userId: $userId, groupName: $groupName) 
+}`;
+
 export const ON_CANCEL_BOOKING = `subscription OnCancelBooking {
   onCancelBooking {
     pk

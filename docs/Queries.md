@@ -210,4 +210,23 @@ mutation UpsertDeleteAppointments {
   }
 }
 
+query ListUsersInGroup {
+  listUsersInGroup(groupName: "Public") {
+    id
+    firstName
+    lastName
+		email
+    phoneNumber
+  }
+}
+
+mutation AddUserToGroup {
+  addUserToGroup(userId: "123", groupName: "Clients") {
+    id
+    firstName
+    lastName
+		email
+    phoneNumber
+  }
+}
 ```

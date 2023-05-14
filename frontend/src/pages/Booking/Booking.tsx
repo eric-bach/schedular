@@ -19,7 +19,12 @@ import Button from '@mui/material/Button';
 
 import aws_exports from '../../aws-exports';
 import { GET_AVAILABLE_APPOINTMENTS, CREATE_BOOKING } from '../../graphql/queries';
-import { GetAvailableAppointmentsResponse, AvailableAppointmentItem, CreateBookingResponse, CreateBookingInput } from '../../types/BookingTypes';
+import {
+  GetAvailableAppointmentsResponse,
+  AvailableAppointmentItem,
+  CreateBookingResponse,
+  CreateBookingInput,
+} from '../../types/BookingTypes';
 import { formatLocalTimeSpanString, formatLongDateString } from '../../helpers/utils';
 
 import '@aws-amplify/ui-react/styles.css';
@@ -45,12 +50,17 @@ function Booking() {
 
     setLoading(true);
 
-    const appointments = await API.graphql<GraphQLQuery<GetAvailableAppointmentsResponse>>(graphqlOperation(GET_AVAILABLE_APPOINTMENTS, { from, to }));
-    setAvailableAppointments(appointments.data?.getAvailableAppointments?.items);
+    try {
+      const appointments = await API.graphql<GraphQLQuery<GetAvailableAppointmentsResponse>>(
+        graphqlOperation(GET_AVAILABLE_APPOINTMENTS, { from, to })
+      );
+      setAvailableAppointments(appointments.data?.getAvailableAppointments?.items);
+      setLoading(false);
 
-    setLoading(false);
-
-    return appointments.data?.getAvailableAppointments?.items;
+      return appointments.data?.getAvailableAppointments?.items;
+    } catch (err) {
+      setLoading(false);
+    }
   };
 
   useEffect(() => {
@@ -155,7 +165,12 @@ function Booking() {
         <Grid xs={0} sm={0} md={0} lg={3} />
         <Grid xs={6} sm={6} md={6} lg={3}>
           <LocalizationProvider dateAdapter={AdapterDayjs}>
-            <DateCalendar value={date} minDate={dayjs()} maxDate={dayjs().add(1, 'month')} onChange={(newValue) => dateSelected(newValue)} />
+            <DateCalendar
+              value={date}
+              minDate={dayjs()}
+              maxDate={dayjs().add(1, 'month')}
+              onChange={(newValue) => dateSelected(newValue)}
+            />
           </LocalizationProvider>
         </Grid>
         <Grid xs={6} sm={6} md={6} lg={3}>
@@ -191,8 +206,8 @@ function Booking() {
                 <>
                   <Stack alignItems='flex-start'>
                     <Typography sx={{ mt: 4 }}>
-                      {formatLongDateString(date)} with {appointment.administratorDetails.firstName} {appointment.administratorDetails.lastName} from{' '}
-                      {formatLocalTimeSpanString(appointment.sk, appointment.duration)}
+                      {formatLongDateString(date)} with {appointment.administratorDetails.firstName}{' '}
+                      {appointment.administratorDetails.lastName} from {formatLocalTimeSpanString(appointment.sk, appointment.duration)}
                     </Typography>
                     <Button variant='contained' color='success' onClick={bookAppointment}>
                       Confirm Appointment

@@ -85,6 +85,27 @@ export class ApiStack extends Stack {
       eventSourceArn: emailQueue.queueArn,
     });
 
+    // Resolver for Cognito user service
+    const userServiceFunction = new NodejsFunction(this, 'userService', {
+      functionName: `${props.appName}-${props.envName}-userService`,
+      runtime: Runtime.NODEJS_18_X,
+      handler: 'handler',
+      entry: path.resolve(__dirname, '../src/lambda/userService/main.ts'),
+      memorySize: 512,
+      timeout: Duration.seconds(10),
+      environment: {
+        REGION: this.region,
+        USER_POOL_ID: userPool.userPoolId,
+      },
+    });
+    userServiceFunction.addToRolePolicy(
+      new PolicyStatement({
+        effect: Effect.ALLOW,
+        actions: ['cognito-idp:ListUsersInGroup', 'cognito-idp:AdminAddUserToGroup', 'cognito-idp:AdminRemoveUserFromGroup'],
+        resources: [userPool.userPoolArn],
+      })
+    );
+
     // AppSync API
     const api = new GraphqlApi(this, `${props.appName}Api`, {
       name: `${props.appName}-${props.envName}-api`,
@@ -103,6 +124,9 @@ export class ApiStack extends Stack {
     });
 
     // AppSync DataSources
+    const userServiceLambdaDataSource = api.addLambdaDataSource('upsertAppointmentsDataSource', userServiceFunction, {
+      name: 'userServiceLambdaDataSource',
+    });
     const dynamoDbDataSource = new DynamoDbDataSource(this, `dynamoDBDataSource`, {
       api: api,
       table: dataTable,
@@ -246,6 +270,14 @@ export class ApiStack extends Stack {
       dataSource: dynamoDbDataSource,
       code: Code.fromAsset(path.join(__dirname, '/graphql/Mutation.deleteAppointments.js')),
       runtime: FunctionRuntime.JS_1_0_0,
+    });
+    userServiceLambdaDataSource.createResolver(`${props.appName}-${props.envName}-listUsersInGroupResolver`, {
+      typeName: 'Query',
+      fieldName: 'listUsersInGroup',
+    });
+    userServiceLambdaDataSource.createResolver(`${props.appName}-${props.envName}-addUserToGroupResolver`, {
+      typeName: 'Mutation',
+      fieldName: 'addUserToGroup',
     });
 
     const passthrough = InlineCode.fromInline(`
