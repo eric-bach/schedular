@@ -1,4 +1,10 @@
-import { SESClient, SendEmailCommand, SendEmailCommandInput } from '@aws-sdk/client-ses'; // ES Modules import
+import {
+  SESClient,
+  SendEmailCommand,
+  SendTemplatedEmailCommand,
+  SendEmailCommandInput,
+  SendTemplatedEmailCommandInput,
+} from '@aws-sdk/client-ses'; // ES Modules import
 
 exports.handler = async (event: any) => {
   console.debug(`🕧 Received event: ${JSON.stringify(event)}`);
@@ -10,11 +16,27 @@ exports.handler = async (event: any) => {
   // Send email confirmation
   const client = new SESClient({ region: process.env.REGION });
 
-  const input: SendEmailCommandInput = getEmailInput(message);
+  // TODO Send templated email
+  const input: SendTemplatedEmailCommandInput = {
+    Source: process.env.SENDER_EMAIL,
+    Destination: { ToAddresses: [message.customerDetails.email] },
+    Template: 'apptConfirmation',
+    TemplateData: `{ "name": "${message.customerDetails.firstName} ${message.customerDetails.lastName}", "date": "${formateLocalLongDate(
+      message.sk
+    )} from ${formatLocalTimeSpanString(message.sk, message.appointmentDetails.duration)}", "administrator": "${
+      message.administratorDetails.firstName
+    } ${message.administratorDetails.lastName}" }`,
+  };
+  console.log(`🔔 Send Email:  ${JSON.stringify(input)}`);
 
-  const command = new SendEmailCommand(input);
+  const command = new SendTemplatedEmailCommand(input);
   const response = await client.send(command);
-  console.log(`✅ Appointment Confirmation sent: {result: ${JSON.stringify(response)}}}`);
+  console.log(`✅ Appointment notification sent: {result: ${JSON.stringify(response)}}}`);
+
+  // const input: SendEmailCommandInput = getEmailInput(message);
+  // const command = new SendEmailCommand(input);
+  // const response = await client.send(command);
+  // console.log(`✅ Appointment Confirmation sent: {result: ${JSON.stringify(response)}}}`);
 };
 
 function getEmailInput(message: any): SendEmailCommandInput {
