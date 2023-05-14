@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { Avatar, Container, IconButton, List, ListItem, ListItemAvatar, ListItemText, Typography } from '@mui/material';
+import { Alert, Avatar, Container, IconButton, List, ListItem, ListItemAvatar, ListItemText, Snackbar, Typography } from '@mui/material';
 import AddTaskIcon from '@mui/icons-material/AddTask';
 import { API, graphqlOperation } from 'aws-amplify';
 
@@ -26,6 +26,7 @@ function stringAvatar(name: string) {
 
 function Customers() {
   const [users, setUsers] = useState<Users[]>([]);
+  const [open, setOpen] = React.useState(false);
   const [isLoading, setLoading] = React.useState<boolean>(false);
 
   const listUsersInGroup = async () => {
@@ -36,10 +37,6 @@ function Customers() {
     setLoading(false);
     console.log('[CUSTOMERS] Users:', result);
   };
-
-  useEffect(() => {
-    listUsersInGroup();
-  }, []);
 
   async function addToGroup(index: number) {
     const user = users[index];
@@ -54,7 +51,20 @@ function Customers() {
     console.log('[CUSTOMERS] Added user to group:', result);
 
     await listUsersInGroup();
+    setOpen(true);
   }
+
+  useEffect(() => {
+    listUsersInGroup();
+  }, []);
+
+  const handleClose = (event?: React.SyntheticEvent | Event, reason?: string) => {
+    if (reason === 'clickaway') {
+      return;
+    }
+
+    setOpen(false);
+  };
 
   return (
     <Container maxWidth='md' sx={{ mt: 5 }}>
@@ -95,6 +105,11 @@ function Customers() {
           ))}
         </List>
       )}
+      <Snackbar open={open} autoHideDuration={6000} onClose={handleClose}>
+        <Alert onClose={handleClose} severity='success' sx={{ width: '100%' }}>
+          User Authorized
+        </Alert>
+      </Snackbar>
     </Container>
   );
 }
