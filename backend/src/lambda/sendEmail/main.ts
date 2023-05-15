@@ -1,10 +1,4 @@
-import {
-  SESClient,
-  SendEmailCommand,
-  SendTemplatedEmailCommand,
-  SendEmailCommandInput,
-  SendTemplatedEmailCommandInput,
-} from '@aws-sdk/client-ses'; // ES Modules import
+import { SESClient, SendEmailCommand, SendTemplatedEmailCommand, SendEmailCommandInput, SendTemplatedEmailCommandInput } from '@aws-sdk/client-ses'; // ES Modules import
 
 exports.handler = async (event: any) => {
   console.debug(`🕧 Received event: ${JSON.stringify(event)}`);
@@ -16,76 +10,24 @@ exports.handler = async (event: any) => {
   // Send email confirmation
   const client = new SESClient({ region: process.env.REGION });
 
-  // TODO Send templated email
+  // Send templated email
   const input: SendTemplatedEmailCommandInput = {
     Source: process.env.SENDER_EMAIL,
     Destination: { ToAddresses: [message.customerDetails.email] },
-    Template: 'apptConfirmation',
-    TemplateData: `{ "name": "${message.customerDetails.firstName} ${message.customerDetails.lastName}", "date": "${formateLocalLongDate(
-      message.sk
-    )} from ${formatLocalTimeSpanString(message.sk, message.appointmentDetails.duration)}", "administrator": "${
-      message.administratorDetails.firstName
-    } ${message.administratorDetails.lastName}" }`,
+    Template: message.appointmentDetails.status === 'booked' ? 'AppointmentConfirmation' : 'AppointmentCancellation',
+    TemplateData: `{ 
+      "name": "${message.customerDetails.firstName} ${message.customerDetails.lastName}", 
+      "date": "${formateLocalLongDate(message.sk)}", 
+      "time": "${formatLocalTimeString(message.sk, 0)}", 
+      "administrator": "${message.administratorDetails.firstName} ${message.administratorDetails.lastName}" }`,
   };
   console.log(`🔔 Send Email:  ${JSON.stringify(input)}`);
 
   const command = new SendTemplatedEmailCommand(input);
   const response = await client.send(command);
+
   console.log(`✅ Appointment notification sent: {result: ${JSON.stringify(response)}}}`);
-
-  // const input: SendEmailCommandInput = getEmailInput(message);
-  // const command = new SendEmailCommand(input);
-  // const response = await client.send(command);
-  // console.log(`✅ Appointment Confirmation sent: {result: ${JSON.stringify(response)}}}`);
 };
-
-function getEmailInput(message: any): SendEmailCommandInput {
-  if (message.appointmentDetails.status === 'booked') {
-    return {
-      Source: process.env.SENDER_EMAIL,
-      Destination: { ToAddresses: [message.customerDetails.email] },
-      Message: {
-        Subject: {
-          Charset: 'UTF-8',
-          Data: 'Appointment Confirmation',
-        },
-        Body: {
-          Text: {
-            Charset: 'UTF-8',
-            Data: `This is to confirm your appointment for ${message.customerDetails.firstName} ${
-              message.customerDetails.lastName
-            } on ${formateLocalLongDate(message.sk)} from ${formatLocalTimeSpanString(
-              message.sk,
-              message.appointmentDetails.duration
-            )}\nConfirmation Id: ${message.pk.substring(8)}`,
-          },
-        },
-      },
-    };
-  } else {
-    return {
-      Source: process.env.SENDER_EMAIL,
-      Destination: { ToAddresses: [message.customerDetails.email] },
-      Message: {
-        Subject: {
-          Charset: 'UTF-8',
-          Data: 'Appointment Cancelled',
-        },
-        Body: {
-          Text: {
-            Charset: 'UTF-8',
-            Data: `This is to confirm your appointment cancellation for ${message.customerDetails.firstName} ${
-              message.customerDetails.lastName
-            } on ${formateLocalLongDate(message.sk)} from ${formatLocalTimeSpanString(
-              message.sk,
-              message.appointmentDetails.duration
-            )}\nConfirmation Id: ${message.pk.substring(8)}`,
-          },
-        },
-      },
-    };
-  }
-}
 
 // Takes a SQS urlDecoded string and converts it to proper JSON
 //    Input:  {id=123, nestedObject={name=test}}
