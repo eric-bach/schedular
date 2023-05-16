@@ -119,6 +119,8 @@ function Customers() {
     setOpen(false);
   };
 
+  console.log(users);
+
   return (
     <Container maxWidth='md' sx={{ mt: 5 }}>
       <Typography variant='h5' fontWeight='bold' align='left' color='textPrimary' gutterBottom sx={{ mt: 2 }}>
@@ -152,13 +154,13 @@ function Customers() {
           )}
         />
       </Box>
-      {isLoading ? (
-        <Loader variation='linear' style={{ margin: '15' }} />
-      ) : (
+      {isLoading && <Loader variation='linear' style={{ margin: '15' }} />}
+      {!isLoading && (
         <React.Fragment>
+          {(!users || users.length < 1) && <Typography sx={{ mt: '1rem' }}>No users found</Typography>}
           <List sx={{ bgcolor: 'background.paper' }}>
             {users.map((user, index) => (
-              <List>
+              <List key={user.id}>
                 <ListItem disablePadding>
                   <ListItemButton onClick={() => handleClick(index)}>
                     <ListItemAvatar>
