@@ -7,12 +7,19 @@ type User = {
   email: string | undefined;
   phoneNumber: string | undefined;
 };
+type GetUserResponse = {
+  users: User[];
+  nextToken: string | undefined;
+};
 
-async function listUsersInGroup(groupName: string) {
+async function listUsersInGroup(groupName: string, limit: number, nextToken: string): Promise<GetUserResponse> {
   const client = new CognitoIdentityProviderClient({});
+
   const input: ListUsersInGroupRequest = {
     UserPoolId: process.env.USER_POOL_ID,
     GroupName: groupName,
+    Limit: limit > 0 ? limit : undefined,
+    NextToken: nextToken ? nextToken : undefined,
   };
 
   const command = new ListUsersInGroupCommand(input);
@@ -32,8 +39,9 @@ async function listUsersInGroup(groupName: string) {
     users.push(user);
   });
 
-  console.log('✅ Retrieved users', users);
-  return users;
+  const resp: GetUserResponse = { users: users, nextToken: response.NextToken ? response.NextToken : undefined };
+  console.log('✅ Retrieved users', resp);
+  return resp;
 }
 
 export default listUsersInGroup;

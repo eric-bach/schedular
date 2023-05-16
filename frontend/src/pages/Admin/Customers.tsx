@@ -1,5 +1,25 @@
 import React, { useEffect, useState } from 'react';
-import { Alert, Avatar, Container, IconButton, List, ListItem, ListItemAvatar, ListItemText, Snackbar, Typography } from '@mui/material';
+import {
+  Alert,
+  Autocomplete,
+  Avatar,
+  Box,
+  Container,
+  IconButton,
+  List,
+  ListItem,
+  ListItemAvatar,
+  ListItemText,
+  Snackbar,
+  Tab,
+  Tabs,
+  TextField,
+  Typography,
+} from '@mui/material';
+import SafetyCheckIcon from '@mui/icons-material/SafetyCheck';
+import GppMaybeIcon from '@mui/icons-material/GppMaybe';
+import VerifiedUserIcon from '@mui/icons-material/VerifiedUser';
+import AdminPanelSettingsIcon from '@mui/icons-material/AdminPanelSettings';
 import AddTaskIcon from '@mui/icons-material/AddTask';
 import { API, graphqlOperation } from 'aws-amplify';
 
@@ -15,8 +35,14 @@ type Users = {
   phoneNumber: string;
 };
 type ListUsersResponse = {
-  listUsersInGroup: Users[];
+  listUsersInGroup: {
+    users: Users[];
+    nextToken: string;
+  };
 };
+
+const data = [{ name: 'John Doe' }, { name: 'Jane Doe' }, { name: 'Bob Doe' }];
+const groupNames: string[] = ['Public', 'Clients', 'Admins'];
 
 function stringAvatar(name: string) {
   return {
@@ -28,12 +54,13 @@ function Customers() {
   const [users, setUsers] = useState<Users[]>([]);
   const [open, setOpen] = React.useState(false);
   const [isLoading, setLoading] = React.useState<boolean>(false);
+  const [tab, setTab] = React.useState(0);
 
-  const listUsersInGroup = async () => {
+  const listUsersInGroup = async (index: number) => {
     setLoading(true);
-    const result = await API.graphql<GraphQLQuery<ListUsersResponse>>(graphqlOperation(LIST_USERS_IN_GROUP, { groupName: 'Public' }));
+    const result = await API.graphql<GraphQLQuery<ListUsersResponse>>(graphqlOperation(LIST_USERS_IN_GROUP, { groupName: groupNames[index], limit: 2 }));
 
-    setUsers(result.data?.listUsersInGroup ?? []);
+    setUsers(result.data?.listUsersInGroup.users ?? []);
     setLoading(false);
     console.log('[CUSTOMERS] Users:', result);
   };
@@ -50,13 +77,19 @@ function Customers() {
 
     console.log('[CUSTOMERS] Added user to group:', result);
 
-    await listUsersInGroup();
+    await listUsersInGroup(tab);
     setOpen(true);
   }
 
   useEffect(() => {
-    listUsersInGroup();
+    setTab(0);
+    listUsersInGroup(0);
   }, []);
+
+  const handleChange = (event: React.SyntheticEvent, newValue: number) => {
+    setTab(newValue);
+    listUsersInGroup(newValue);
+  };
 
   const handleClose = (event?: React.SyntheticEvent | Event, reason?: string) => {
     if (reason === 'clickaway') {
@@ -69,10 +102,34 @@ function Customers() {
   return (
     <Container maxWidth='md' sx={{ mt: 5 }}>
       <Typography variant='h5' fontWeight='bold' align='left' color='textPrimary' gutterBottom sx={{ mt: 2 }}>
-        Customers (Not confirmed)
+        Users
       </Typography>
+      <Box sx={{ display: 'flex', gap: '1rem' }}>
+        <Tabs value={tab} onChange={handleChange} aria-label='icon label tabs example'>
+          <Tab icon={<GppMaybeIcon />} label='Unverified' />
+          <Tab icon={<VerifiedUserIcon />} label='Verified' />
+          <Tab icon={<AdminPanelSettingsIcon />} label='Administrators' />
+        </Tabs>
+        <Autocomplete
+          freeSolo
+          id='free-solo-2-demo'
+          disableClearable
+          options={data.map((option: any) => option.name)}
+          renderInput={(params) => (
+            <TextField
+              {...params}
+              label='Search user'
+              InputProps={{
+                ...params.InputProps,
+                type: 'search',
+              }}
+              sx={{ mt: '0.5rem', minWidth: '300px' }}
+            />
+          )}
+        />
+      </Box>
       {isLoading ? (
-        <Loader variation='linear' />
+        <Loader variation='linear' style={{ margin: '15' }} />
       ) : (
         <List sx={{ bgcolor: 'background.paper' }}>
           {users.map((user, index) => (
@@ -80,9 +137,13 @@ function Customers() {
               <ListItem
                 alignItems='flex-start'
                 secondaryAction={
-                  <IconButton edge='end' aria-label='delete' onClick={(e) => addToGroup(index)}>
-                    <AddTaskIcon />
-                  </IconButton>
+                  tab === 0 ? (
+                    <IconButton edge='end' aria-label='delete' onClick={(e) => addToGroup(index)}>
+                      <AddTaskIcon />
+                    </IconButton>
+                  ) : (
+                    <React.Fragment />
+                  )
                 }
               >
                 <ListItemAvatar>
