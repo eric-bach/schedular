@@ -1,23 +1,28 @@
-import React, { useEffect } from 'react';
-import { Container, Stack, Typography, useTheme } from '@mui/material';
-import Alert from '@mui/material/Alert';
-import AlertTitle from '@mui/material/AlertTitle';
-import List from '@mui/material/List';
-import ListItem from '@mui/material/ListItem';
-import Divider from '@mui/material/Divider';
-import ListItemText from '@mui/material/ListItemText';
-import Chip from '@mui/material/Chip';
-import Button from '@mui/material/Button';
-import DeleteIcon from '@mui/icons-material/Delete';
-import Dialog from '@mui/material/Dialog';
-import DialogActions from '@mui/material/DialogActions';
-import DialogContent from '@mui/material/DialogContent';
-import DialogContentText from '@mui/material/DialogContentText';
-import DialogTitle from '@mui/material/DialogTitle';
-import useMediaQuery from '@mui/material/useMediaQuery';
+import React, { useEffect, useState } from 'react';
 import { API, graphqlOperation } from 'aws-amplify';
 import { GraphQLQuery, GraphQLSubscription } from '@aws-amplify/api';
 import { Loader } from '@aws-amplify/ui-react';
+import {
+  Alert,
+  AlertTitle,
+  Button,
+  Chip,
+  Dialog,
+  DialogActions,
+  DialogContent,
+  DialogContentText,
+  DialogTitle,
+  Divider,
+  List,
+  ListItem,
+  ListItemText,
+  Stack,
+  Typography,
+  useMediaQuery,
+  useTheme,
+} from '@mui/material';
+import DeleteIcon from '@mui/icons-material/Delete';
+
 import {
   GetBookingsResponse,
   BookingItem,
@@ -33,17 +38,17 @@ import '@aws-amplify/ui-react/styles.css';
 function Bookings(state: any) {
   const { customer } = state;
 
-  const [isLoading, setLoading] = React.useState<boolean>(false);
-  const [bookings, setBookings] = React.useState<(BookingItem | undefined)[]>();
-  const [selectedBooking, setSelectedBooking] = React.useState<BookingItem>();
-  const [isError, setError] = React.useState<boolean>(false);
-  const [open, setOpen] = React.useState(false);
+  const [isLoading, setLoading] = useState<boolean>(false);
+  const [bookings, setBookings] = useState<(BookingItem | undefined)[]>();
+  const [selectedBooking, setSelectedBooking] = useState<BookingItem>();
+  const [isError, setError] = useState<boolean>(false);
+  const [open, setOpen] = useState(false);
 
   const theme = useTheme();
   const fullScreen = useMediaQuery(theme.breakpoints.down('md'));
 
   const getBookings = async (customerId: string) => {
-    console.debug('[BOOKINGS] Getting appointments for', new Date().toISOString());
+    //console.debug('[BOOKINGS] Getting appointments for', new Date().toISOString());
 
     try {
       setLoading(true);
@@ -54,13 +59,13 @@ function Bookings(state: any) {
         })
       );
 
-      console.debug('[BOOKINGS] Found appointments', result);
+      console.debug('[BOOKINGS] Found bookings', result);
       setBookings(result.data?.getBookings?.items);
-
       setLoading(false);
 
       return result.data?.getBookings?.items;
     } catch (error) {
+      console.error('[BOOKINGS] Error', error);
       setLoading(false);
     }
   };
@@ -88,7 +93,7 @@ function Bookings(state: any) {
 
   useEffect(() => {
     getBookings(customer.id).then((resp) => {
-      console.debug('[BOOKINGS] Found bookings', resp);
+      //console.debug('[BOOKINGS] Found bookings', resp);
     });
   }, []);
 
@@ -103,9 +108,7 @@ function Bookings(state: any) {
     };
 
     console.debug('[BOOKINGS] Cancel booking:', input);
-
     const result = await API.graphql<GraphQLQuery<CancelBookingResponse>>(graphqlOperation(CANCEL_BOOKING, { input: input }));
-
     console.debug('[BOOKINGS] Cancel booking result:', result);
   };
 

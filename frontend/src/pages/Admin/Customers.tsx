@@ -1,4 +1,8 @@
 import React, { useEffect, useState } from 'react';
+import { useNavigate } from 'react-router-dom';
+import { API, graphqlOperation } from 'aws-amplify';
+import { GraphQLQuery } from '@aws-amplify/api';
+import { Loader } from '@aws-amplify/ui-react';
 import {
   Alert,
   Autocomplete,
@@ -17,15 +21,13 @@ import {
   TextField,
   Typography,
 } from '@mui/material';
-import GppMaybeIcon from '@mui/icons-material/GppMaybe';
-import VerifiedUserIcon from '@mui/icons-material/VerifiedUser';
-import AdminPanelSettingsIcon from '@mui/icons-material/AdminPanelSettings';
-import { API, graphqlOperation } from 'aws-amplify';
-import { GraphQLQuery } from '@aws-amplify/api';
-import { Loader } from '@aws-amplify/ui-react';
+import {
+  GppMaybe as GppMaybeIcon,
+  VerifiedUser as VerifiedUserIcon,
+  AdminPanelSettings as AdminPanelSettingsIcon,
+} from '@mui/icons-material';
 
 import { ADD_USER_TO_GROUP, LIST_USERS_IN_GROUP } from '../../graphql/queries';
-import { useNavigate } from 'react-router-dom';
 
 type Users = {
   id: string;
@@ -40,8 +42,6 @@ type ListUsersResponse = {
     nextToken: string;
   };
 };
-
-const data = [{ name: 'John Doe' }, { name: 'Jane Doe' }, { name: 'Bob Doe' }];
 const groupNames: string[] = ['Public', 'Clients', 'Admins'];
 
 function stringAvatar(name: string) {
