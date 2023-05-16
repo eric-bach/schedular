@@ -243,7 +243,7 @@ function Schedule() {
                           )}
                           {values.appointments.length > 0 &&
                             values.appointments.map((appt, index) => (
-                              <React.Fragment key={index}>
+                              <React.Fragment key={appt.pk}>
                                 <Grid container spacing={{ xs: 1 }} columns={{ xs: 12 }}>
                                   <Grid xs={2}>
                                     <LocalizationProvider dateAdapter={AdapterDayjs}>
