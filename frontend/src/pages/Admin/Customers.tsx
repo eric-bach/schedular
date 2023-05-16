@@ -6,7 +6,6 @@ import {
   Box,
   Button,
   Container,
-  IconButton,
   List,
   ListItem,
   ListItemAvatar,
@@ -26,6 +25,7 @@ import { GraphQLQuery } from '@aws-amplify/api';
 import { Loader } from '@aws-amplify/ui-react';
 
 import { ADD_USER_TO_GROUP, LIST_USERS_IN_GROUP } from '../../graphql/queries';
+import { useNavigate } from 'react-router-dom';
 
 type Users = {
   id: string;
@@ -51,6 +51,8 @@ function stringAvatar(name: string) {
 }
 
 function Customers() {
+  const navigate = useNavigate();
+
   const [users, setUsers] = useState<Users[]>([]);
   const [nextToken, setNextToken] = useState<string | undefined>(undefined);
   const [open, setOpen] = React.useState(false);
@@ -103,6 +105,7 @@ function Customers() {
       await addToGroup(index);
     } else {
       // TODO Open user profile
+      navigate(`/admin/customer/${users[index].id}`, { state: { customer: users[index] } });
     }
   };
 
@@ -118,8 +121,6 @@ function Customers() {
 
     setOpen(false);
   };
-
-  console.log(users);
 
   return (
     <Container maxWidth='md' sx={{ mt: 5 }}>
