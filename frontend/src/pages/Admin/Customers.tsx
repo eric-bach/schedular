@@ -4,11 +4,13 @@ import {
   Autocomplete,
   Avatar,
   Box,
+  Button,
   Container,
   IconButton,
   List,
   ListItem,
   ListItemAvatar,
+  ListItemButton,
   ListItemText,
   Snackbar,
   Tab,
@@ -16,16 +18,14 @@ import {
   TextField,
   Typography,
 } from '@mui/material';
-import SafetyCheckIcon from '@mui/icons-material/SafetyCheck';
 import GppMaybeIcon from '@mui/icons-material/GppMaybe';
 import VerifiedUserIcon from '@mui/icons-material/VerifiedUser';
 import AdminPanelSettingsIcon from '@mui/icons-material/AdminPanelSettings';
-import AddTaskIcon from '@mui/icons-material/AddTask';
 import { API, graphqlOperation } from 'aws-amplify';
+import { GraphQLQuery } from '@aws-amplify/api';
+import { Loader } from '@aws-amplify/ui-react';
 
 import { ADD_USER_TO_GROUP, LIST_USERS_IN_GROUP } from '../../graphql/queries';
-import { GraphQLQuery } from '@aws-amplify/api';
-import { Divider, Loader } from '@aws-amplify/ui-react';
 
 type Users = {
   id: string;
@@ -52,17 +52,27 @@ function stringAvatar(name: string) {
 
 function Customers() {
   const [users, setUsers] = useState<Users[]>([]);
+  const [nextToken, setNextToken] = useState<string | undefined>(undefined);
   const [open, setOpen] = React.useState(false);
   const [isLoading, setLoading] = React.useState<boolean>(false);
   const [tab, setTab] = React.useState(0);
 
-  const listUsersInGroup = async (index: number) => {
+  const listUsersInGroup = async (index: number, nextToken: string | undefined) => {
     setLoading(true);
-    const result = await API.graphql<GraphQLQuery<ListUsersResponse>>(graphqlOperation(LIST_USERS_IN_GROUP, { groupName: groupNames[index], limit: 2 }));
+    const result = await API.graphql<GraphQLQuery<ListUsersResponse>>(
+      graphqlOperation(LIST_USERS_IN_GROUP, { groupName: groupNames[index], limit: 1, nextToken: nextToken })
+    );
 
-    setUsers(result.data?.listUsersInGroup.users ?? []);
+    if (nextToken && result.data?.listUsersInGroup.users) {
+      setUsers(users.concat(result.data?.listUsersInGroup.users));
+    } else {
+      setUsers(result.data?.listUsersInGroup.users ?? []);
+    }
+
+    setNextToken(result.data?.listUsersInGroup.nextToken);
     setLoading(false);
     console.log('[CUSTOMERS] Users:', result);
+    console.log('[CUSTOMERS] Next Token:', result.data?.listUsersInGroup.nextToken);
   };
 
   async function addToGroup(index: number) {
@@ -77,18 +87,28 @@ function Customers() {
 
     console.log('[CUSTOMERS] Added user to group:', result);
 
-    await listUsersInGroup(tab);
+    await listUsersInGroup(tab, undefined);
     setOpen(true);
   }
 
   useEffect(() => {
     setTab(0);
-    listUsersInGroup(0);
+    listUsersInGroup(0, undefined);
   }, []);
+
+  const handleClick = async (index: number) => {
+    console.log('Clicked User ', users[index]);
+
+    if (tab === 0) {
+      await addToGroup(index);
+    } else {
+      // TODO Open user profile
+    }
+  };
 
   const handleChange = (event: React.SyntheticEvent, newValue: number) => {
     setTab(newValue);
-    listUsersInGroup(newValue);
+    listUsersInGroup(newValue, undefined);
   };
 
   const handleClose = (event?: React.SyntheticEvent | Event, reason?: string) => {
@@ -111,14 +131,18 @@ function Customers() {
           <Tab icon={<AdminPanelSettingsIcon />} label='Administrators' />
         </Tabs>
         <Autocomplete
+          disabled // TODO Search feature not built yet
           freeSolo
-          id='free-solo-2-demo'
-          disableClearable
-          options={data.map((option: any) => option.name)}
+          options={users.map((option: any) => `${option.firstName} ${option.lastName}`)}
+          onKeyDown={(e: any) => {
+            if (e.keyCode === 13) {
+              console.log('Search Key', e.target.value);
+            }
+          }}
           renderInput={(params) => (
             <TextField
               {...params}
-              label='Search user'
+              label='Search User'
               InputProps={{
                 ...params.InputProps,
                 type: 'search',
@@ -131,40 +155,37 @@ function Customers() {
       {isLoading ? (
         <Loader variation='linear' style={{ margin: '15' }} />
       ) : (
-        <List sx={{ bgcolor: 'background.paper' }}>
-          {users.map((user, index) => (
-            <React.Fragment key={user.id}>
-              <ListItem
-                alignItems='flex-start'
-                secondaryAction={
-                  tab === 0 ? (
-                    <IconButton edge='end' aria-label='delete' onClick={(e) => addToGroup(index)}>
-                      <AddTaskIcon />
-                    </IconButton>
-                  ) : (
-                    <React.Fragment />
-                  )
-                }
-              >
-                <ListItemAvatar>
-                  <Avatar {...stringAvatar(`${user.firstName} ${user.lastName}`)} />
-                </ListItemAvatar>
-                <ListItemText
-                  primary={`${user.firstName} ${user.lastName}`}
-                  secondary={
-                    <React.Fragment>
-                      <Typography sx={{ display: 'block' }} component='span' variant='body2'>
-                        {user.email} | {user.phoneNumber}
-                      </Typography>
-                      <Typography sx={{ display: 'block' }} component='span' variant='body2'></Typography>
-                    </React.Fragment>
-                  }
-                />
-              </ListItem>
-              <Divider />
-            </React.Fragment>
-          ))}
-        </List>
+        <React.Fragment>
+          <List sx={{ bgcolor: 'background.paper' }}>
+            {users.map((user, index) => (
+              <List>
+                <ListItem disablePadding>
+                  <ListItemButton onClick={() => handleClick(index)}>
+                    <ListItemAvatar>
+                      <Avatar {...stringAvatar(`${user.firstName} ${user.lastName}`)} />
+                    </ListItemAvatar>
+                    <ListItemText
+                      primary={`${user.firstName} ${user.lastName}`}
+                      secondary={
+                        <React.Fragment>
+                          <Typography sx={{ display: 'block' }} component='span' variant='body2'>
+                            {user.email} | {user.phoneNumber}
+                          </Typography>
+                          <Typography sx={{ display: 'block' }} component='span' variant='body2'></Typography>
+                        </React.Fragment>
+                      }
+                    />
+                  </ListItemButton>
+                </ListItem>
+              </List>
+            ))}
+          </List>
+          {nextToken && (
+            <Button variant='outlined' onClick={() => listUsersInGroup(tab, nextToken)}>
+              Load More
+            </Button>
+          )}
+        </React.Fragment>
       )}
       <Snackbar open={open} autoHideDuration={6000} onClose={handleClose}>
         <Alert onClose={handleClose} severity='success' sx={{ width: '100%' }}>
