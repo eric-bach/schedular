@@ -21,11 +21,7 @@ import {
   TextField,
   Typography,
 } from '@mui/material';
-import {
-  GppMaybe as GppMaybeIcon,
-  VerifiedUser as VerifiedUserIcon,
-  AdminPanelSettings as AdminPanelSettingsIcon,
-} from '@mui/icons-material';
+import { GppMaybe as GppMaybeIcon, VerifiedUser as VerifiedUserIcon, AdminPanelSettings as AdminPanelSettingsIcon } from '@mui/icons-material';
 
 import { ADD_USER_TO_GROUP, LIST_USERS_IN_GROUP } from '../../graphql/queries';
 

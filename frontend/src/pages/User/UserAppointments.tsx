@@ -1,8 +1,7 @@
 import React from 'react';
 import { Amplify } from 'aws-amplify';
 import { useAuthenticator } from '@aws-amplify/ui-react';
-import Container from '@mui/material/Container';
-import Typography from '@mui/material/Typography';
+import { Container, Typography } from '@mui/material';
 
 import Bookings from '../Admin/Bookings';
 
