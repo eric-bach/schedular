@@ -203,6 +203,7 @@ type Query {
   getAppointments(from: String!, to: String!, lastEvaluatedKey: LastEvaluatedKey): GetAppointmentsResponse
     @aws_auth(cognito_groups: ["Admins"])
   getBooking(pk: String!, sk: String!): GetBookingResponse @aws_auth(cognito_groups: ["Clients", "Admins"])
+  getBookings(datetime: String!, lastEvaluatedKey: LastEvaluatedKey): GetBookingsResponse @aws_auth(cognito_groups: ["Admins"])
   getUserBookings(customerId: String!, datetime: String!, lastEvaluatedKey: LastEvaluatedKey): GetBookingsResponse
     @aws_auth(cognito_groups: ["Clients", "Admins"])
 

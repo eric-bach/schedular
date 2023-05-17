@@ -50,6 +50,33 @@ query GetAppointments {
   }
 }
 
+query GetBookings {
+  getBookings(datetime: "2023-04-16T00:00:00Z")
+  {
+    items {
+      pk
+      sk
+      type
+      appointmentDetails {
+        pk
+        sk
+        type
+        category
+        status
+        duration
+      }
+      customerId
+      customerDetails {
+        id
+        firstName
+        lastName
+        email
+        phone
+      }
+    }
+  }
+}
+
 query GetUserBookings {
   getUserBookings(customerId: "79aea011-a655-447a-92d4-1d17be6d0ea4", datetime: "2023-04-16T00:00:00Z")
   {
