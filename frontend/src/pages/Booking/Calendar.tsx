@@ -12,12 +12,7 @@ import { LocalizationProvider } from '@mui/x-date-pickers/LocalizationProvider';
 import dayjs, { Dayjs } from 'dayjs';
 
 import { GET_AVAILABLE_APPOINTMENTS, CREATE_BOOKING } from '../../graphql/queries';
-import {
-  GetAvailableAppointmentsResponse,
-  AvailableAppointmentItem,
-  CreateBookingResponse,
-  CreateBookingInput,
-} from '../../types/BookingTypes';
+import { GetAvailableAppointmentsResponse, AvailableAppointmentItem, CreateBookingResponse, CreateBookingInput } from '../../types/Types';
 import { formatLocalTimeSpanString, formatLocalTimeString, formatLongDateString } from '../../helpers/utils';
 
 import aws_exports from '../../aws-exports';

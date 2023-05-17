@@ -28,13 +28,7 @@ import DeleteIcon from '@mui/icons-material/Delete';
 import { styled } from '@mui/material/styles';
 import Switch, { SwitchProps } from '@mui/material/Switch';
 
-import {
-  GetBookingsResponse,
-  BookingItem,
-  CancelBookingInput,
-  CancelBookingResponse,
-  OnCancelBookingResponse,
-} from '../../types/BookingTypes';
+import { GetBookingsResponse, BookingItem, CancelBookingInput, CancelBookingResponse, OnCancelBookingResponse } from '../../types/Types';
 import { CANCEL_BOOKING, GET_BOOKINGS, ON_CANCEL_BOOKING } from '../../graphql/queries';
 import { formatLocalTimeString, formateLocalLongDate } from '../../helpers/utils';
 

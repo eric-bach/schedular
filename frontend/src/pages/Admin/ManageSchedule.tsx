@@ -16,7 +16,7 @@ import * as yup from 'yup';
 import { v4 as uuidv4 } from 'uuid';
 
 import { GET_APPOINTMENTS, UPSERT_DELETE_APPOINTMENTS } from '../../graphql/queries';
-import { GetAppointmentsResponse, AppointmentItem, UpsertDeleteAppointmentsResponse } from '../../types/BookingTypes';
+import { GetAppointmentsResponse, AppointmentItem, UpsertDeleteAppointmentsResponse } from '../../types/Types';
 import { formatLongDateString } from '../../helpers/utils';
 
 dayjs.extend(isBetweenPlugin);
