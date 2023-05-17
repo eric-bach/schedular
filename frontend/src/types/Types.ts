@@ -102,7 +102,7 @@ export type CreateBookingResponse = {
   };
 };
 
-// GetBookings = /user/appointments
+// GetUserBookings = /user/appointments
 export type BookingItem = {
   pk: string;
   sk: string;
@@ -129,8 +129,8 @@ export type BookingItem = {
     phone: string;
   };
 };
-export type GetBookingsResponse = {
-  getBookings: {
+export type GetUserBookingsResponse = {
+  getUserBookings: {
     items: [BookingItem];
   };
   lastEvaluatedKey: Base;

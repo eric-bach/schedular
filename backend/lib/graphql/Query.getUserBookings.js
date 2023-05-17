@@ -1,7 +1,7 @@
 import { util } from '@aws-appsync/utils';
 
 export function request(ctx) {
-  console.log('🔔 GetBookings Request: ', ctx);
+  console.log('🔔 GetUserBookings Request: ', ctx);
 
   return {
     version: '2017-02-28',
@@ -27,7 +27,7 @@ export function request(ctx) {
 }
 
 export function response(ctx) {
-  console.log('🔔 GetBooking Response: ', ctx);
+  console.log('🔔 GetUserBooking Response: ', ctx);
 
   if (ctx.error) {
     util.error(ctx.error.message, ctx.error.type, ctx.result);

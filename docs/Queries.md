@@ -50,8 +50,8 @@ query GetAppointments {
   }
 }
 
-query GetBookings {
-  getBookings(customerId: "79aea011-a655-447a-92d4-1d17be6d0ea4", datetime: "2023-04-16T00:00:00Z")
+query GetUserBookings {
+  getUserBookings(customerId: "79aea011-a655-447a-92d4-1d17be6d0ea4", datetime: "2023-04-16T00:00:00Z")
   {
     items {
       pk
