@@ -4,7 +4,7 @@ import { Amplify } from 'aws-amplify';
 import { Loader, useAuthenticator } from '@aws-amplify/ui-react';
 import { API, graphqlOperation } from 'aws-amplify';
 import { GraphQLQuery } from '@aws-amplify/api';
-import { Alert, AlertTitle, Box, Button, Card, CardActions, CardContent, CardMedia, Stack, Typography } from '@mui/material';
+import { Alert, AlertTitle, Box, Button, Card, CardActions, CardContent, Stack, Typography } from '@mui/material';
 import Grid from '@mui/material/Unstable_Grid2';
 import { AdapterDayjs } from '@mui/x-date-pickers/AdapterDayjs';
 import { DateCalendar } from '@mui/x-date-pickers';
@@ -164,7 +164,7 @@ function Calendar() {
           </LocalizationProvider>
         </Grid>
         <Grid xs={6} sm={6} md={6} lg={3}>
-          {isLoading && <Loader size='large' />}
+          {isLoading && <Loader variation='linear' filledColor='#1976d2' />}
           {selectedDate && !isLoading && (
             <>
               <Stack spacing={2} alignItems='flex-start'>

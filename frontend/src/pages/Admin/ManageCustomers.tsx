@@ -143,7 +143,7 @@ function ManageCustomers() {
           )}
         />
       </Box>
-      {isLoading && <Loader variation='linear' style={{ margin: '15' }} />}
+      {isLoading && <Loader variation='linear' filledColor='#1976d2' style={{ margin: '15' }} />}
       {!isLoading && (
         <React.Fragment>
           {(!users || users.length < 1) && <Typography sx={{ mt: '1rem' }}>No users found</Typography>}
