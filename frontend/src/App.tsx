@@ -6,17 +6,18 @@ import { Header } from './Header';
 import { Login } from './components/Login';
 import { RequireAuth } from './components/RequireAuth';
 import { RequireAdminAuth } from './components/RequireAdminAuth';
-import Services from './pages/Home/Services';
-import Pricing from './pages/Home/Pricing';
-import Booking from './pages/Booking/Booking';
+import Calendar from './pages/Booking/Calendar';
 import Confirmation from './pages/Booking/Confirmation';
-import UserAppointments from './pages/User/UserAppointments';
+import Pricing from './pages/Home/Pricing';
+import Services from './pages/Home/Services';
+import Bookings from './pages/User/Bookings';
 import Profile from './pages/User/Profile';
-import Appointments from './pages/Admin/Appointments';
-import Schedule from './pages/Admin/Schedule';
+import ManageBookings from './pages/Admin/ManageBookings';
+import ManageCustomer from './pages/Admin/ManageCustomer';
+import ManageCustomers from './pages/Admin/ManageCustomers';
+import ManageSchedule from './pages/Admin/ManageSchedule';
 
 import './style.css';
-import Customers from './pages/Admin/Customers';
 
 function App() {
   return (
@@ -28,10 +29,10 @@ function App() {
             <Route path='/services' element={<Services />} />
             <Route path='/pricing' element={<Pricing />} />
             <Route
-              path='/booking'
+              path='/calendar'
               element={
                 <RequireAuth>
-                  <Booking />
+                  <Calendar />
                 </RequireAuth>
               }
             />
@@ -52,10 +53,10 @@ function App() {
               }
             />
             <Route
-              path='/user/appointments'
+              path='/user/bookings'
               element={
                 <RequireAuth>
-                  <UserAppointments />
+                  <Bookings />
                 </RequireAuth>
               }
             />
@@ -63,15 +64,23 @@ function App() {
               path='/admin/customers'
               element={
                 <RequireAdminAuth>
-                  <Customers />
+                  <ManageCustomers />
                 </RequireAdminAuth>
               }
             />
             <Route
-              path='/admin/appointments'
+              path='/admin/customer/:id'
               element={
                 <RequireAdminAuth>
-                  <Appointments />
+                  <ManageCustomer />
+                </RequireAdminAuth>
+              }
+            />
+            <Route
+              path='/admin/bookings'
+              element={
+                <RequireAdminAuth>
+                  <ManageBookings />
                 </RequireAdminAuth>
               }
             />
@@ -79,7 +88,7 @@ function App() {
               path='/admin/schedule'
               element={
                 <RequireAdminAuth>
-                  <Schedule />
+                  <ManageSchedule />
                 </RequireAdminAuth>
               }
             />

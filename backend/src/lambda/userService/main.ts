@@ -8,6 +8,8 @@ type AppSyncEvent = {
   arguments: {
     userId: string;
     groupName: string;
+    limit: number;
+    nextToken: string;
   };
 };
 
@@ -20,7 +22,7 @@ exports.handler = async (event: AppSyncEvent) => {
     // Queries
     case 'listUsersInGroup':
       console.debug(`🔔 ListUsersInGroup: ${JSON.stringify(event.arguments.groupName)}`);
-      return await listUsersInGroup(event.arguments.groupName);
+      return await listUsersInGroup(event.arguments.groupName, event.arguments.limit ?? 0, event.arguments.nextToken);
 
     // Mutations
     case 'addUserToGroup':

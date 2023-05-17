@@ -1,58 +1,48 @@
-import React, { useEffect } from 'react';
-import { Amplify } from 'aws-amplify';
-import { Loader, useAuthenticator } from '@aws-amplify/ui-react';
+import React, { useEffect, useState } from 'react';
 import { API, graphqlOperation } from 'aws-amplify';
 import { GraphQLQuery, GraphQLSubscription } from '@aws-amplify/api';
-import Alert from '@mui/material/Alert';
-import AlertTitle from '@mui/material/AlertTitle';
-import Container from '@mui/material/Container';
-import List from '@mui/material/List';
-import ListItem from '@mui/material/ListItem';
-import Divider from '@mui/material/Divider';
-import ListItemText from '@mui/material/ListItemText';
-import Typography from '@mui/material/Typography';
-import Chip from '@mui/material/Chip';
-import Button from '@mui/material/Button';
-import DeleteIcon from '@mui/icons-material/Delete';
-import Dialog from '@mui/material/Dialog';
-import DialogActions from '@mui/material/DialogActions';
-import DialogContent from '@mui/material/DialogContent';
-import DialogContentText from '@mui/material/DialogContentText';
-import DialogTitle from '@mui/material/DialogTitle';
-import useMediaQuery from '@mui/material/useMediaQuery';
-import { useTheme } from '@mui/material/styles';
-
-import aws_exports from '../../aws-exports';
-import { CANCEL_BOOKING, GET_BOOKINGS, ON_CANCEL_BOOKING } from '../../graphql/queries';
+import { Loader } from '@aws-amplify/ui-react';
 import {
-  GetBookingsResponse,
-  BookingItem,
-  CancelBookingInput,
-  CancelBookingResponse,
-  OnCancelBookingResponse,
-} from '../../types/BookingTypes';
+  Alert,
+  AlertTitle,
+  Button,
+  Chip,
+  Dialog,
+  DialogActions,
+  DialogContent,
+  DialogContentText,
+  DialogTitle,
+  Divider,
+  List,
+  ListItem,
+  ListItemText,
+  Stack,
+  Typography,
+  useMediaQuery,
+  useTheme,
+} from '@mui/material';
+import DeleteIcon from '@mui/icons-material/Delete';
+
+import { GetBookingsResponse, BookingItem, CancelBookingInput, CancelBookingResponse, OnCancelBookingResponse } from '../../types/BookingTypes';
+import { CANCEL_BOOKING, GET_BOOKINGS, ON_CANCEL_BOOKING } from '../../graphql/queries';
+import { formatLocalTimeString, formateLocalLongDate } from '../../helpers/utils';
 
 import '@aws-amplify/ui-react/styles.css';
-import { formateLocalLongDate, formatLocalTimeString } from '../../helpers/utils';
-import Stack from '@mui/material/Stack';
 
-Amplify.configure(aws_exports);
+function BookedAppointments(state: any) {
+  const { customer } = state;
 
-function UserAppointments() {
-  const { user, authStatus } = useAuthenticator((context) => [context.route]);
-
-  const [isLoading, setLoading] = React.useState<boolean>(false);
-  const [bookings, setBookings] = React.useState<(BookingItem | undefined)[]>();
-  const [selectedBooking, setSelectedBooking] = React.useState<BookingItem>();
-  const [isError, setError] = React.useState<boolean>(false);
-  const [open, setOpen] = React.useState(false);
+  const [isLoading, setLoading] = useState<boolean>(false);
+  const [bookings, setBookings] = useState<(BookingItem | undefined)[]>();
+  const [selectedBooking, setSelectedBooking] = useState<BookingItem>();
+  const [isError, setError] = useState<boolean>(false);
+  const [open, setOpen] = useState(false);
 
   const theme = useTheme();
   const fullScreen = useMediaQuery(theme.breakpoints.down('md'));
 
   const getBookings = async (customerId: string) => {
-    //console.debug('[USER APPOINTMENTS] Getting appointments for', customerId);
-    console.debug('[USER APPOINTMENTS] Getting appointments for', new Date().toISOString());
+    //console.debug('[BOOKINGS] Getting appointments for', new Date().toISOString());
 
     try {
       setLoading(true);
@@ -63,30 +53,28 @@ function UserAppointments() {
         })
       );
 
-      console.debug('[USER APPOINTMENTS] Found appointments', result);
+      console.debug('[BOOKINGS] Found bookings', result);
       setBookings(result.data?.getBookings?.items);
-
       setLoading(false);
 
       return result.data?.getBookings?.items;
     } catch (error) {
+      console.error('[BOOKINGS] Error', error);
       setLoading(false);
     }
   };
 
   // Subscribe to creation of Todo
   useEffect(() => {
-    const onCancelBookingListener = API.graphql<GraphQLSubscription<OnCancelBookingResponse>>(
-      graphqlOperation(ON_CANCEL_BOOKING)
-    ).subscribe({
+    const onCancelBookingListener = API.graphql<GraphQLSubscription<OnCancelBookingResponse>>(graphqlOperation(ON_CANCEL_BOOKING)).subscribe({
       next: async ({ provider, value }: any) => {
-        console.log('[USER APPOINTMENTS] Received subscription event', value);
+        console.log('[BOOKINGS] Received subscription event', value);
         setOpen(false);
 
         // Update bookings with cancelled booking from GraphQL subscription without calling server
         let filteredBookings = bookings?.filter((b) => b?.pk !== value.data.onCancelBooking.pk);
         filteredBookings?.push(value.data.onCancelBooking);
-        console.log('[USER APPOINTMENTS] Updated bookings:', filteredBookings);
+        console.log('[BOOKINGS] Updated bookings:', filteredBookings);
         setBookings(filteredBookings);
       },
       error: (error: any) => setError(true),
@@ -96,13 +84,9 @@ function UserAppointments() {
   }, [bookings]);
 
   useEffect(() => {
-    if (authStatus === 'authenticated' && user.attributes) {
-      getBookings(user.attributes.sub).then((resp) => {
-        console.debug('[USER APPOINTMENTS] Found bookings', resp);
-      });
-    } else {
-      // TODO Return error
-    }
+    getBookings(customer.id).then((resp) => {
+      //console.debug('[BOOKINGS] Found bookings', resp);
+    });
   }, []);
 
   function dismissError() {
@@ -115,11 +99,9 @@ function UserAppointments() {
       appointmentDetails: booking.appointmentDetails,
     };
 
-    console.debug('[USER APPOINTMENTS] Cancel booking:', input);
-
+    console.debug('[BOOKINGS] Cancel booking:', input);
     const result = await API.graphql<GraphQLQuery<CancelBookingResponse>>(graphqlOperation(CANCEL_BOOKING, { input: input }));
-
-    console.debug('[USER APPOINTMENTS] Cancel booking result:', result);
+    console.debug('[BOOKINGS] Cancel booking result:', result);
   };
 
   const handleClickOpen = (booking: BookingItem) => {
@@ -133,11 +115,7 @@ function UserAppointments() {
   };
 
   return (
-    <Container maxWidth='md' sx={{ mt: 5 }}>
-      <Typography variant='h5' fontWeight='bold' align='left' color='textPrimary' gutterBottom sx={{ mt: 2 }}>
-        Upcoming Appointments:
-      </Typography>
-
+    <React.Fragment>
       {isError && (
         <Alert
           severity='error'
@@ -168,11 +146,7 @@ function UserAppointments() {
                     alignItems='flex-start'
                     secondaryAction={
                       <Stack direction='row' spacing={1}>
-                        <Chip
-                          label={status}
-                          variant={status === 'booked' ? 'filled' : 'outlined'}
-                          sx={{ mb: 1, backgroundColor: chipColor, color: 'white' }}
-                        />
+                        <Chip label={status} variant={status === 'booked' ? 'filled' : 'outlined'} sx={{ mb: 1, backgroundColor: chipColor, color: 'white' }} />
                         {status === 'booked' && (
                           <Chip
                             label='cancel'
@@ -206,8 +180,8 @@ function UserAppointments() {
                         <DialogTitle id='responsive-dialog-title'>{'Cancel appointment?'}</DialogTitle>
                         <DialogContent>
                           <DialogContentText>
-                            Are you sure you want to cancel your appointment on{' '}
-                            {formateLocalLongDate(selectedBooking.appointmentDetails.sk)} at {formatLocalTimeString(selectedBooking.sk, 0)}?
+                            Are you sure you want to cancel your appointment on {formateLocalLongDate(selectedBooking.appointmentDetails.sk)} at{' '}
+                            {formatLocalTimeString(selectedBooking.sk, 0)}?
                           </DialogContentText>
                         </DialogContent>
                         <DialogActions>
@@ -232,8 +206,8 @@ function UserAppointments() {
           )}
         </List>
       )}
-    </Container>
+    </React.Fragment>
   );
 }
 
-export default UserAppointments;
+export default BookedAppointments;

@@ -1,11 +1,6 @@
 import React from 'react';
 import { useLocation, useNavigate, useParams } from 'react-router-dom';
-import Container from '@mui/material/Container';
-import Alert from '@mui/material/Alert';
-import AlertTitle from '@mui/material/AlertTitle';
-import Typography from '@mui/material/Typography';
-import Chip from '@mui/material/Chip';
-import Button from '@mui/material/Button';
+import { Alert, AlertTitle, Button, Container, Chip, Typography } from '@mui/material';
 
 import { formateLocalLongDate, formatLocalTimeString } from '../../helpers/utils';
 
@@ -53,7 +48,7 @@ export default function Confirmation() {
         variant='contained'
         sx={{ mt: 2 }}
         onClick={() => {
-          navigate('/user/appointments');
+          navigate('/user/bookings');
         }}
       >
         See My Appointments

@@ -211,12 +211,15 @@ mutation UpsertDeleteAppointments {
 }
 
 query ListUsersInGroup {
-  listUsersInGroup(groupName: "Public") {
-    id
-    firstName
-    lastName
-		email
-    phoneNumber
+  listUsersInGroup(groupName: "Clients", limit: 1) {
+    users {
+      id
+      firstName
+      lastName
+      email
+      phoneNumber
+    }
+    nextToken
   }
 }
 

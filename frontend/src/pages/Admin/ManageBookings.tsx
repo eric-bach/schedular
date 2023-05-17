@@ -2,29 +2,22 @@ import React, { useEffect } from 'react';
 import { Loader, useAuthenticator } from '@aws-amplify/ui-react';
 import { API, graphqlOperation } from 'aws-amplify';
 import { GraphQLQuery } from '@aws-amplify/api';
-import Typography from '@mui/material/Typography';
-import Container from '@mui/material/Container';
-import List from '@mui/material/List';
-import ListItem from '@mui/material/ListItem';
-import Divider from '@mui/material/Divider';
-import ListItemText from '@mui/material/ListItemText';
-import Chip from '@mui/material/Chip';
-import { AdapterDayjs } from '@mui/x-date-pickers/AdapterDayjs';
-import { LocalizationProvider } from '@mui/x-date-pickers/LocalizationProvider';
-import { DateCalendar } from '@mui/x-date-pickers';
+import { Container, Chip, Divider, List, ListItem, ListItemText, Typography } from '@mui/material';
 import Grid from '@mui/material/Unstable_Grid2';
+import { AdapterDayjs } from '@mui/x-date-pickers/AdapterDayjs';
+import { DateCalendar } from '@mui/x-date-pickers';
+import { LocalizationProvider } from '@mui/x-date-pickers/LocalizationProvider';
 import dayjs, { Dayjs } from 'dayjs';
 
 import { GET_APPOINTMENTS } from '../../graphql/queries';
 import { GetAppointmentsResponse, AppointmentItem } from '../../types/BookingTypes';
 import { formatLongDateString, formatLocalTimeString } from '../../helpers/utils';
 
-function Appointments() {
+function ManageBookings() {
   const { authStatus } = useAuthenticator((context) => [context.route]);
 
   const [isLoading, setLoading] = React.useState<boolean>(false);
   const [appointments, setAppointments] = React.useState<AppointmentItem[]>([]);
-  const [dateHeading, setDateHeading] = React.useState<string | undefined>();
   const [date, setDate] = React.useState<Dayjs | null>(dayjs());
 
   const getAppointments = async (d: Dayjs) => {
@@ -37,7 +30,6 @@ function Appointments() {
 
     const appointments = await API.graphql<GraphQLQuery<GetAppointmentsResponse>>(graphqlOperation(GET_APPOINTMENTS, { from, to }));
     setAppointments(appointments.data?.getAppointments?.items ?? []);
-    setDateHeading(`${formatLongDateString(dayjs(d))}`);
 
     setLoading(false);
 
@@ -54,6 +46,8 @@ function Appointments() {
   useEffect(() => {
     if (authStatus === 'authenticated') {
       const d = dayjs();
+      setDate(d);
+
       getAppointments(d).then((resp) => {
         //console.debug('[APPOINTMENTS] Loaded initial appointments', resp);
       });
@@ -67,12 +61,7 @@ function Appointments() {
       <Grid container spacing={{ md: 1, lg: 1 }} columns={{ md: 6, lg: 6 }}>
         <Grid md={2} lg={2}>
           <LocalizationProvider dateAdapter={AdapterDayjs}>
-            <DateCalendar
-              value={date}
-              minDate={dayjs()}
-              maxDate={dayjs().add(1, 'month')}
-              onChange={(newValue) => dateSelected(newValue)}
-            />
+            <DateCalendar value={date} minDate={dayjs()} maxDate={dayjs().add(1, 'month')} onChange={(newValue) => dateSelected(newValue)} />
           </LocalizationProvider>
         </Grid>
 
@@ -82,7 +71,8 @@ function Appointments() {
           ) : (
             <>
               <Typography variant='h5' fontWeight='bold' align='left' color='textPrimary' gutterBottom sx={{ mt: 2 }}>
-                Schedule for {dateHeading}:
+                {/* Schedule for {dateHeading}: */}
+                Schedule for {formatLongDateString(dayjs(date))}
               </Typography>
               <List sx={{ bgcolor: 'background.paper' }}>
                 {(!appointments || appointments.length < 1) && <Typography>No Appointments Today 😄</Typography>}
@@ -93,7 +83,7 @@ function Appointments() {
                   const heading = `${formatLocalTimeString(appt.sk, 0)} to ${formatLocalTimeString(appt.sk, appt.duration ?? 0)}`;
 
                   return (
-                    <React.Fragment key={appt.sk}>
+                    <React.Fragment key={appt.pk}>
                       <ListItem
                         alignItems='flex-start'
                         secondaryAction={
@@ -152,4 +142,4 @@ function Appointments() {
   );
 }
 
-export default Appointments;
+export default ManageBookings;
