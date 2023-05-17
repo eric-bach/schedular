@@ -1,4 +1,4 @@
-import { SESClient, SendEmailCommand, SendTemplatedEmailCommand, SendEmailCommandInput, SendTemplatedEmailCommandInput } from '@aws-sdk/client-ses'; // ES Modules import
+import { SESClient, SendTemplatedEmailCommand, SendTemplatedEmailCommandInput } from '@aws-sdk/client-ses'; // ES Modules import
 
 exports.handler = async (event: any) => {
   console.debug(`🕧 Received event: ${JSON.stringify(event)}`);
