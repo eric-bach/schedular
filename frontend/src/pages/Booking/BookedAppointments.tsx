@@ -198,7 +198,7 @@ function BookedAppointments(state: any) {
         </Alert>
       )}
 
-      {isLoading && <Loader variation='linear' />}
+      {isLoading && <Loader variation='linear' filledColor='#1976d2' />}
 
       {!isLoading && (!displayBookings || displayBookings.length < 1) && (
         <Typography variant='body1' align='left' color='textPrimary'>

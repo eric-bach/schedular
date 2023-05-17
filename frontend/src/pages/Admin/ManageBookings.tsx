@@ -72,7 +72,7 @@ function ManageBookings() {
 
         <Grid md={4} lg={4}>
           {isLoading ? (
-            <Loader variation='linear' />
+            <Loader variation='linear' filledColor='#1976d2' />
           ) : (
             <>
               <Typography variant='h5' fontWeight='bold' align='left' color='textPrimary' gutterBottom sx={{ mt: 2 }}>
