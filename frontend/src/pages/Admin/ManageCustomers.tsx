@@ -46,7 +46,7 @@ function stringAvatar(name: string) {
   };
 }
 
-function Customers() {
+function ManageCustomers() {
   const navigate = useNavigate();
 
   const [users, setUsers] = useState<Users[]>([]);
@@ -195,4 +195,4 @@ function Customers() {
   );
 }
 
-export default Customers;
+export default ManageCustomers;

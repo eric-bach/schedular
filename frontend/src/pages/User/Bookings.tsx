@@ -3,22 +3,22 @@ import { Amplify } from 'aws-amplify';
 import { useAuthenticator } from '@aws-amplify/ui-react';
 import { Container, Typography } from '@mui/material';
 
-import Bookings from '../Admin/Bookings';
+import BookedAppointments from '../Booking/BookedAppointments';
 
 import aws_exports from '../../aws-exports';
 import '@aws-amplify/ui-react/styles.css';
 
 Amplify.configure(aws_exports);
 
-function UserAppointments() {
+function Bookings() {
   const { user } = useAuthenticator((context) => [context.route]);
 
   return (
     <Container maxWidth='md' sx={{ mt: 5 }}>
       <Typography variant='h5' fontWeight='bold' align='left' color='textPrimary' gutterBottom sx={{ mt: 2 }}>
-        Upcoming Appointments:
+        Upcoming Bookings:
       </Typography>
-      <Bookings
+      <BookedAppointments
         customer={{
           id: user.attributes?.sub,
           firstName: user.attributes?.firstName,
@@ -31,4 +31,4 @@ function UserAppointments() {
   );
 }
 
-export default UserAppointments;
+export default Bookings;

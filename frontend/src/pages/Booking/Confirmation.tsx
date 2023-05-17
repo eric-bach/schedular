@@ -48,7 +48,7 @@ export default function Confirmation() {
         variant='contained'
         sx={{ mt: 2 }}
         onClick={() => {
-          navigate('/user/appointments');
+          navigate('/user/bookings');
         }}
       >
         See My Appointments

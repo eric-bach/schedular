@@ -17,8 +17,8 @@ import MenuItem from '@mui/material/MenuItem';
 import SpaIcon from '@mui/icons-material/Spa';
 
 const pages = ['Services', 'Pricing', 'Book Appointment'];
-const settings = ['Profile', 'Appointments', 'Logout'];
-const adminPages = ['My Customers', 'My Appointments', 'Manage Schedule'];
+const settings = ['My Profile', 'My Bookings', 'Logout'];
+const adminPages = ['Manage Customers', 'Manage Bookings', 'Manage Schedule'];
 
 export function Header() {
   const { authStatus, user, signOut } = useAuthenticator((context) => [context.route, context.signOut]);
@@ -49,17 +49,17 @@ export function Header() {
     } else if (e.target.textContent === 'Pricing') {
       navigate('/pricing');
     } else if (e.target.textContent === 'Book Appointment') {
-      navigate('/booking');
+      navigate('/calendar');
     }
   };
 
   const handleCloseUserMenu = (e: any) => {
     setAnchorElUser(null);
 
-    if (e.target.textContent === 'Profile') {
+    if (e.target.textContent === 'My Profile') {
       navigate('/user/profile');
-    } else if (e.target.textContent === 'Appointments') {
-      navigate('/user/appointments');
+    } else if (e.target.textContent === 'My Bookings') {
+      navigate('/user/bookings');
     } else if (e.target.textContent === 'Logout') {
       signOut();
       navigate('/');
@@ -69,10 +69,10 @@ export function Header() {
   const handleCloseAdminMenu = (e: any) => {
     setAnchorElAdmin(null);
 
-    if (e.target.textContent === 'My Customers') {
+    if (e.target.textContent === 'Manage Customers') {
       navigate('/admin/customers');
-    } else if (e.target.textContent === 'My Appointments') {
-      navigate('/admin/appointments');
+    } else if (e.target.textContent === 'Manage Bookings') {
+      navigate('/admin/bookings');
     } else if (e.target.textContent === 'Manage Schedule') {
       navigate('/admin/schedule');
     }

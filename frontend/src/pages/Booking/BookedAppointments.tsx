@@ -29,7 +29,7 @@ import { formatLocalTimeString, formateLocalLongDate } from '../../helpers/utils
 
 import '@aws-amplify/ui-react/styles.css';
 
-function Bookings(state: any) {
+function BookedAppointments(state: any) {
   const { customer } = state;
 
   const [isLoading, setLoading] = useState<boolean>(false);
@@ -210,4 +210,4 @@ function Bookings(state: any) {
   );
 }
 
-export default Bookings;
+export default BookedAppointments;

@@ -13,7 +13,7 @@ import { GET_APPOINTMENTS } from '../../graphql/queries';
 import { GetAppointmentsResponse, AppointmentItem } from '../../types/BookingTypes';
 import { formatLongDateString, formatLocalTimeString } from '../../helpers/utils';
 
-function Appointments() {
+function ManageBookings() {
   const { authStatus } = useAuthenticator((context) => [context.route]);
 
   const [isLoading, setLoading] = React.useState<boolean>(false);
@@ -83,7 +83,7 @@ function Appointments() {
                   const heading = `${formatLocalTimeString(appt.sk, 0)} to ${formatLocalTimeString(appt.sk, appt.duration ?? 0)}`;
 
                   return (
-                    <React.Fragment key={appt.sk}>
+                    <React.Fragment key={appt.pk}>
                       <ListItem
                         alignItems='flex-start'
                         secondaryAction={
@@ -142,4 +142,4 @@ function Appointments() {
   );
 }
 
-export default Appointments;
+export default ManageBookings;

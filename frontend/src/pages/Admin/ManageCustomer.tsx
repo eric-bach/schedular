@@ -1,9 +1,9 @@
 import React from 'react';
 import { useLocation } from 'react-router-dom';
 import { Container, Typography } from '@mui/material';
-import Bookings from './Bookings';
+import BookedAppointments from '../Booking/BookedAppointments';
 
-function Customer() {
+function ManageCustomer() {
   const { state } = useLocation();
   const { customer } = state;
 
@@ -12,9 +12,9 @@ function Customer() {
       <Typography variant='h5' fontWeight='bold' align='left' color='textPrimary' gutterBottom sx={{ mt: 2 }}>
         Customer Profile for {customer.firstName} {customer.lastName}
       </Typography>
-      <Bookings customer={customer} />
+      <BookedAppointments customer={customer} />
     </Container>
   );
 }
 
-export default Customer;
+export default ManageCustomer;

@@ -21,7 +21,7 @@ import '@aws-amplify/ui-react/styles.css';
 
 Amplify.configure(aws_exports);
 
-function Booking() {
+function Calendar() {
   const { user } = useAuthenticator((context) => [context.route]);
 
   const [appointments, setAppointments] = React.useState<[AvailableAppointmentItem | undefined]>();
@@ -207,4 +207,4 @@ function Booking() {
   );
 }
 
-export default Booking;
+export default Calendar;

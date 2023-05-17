@@ -54,7 +54,7 @@ function convertToInputValues(userAttributes: any, items: AppointmentItem[] | un
   });
 }
 
-function Schedule() {
+function ManageSchedule() {
   const { user, authStatus } = useAuthenticator((context) => [context.route]);
 
   const [error, setError] = React.useState<string>();
@@ -317,4 +317,4 @@ function Schedule() {
   );
 }
 
-export default Schedule;
+export default ManageSchedule;
