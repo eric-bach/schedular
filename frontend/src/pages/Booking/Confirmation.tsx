@@ -18,7 +18,7 @@ export default function Confirmation() {
       </Alert>
 
       <Typography variant='h4' component='h4' gutterBottom>
-        Appointment Details <Chip label='booked' color='success' />
+        Appointment Details <Chip label='booked' color='primary' />
       </Typography>
 
       <Typography variant='h6' gutterBottom>

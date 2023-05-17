@@ -221,3 +221,18 @@ export type UpsertDeleteAppointmentsResponse = {
   upserted: [UpsertedAppointmentsResponse];
   deleted: [Base];
 };
+
+// ListUsersInGroup
+export type Users = {
+  id: string;
+  firstName: string;
+  lastName: string;
+  email: string;
+  phoneNumber: string;
+};
+export type ListUsersResponse = {
+  listUsersInGroup: {
+    users: Users[];
+    nextToken: string;
+  };
+};

@@ -4,7 +4,7 @@ import { Amplify } from 'aws-amplify';
 import { Loader, useAuthenticator } from '@aws-amplify/ui-react';
 import { API, graphqlOperation } from 'aws-amplify';
 import { GraphQLQuery } from '@aws-amplify/api';
-import { Alert, AlertTitle, Box, Button, Stack, Typography } from '@mui/material';
+import { Alert, AlertTitle, Box, Button, Card, CardActions, CardContent, CardMedia, Stack, Typography } from '@mui/material';
 import Grid from '@mui/material/Unstable_Grid2';
 import { AdapterDayjs } from '@mui/x-date-pickers/AdapterDayjs';
 import { DateCalendar } from '@mui/x-date-pickers';
@@ -12,8 +12,8 @@ import { LocalizationProvider } from '@mui/x-date-pickers/LocalizationProvider';
 import dayjs, { Dayjs } from 'dayjs';
 
 import { GET_AVAILABLE_APPOINTMENTS, CREATE_BOOKING } from '../../graphql/queries';
-import { GetAvailableAppointmentsResponse, AvailableAppointmentItem, CreateBookingResponse, CreateBookingInput } from '../../types/BookingTypes';
-import { formatLocalTimeSpanString, formatLongDateString } from '../../helpers/utils';
+import { GetAvailableAppointmentsResponse, AvailableAppointmentItem, CreateBookingResponse, CreateBookingInput } from '../../types/Types';
+import { formatLocalTimeSpanString, formatLocalTimeString, formatLongDateString } from '../../helpers/utils';
 
 import aws_exports from '../../aws-exports';
 
@@ -40,7 +40,9 @@ function Calendar() {
 
     try {
       setLoading(true);
-      const appointments = await API.graphql<GraphQLQuery<GetAvailableAppointmentsResponse>>(graphqlOperation(GET_AVAILABLE_APPOINTMENTS, { from, to }));
+      const appointments = await API.graphql<GraphQLQuery<GetAvailableAppointmentsResponse>>(
+        graphqlOperation(GET_AVAILABLE_APPOINTMENTS, { from, to })
+      );
       setAppointments(appointments.data?.getAvailableAppointments?.items);
       setLoading(false);
 
@@ -153,7 +155,12 @@ function Calendar() {
         <Grid xs={0} sm={0} md={0} lg={3} />
         <Grid xs={6} sm={6} md={6} lg={3}>
           <LocalizationProvider dateAdapter={AdapterDayjs}>
-            <DateCalendar value={selectedDate} minDate={dayjs()} maxDate={dayjs().add(1, 'month')} onChange={(newValue) => dateSelected(newValue)} />
+            <DateCalendar
+              value={selectedDate}
+              minDate={dayjs()}
+              maxDate={dayjs().add(1, 'month')}
+              onChange={(newValue) => dateSelected(newValue)}
+            />
           </LocalizationProvider>
         </Grid>
         <Grid xs={6} sm={6} md={6} lg={3}>
@@ -186,17 +193,24 @@ function Calendar() {
               </Stack>
 
               {selectedAppointment && (
-                <>
-                  <Stack alignItems='flex-start'>
-                    <Typography sx={{ mt: 4 }}>
-                      {formatLongDateString(selectedDate)} with {selectedAppointment.administratorDetails.firstName}{' '}
-                      {selectedAppointment.administratorDetails.lastName} from {formatLocalTimeSpanString(selectedAppointment.sk, selectedAppointment.duration)}
+                <Card sx={{ maxWidth: 345, mt: 3, ml: -2, border: 'none' }} raised={true} variant='outlined'>
+                  <CardContent>
+                    <Typography gutterBottom variant='h5' component='div'>
+                      Confirm Appointment
                     </Typography>
-                    <Button variant='contained' color='success' onClick={bookAppointment}>
+                    <Typography variant='body2' color='text.secondary'>
+                      {formatLongDateString(selectedDate)} at {formatLocalTimeString(selectedAppointment.sk, 0)}
+                    </Typography>
+                    <Typography variant='body2' color='text.secondary'>
+                      with {selectedAppointment.administratorDetails.firstName} {selectedAppointment.administratorDetails.lastName}
+                    </Typography>
+                  </CardContent>
+                  <CardActions>
+                    <Button variant='contained' color='success' onClick={bookAppointment} sx={{ ml: 0.5 }}>
                       Confirm Appointment
                     </Button>
-                  </Stack>
-                </>
+                  </CardActions>
+                </Card>
               )}
             </>
           )}

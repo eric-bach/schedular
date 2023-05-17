@@ -21,23 +21,15 @@ import {
   TextField,
   Typography,
 } from '@mui/material';
-import { GppMaybe as GppMaybeIcon, VerifiedUser as VerifiedUserIcon, AdminPanelSettings as AdminPanelSettingsIcon } from '@mui/icons-material';
+import {
+  GppMaybe as GppMaybeIcon,
+  VerifiedUser as VerifiedUserIcon,
+  AdminPanelSettings as AdminPanelSettingsIcon,
+} from '@mui/icons-material';
 
 import { ADD_USER_TO_GROUP, LIST_USERS_IN_GROUP } from '../../graphql/queries';
+import { ListUsersResponse, Users } from '../../types/Types';
 
-type Users = {
-  id: string;
-  firstName: string;
-  lastName: string;
-  email: string;
-  phoneNumber: string;
-};
-type ListUsersResponse = {
-  listUsersInGroup: {
-    users: Users[];
-    nextToken: string;
-  };
-};
 const groupNames: string[] = ['Public', 'Clients', 'Admins'];
 
 function stringAvatar(name: string) {
