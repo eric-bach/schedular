@@ -57,7 +57,7 @@ export class MessagingStack extends Stack {
 
     // Email Lambda
     const sendEmailFunction = new NodejsFunction(this, 'SendEmailFunction', {
-      functionName: `${props.appName}-${props.envName}-send-email`,
+      functionName: `${props.appName}-${props.envName}-SendEmail`,
       runtime: Runtime.NODEJS_16_X,
       handler: 'handler',
       entry: 'src/lambda/sendEmail/main.ts',

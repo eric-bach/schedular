@@ -15,9 +15,9 @@ import {
   SchemaFile,
 } from 'aws-cdk-lib/aws-appsync';
 import { NodejsFunction } from 'aws-cdk-lib/aws-lambda-nodejs';
-import {  Runtime } from 'aws-cdk-lib/aws-lambda';
+import { Runtime } from 'aws-cdk-lib/aws-lambda';
 import { Queue } from 'aws-cdk-lib/aws-sqs';
-import { Effect,  PolicyDocument, PolicyStatement, Role, ServicePrincipal } from 'aws-cdk-lib/aws-iam';
+import { Effect, PolicyDocument, PolicyStatement, Role, ServicePrincipal } from 'aws-cdk-lib/aws-iam';
 
 const dotenv = require('dotenv');
 import * as path from 'path';
@@ -34,8 +34,8 @@ export class ApiStack extends Stack {
     const queue = Queue.fromQueueArn(this, 'queue', props.params.queueArn);
 
     // Resolver for Cognito user service
-    const userServiceFunction = new NodejsFunction(this, 'userService', {
-      functionName: `${props.appName}-${props.envName}-userService`,
+    const userServiceFunction = new NodejsFunction(this, 'UserService', {
+      functionName: `${props.appName}-${props.envName}-UserService`,
       runtime: Runtime.NODEJS_18_X,
       handler: 'handler',
       entry: path.resolve(__dirname, '../src/lambda/userService/main.ts'),
