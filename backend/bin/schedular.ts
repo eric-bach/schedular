@@ -8,6 +8,7 @@ import { DatabaseStack } from '../lib/database-stack';
 import { ApiStack } from '../lib/api-stack';
 import { FrontendStack } from '../lib/frontend-stack';
 import { CiCdStack } from '../lib/cicd-stack';
+import { MessagingStack } from '../lib/messaging-stack';
 
 const app = new cdk.App();
 
@@ -47,11 +48,14 @@ switch (stage) {
 
     const database = new DatabaseStack(app, `${APP_NAME}-database-${envName}`, baseProps);
 
+    const queue = new MessagingStack(app, `${APP_NAME}-messaging-${envName}`, baseProps);
+    
     new ApiStack(app, `${APP_NAME}-api-${envName}`, {
       ...baseProps,
       params: {
         userPoolId: auth.userPoolId,
         dataTableArn: database.dataTableArn,
+        queueArn: queue.queueArn
       },
     });
 
