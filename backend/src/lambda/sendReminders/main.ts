@@ -4,6 +4,9 @@ import { marshall, unmarshall } from '@aws-sdk/util-dynamodb';
 exports.handler = async () => {
   console.debug(`🕧 Send Reminders invoked`);
 
+var tomorrow = new Date();
+tomorrow.setDate(tomorrow.getDate() = 1)
+
   // Get DynamoDB items
   let input: QueryCommandInput = {
     TableName: process.env.DATA_TABLE_NAME,
@@ -15,7 +18,7 @@ exports.handler = async () => {
     },
     ExpressionAttributeValues: {
       ':type': { S: 'booking' },
-      ':datetime': { S: new Date().toISOString().substring(0, 10) },
+      ':datetime': { S: tomorrow.toISOString().substring(0, 10) },
       ':booked': { S: 'booked' },
     },
     FilterExpression: 'appointmentDetails.#status = :booked',
