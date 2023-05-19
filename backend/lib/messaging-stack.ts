@@ -6,7 +6,10 @@ import { NodejsFunction } from 'aws-cdk-lib/aws-lambda-nodejs';
 import { EventSourceMapping, Runtime } from 'aws-cdk-lib/aws-lambda';
 import { Queue } from 'aws-cdk-lib/aws-sqs';
 import { Effect, ManagedPolicy, PolicyStatement, Role, ServicePrincipal } from 'aws-cdk-lib/aws-iam';
-import { SchedularBaseStackProps } from './types/SchedularStackProps';
+import { SchedularMessagingStackProps } from './types/SchedularStackProps';
+import { EventBus, Rule, Schedule } from 'aws-cdk-lib/aws-events';
+import { LambdaFunction } from 'aws-cdk-lib/aws-events-targets';
+import { Table } from 'aws-cdk-lib/aws-dynamodb';
 
 const dotenv = require('dotenv');
 
@@ -15,8 +18,15 @@ dotenv.config();
 export class MessagingStack extends Stack {
   public queueArn: string;
 
-  constructor(scope: Construct, id: string, props: SchedularBaseStackProps) {
+  constructor(scope: Construct, id: string, props: SchedularMessagingStackProps) {
     super(scope, id, props);
+
+    const dataTable = Table.fromTableArn(this, 'table', props.params.dataTableArn);
+
+    // EventBus
+    const eventBus = new EventBus(this, 'SchedularEventBus', {
+      eventBusName: `${props.appName}-bus-${props.envName}`,
+    });
 
     // SES
     const emailIdentity = new EmailIdentity(this, 'Identity', {
@@ -88,6 +98,50 @@ export class MessagingStack extends Stack {
       batchSize: 10,
       eventSourceArn: emailQueue.queueArn,
     });
+
+    // Reminders Lambda
+    const sendRemindersFunction = new NodejsFunction(this, 'SendRemindersFunction', {
+      functionName: `${props.appName}-${props.envName}-SendReminders`,
+      runtime: Runtime.NODEJS_16_X,
+      handler: 'handler',
+      entry: 'src/lambda/sendReminders/main.ts',
+      environment: {
+        DATA_TABLE_NAME: dataTable.tableName || '',
+      },
+      timeout: Duration.seconds(20),
+      memorySize: 512,
+      // role: new Role(this, 'SendRemindersConsumerRole', {
+      //   assumedBy: new ServicePrincipal('lambda.amazonaws.com'),
+      //   managedPolicies: [
+      //     ManagedPolicy.fromAwsManagedPolicyName('service-role/AWSLambdaBasicExecutionRole'),
+      //     ManagedPolicy.fromAwsManagedPolicyName('service-role/AmazonEventBridgeFullAccess'),
+      //   ],
+      // }),
+    });
+    // Add permission to query DynamoDB
+    sendRemindersFunction.addToRolePolicy(
+      new PolicyStatement({
+        effect: Effect.ALLOW,
+        actions: ['dynamodb:Query'],
+        resources: [dataTable.tableArn + '/index/type-gsi'],
+      })
+    );
+    // Add permission to send to EventBridge
+    sendRemindersFunction.addToRolePolicy(
+      new PolicyStatement({
+        effect: Effect.ALLOW,
+        actions: ['events:PutEvents'],
+        resources: [eventBus.eventBusArn],
+      })
+    );
+    // EventBridge rule that runs everyday at 6pm
+    const cronRule = new Rule(this, 'CronRule', {
+      schedule: Schedule.expression('cron(0 18 * * ? *)'),
+      // TODO Enable
+      enabled: false,
+    });
+    // Set Lambda function as target for EventBridge
+    cronRule.addTarget(new LambdaFunction(sendEmailFunction));
 
     /***
      *** Outputs

@@ -13,7 +13,7 @@ export interface SchedularFrontendStackProps extends SchedularBaseStackProps {
 
 export interface SchedularMessagingStackProps extends SchedularBaseStackProps {
   params: {
-    dlqNotifications: string;
+    dataTableArn: string;
   };
 }
 
