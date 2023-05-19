@@ -99,6 +99,31 @@ export class MessagingStack extends Stack {
       eventSourceArn: emailQueue.queueArn,
     });
 
+    // Email Lambda v2
+    const sendEmailv2Function = new NodejsFunction(this, 'SendEmailv2Function', {
+      functionName: `${props.appName}-${props.envName}-SendEmailv2`,
+      runtime: Runtime.NODEJS_16_X,
+      handler: 'handler',
+      entry: 'src/lambda/sendEmailv2/main.ts',
+      environment: {
+        SENDER_EMAIL: process.env.SENDER_EMAIL || 'info@example.com',
+      },
+      timeout: Duration.seconds(10),
+      memorySize: 256,
+      role: new Role(this, 'SendEmailv2ConsumerRole', {
+        assumedBy: new ServicePrincipal('lambda.amazonaws.com'),
+        managedPolicies: [ManagedPolicy.fromAwsManagedPolicyName('service-role/AWSLambdaBasicExecutionRole')],
+      }),
+    });
+    // Add permission send email
+    sendEmailFunction.addToRolePolicy(
+      new PolicyStatement({
+        effect: Effect.ALLOW,
+        actions: ['ses:SendTemplatedEmail'],
+        resources: [`arn:aws:ses:${this.region}:${this.account}:identity/*`, `arn:aws:ses:${this.region}:${this.account}:template/*`],
+      })
+    );
+
     // Reminders Lambda
     const sendRemindersFunction = new NodejsFunction(this, 'SendRemindersFunction', {
       functionName: `${props.appName}-${props.envName}-SendReminders`,
@@ -107,6 +132,8 @@ export class MessagingStack extends Stack {
       entry: 'src/lambda/sendReminders/main.ts',
       environment: {
         DATA_TABLE_NAME: dataTable.tableName || '',
+        EVENTBUS_NAME: eventBus.eventBusName || '',
+        REGION: this.region,
       },
       timeout: Duration.seconds(20),
       memorySize: 512,
@@ -143,6 +170,24 @@ export class MessagingStack extends Stack {
     // Set Lambda function as target for EventBridge
     cronRule.addTarget(new LambdaFunction(sendEmailFunction));
 
+    // EventBus Rule -
+    const sendEmailRule = new Rule(this, 'SendEmailRule', {
+      ruleName: `${props.appName}-SendEmailRule-${props.envName}`,
+      description: 'SendEmail',
+      eventBus: eventBus,
+      eventPattern: {
+        source: ['custom.schedular'],
+        detailType: ['BookingReminder'],
+      },
+    });
+    sendEmailRule.addTarget(
+      new LambdaFunction(sendEmailv2Function, {
+        //deadLetterQueue: SqsQueue,
+        maxEventAge: Duration.hours(2),
+        retryAttempts: 2,
+      })
+    );
+
     /***
      *** Outputs
      ***/
@@ -160,6 +205,16 @@ export class MessagingStack extends Stack {
     new CfnOutput(this, 'SendEmailFunctionArn', {
       value: sendEmailFunction.functionArn,
       exportName: `${props.appName}-${props.envName}-sendEmailFunctionArn`,
+    });
+
+    new CfnOutput(this, 'SendEmailv2FunctionArn', {
+      value: sendEmailv2Function.functionArn,
+      exportName: `${props.appName}-${props.envName}-sendEmailv2FunctionArn`,
+    });
+
+    new CfnOutput(this, 'SendRemindersFunctionArn', {
+      value: sendRemindersFunction.functionArn,
+      exportName: `${props.appName}-${props.envName}-sendRemindersFunctionArn`,
     });
 
     /***
