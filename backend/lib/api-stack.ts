@@ -22,6 +22,7 @@ import { Effect, PolicyDocument, PolicyStatement, Role, ServicePrincipal } from 
 const dotenv = require('dotenv');
 import * as path from 'path';
 import { SchedularApiStackProps } from './types/SchedularStackProps';
+import { EventBus } from 'aws-cdk-lib/aws-events';
 
 dotenv.config();
 
@@ -32,6 +33,7 @@ export class ApiStack extends Stack {
     const userPool = UserPool.fromUserPoolId(this, 'userPool', props.params.userPoolId);
     const dataTable = Table.fromTableArn(this, 'table', props.params.dataTableArn);
     const queue = Queue.fromQueueArn(this, 'queue', props.params.queueArn);
+    const eventBus = EventBus.fromEventBusArn(this, 'eventBus', props.params.eventBusArn);
 
     // Resolver for Cognito user service
     const userServiceFunction = new NodejsFunction(this, 'UserService', {
@@ -116,7 +118,15 @@ export class ApiStack extends Stack {
         signingServiceName: 'sqs',
       },
     });
+    const eventsHttpDataSource = api.addHttpDataSource('eventsHttpDataSource', `https://events.${this.region}.amazonaws.com`, {
+      name: 'eventsHttpDataSource',
+      authorizationConfig: {
+        signingRegion: this.region,
+        signingServiceName: 'events',
+      },
+    });
 
+    eventBus.grantPutEventsTo(eventsHttpDataSource.grantPrincipal);
     queue.grantSendMessages(httpDataSource.grantPrincipal);
 
     // AppSync JS Resolvers
@@ -212,6 +222,45 @@ export class ApiStack extends Stack {
       `),
       runtime: FunctionRuntime.JS_1_0_0,
     });
+    const sendToEventBridgeFunction = new AppsyncFunction(this, 'eventBridgeFunction', {
+      name: 'eventBridgeFunction',
+      api: api,
+      dataSource: eventsHttpDataSource,
+      code: Code.fromInline(`
+        import { util } from '@aws-appsync/utils';
+        export function request(ctx) {
+          return {
+            version: '2018-05-29',
+            method: 'POST',
+            resourcePath: '/',
+            params: {
+              headers: {
+                "content-type": "application/x-amz-json-1.1",
+                "x-amz-target": "AWSEvents.PutEvents"
+              },
+              body: {
+                Entries: [
+                  {
+                    Source: 'custom.schedular',
+                    EventBusName: \`$\{eventBus.eventBusName\}\`,
+                    Detail: \`$\{ctx.prev.result\}\`,
+                    DetailType: 'BookingCreated'
+                  }
+                ]
+              }
+            },
+          };
+        }
+
+        export function response(ctx) {
+          if (ctx.error) {
+            util.error(ctx.error.message, ctx.error.type, ctx.result);
+          }
+          return ctx.prev.result;
+        }
+      `),
+      runtime: FunctionRuntime.JS_1_0_0,
+    });
     const upsertAppointmentsFunction = new AppsyncFunction(this, 'upsertAppointmentsFunction', {
       name: 'upsertAppointmentsFunction',
       api: api,
@@ -294,7 +343,7 @@ export class ApiStack extends Stack {
       typeName: 'Mutation',
       fieldName: 'createBooking',
       runtime: FunctionRuntime.JS_1_0_0,
-      pipelineConfig: [createBookingFunction, getBookingFunction, sqsSendEMailFunction],
+      pipelineConfig: [createBookingFunction, getBookingFunction, sendToEventBridgeFunction],
       code: passthrough,
     });
     const cancelBookingResolver = new Resolver(this, 'cancelBookingResolver', {

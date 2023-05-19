@@ -48,14 +48,18 @@ switch (stage) {
 
     const database = new DatabaseStack(app, `${APP_NAME}-database-${envName}`, baseProps);
 
-    const queue = new MessagingStack(app, `${APP_NAME}-messaging-${envName}`, { ...baseProps, params: { dataTableArn: database.dataTableArn } });
+    const messaging = new MessagingStack(app, `${APP_NAME}-messaging-${envName}`, {
+      ...baseProps,
+      params: { dataTableArn: database.dataTableArn },
+    });
 
     new ApiStack(app, `${APP_NAME}-api-${envName}`, {
       ...baseProps,
       params: {
         userPoolId: auth.userPoolId,
         dataTableArn: database.dataTableArn,
-        queueArn: queue.queueArn,
+        queueArn: messaging.queueArn,
+        eventBusArn: messaging.eventBusArn,
       },
     });
 

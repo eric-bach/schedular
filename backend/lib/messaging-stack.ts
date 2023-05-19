@@ -17,6 +17,7 @@ dotenv.config();
 
 export class MessagingStack extends Stack {
   public queueArn: string;
+  public eventBusArn: string;
 
   constructor(scope: Construct, id: string, props: SchedularMessagingStackProps) {
     super(scope, id, props);
@@ -177,7 +178,7 @@ export class MessagingStack extends Stack {
       eventBus: eventBus,
       eventPattern: {
         source: ['custom.schedular'],
-        detailType: ['BookingReminder'],
+        detailType: ['BookingReminder', 'BookingCreated', 'BookingCancelled'],
       },
     });
     sendEmailRule.addTarget(
@@ -195,6 +196,11 @@ export class MessagingStack extends Stack {
     new CfnOutput(this, 'VerifiedEmailIdentity', {
       value: emailIdentity.emailIdentityName,
       exportName: `${props.appName}-${props.envName}-emailIdentity`,
+    });
+
+    new CfnOutput(this, 'EventBusArn', {
+      value: eventBus.eventBusArn,
+      exportName: `${props.appName}-${props.envName}-eventBusArn`,
     });
 
     new CfnOutput(this, 'EmailQueueArn', {
@@ -222,5 +228,6 @@ export class MessagingStack extends Stack {
      ***/
 
     this.queueArn = emailQueue.queueArn;
+    this.eventBusArn = eventBus.eventBusArn;
   }
 }

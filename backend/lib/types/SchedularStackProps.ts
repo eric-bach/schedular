@@ -22,6 +22,7 @@ export interface SchedularApiStackProps extends SchedularBaseStackProps {
     userPoolId: string;
     dataTableArn: string;
     queueArn: string;
+    eventBusArn: string;
   };
 }
 
