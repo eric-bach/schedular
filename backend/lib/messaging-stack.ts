@@ -51,24 +51,24 @@ export class MessagingStack extends Stack {
       },
     });
 
-    // Email Lambda v2
-    const sendEmailv2Function = new NodejsFunction(this, 'SendEmailv2Function', {
-      functionName: `${props.appName}-${props.envName}-SendEmailv2`,
-      runtime: Runtime.NODEJS_16_X,
+    // Email Lambda
+    const sendEmailFunction = new NodejsFunction(this, 'SendEmailFunction', {
+      functionName: `${props.appName}-${props.envName}-SendEmail`,
+      runtime: Runtime.NODEJS_18_X,
       handler: 'handler',
-      entry: 'src/lambda/sendEmailv2/main.ts',
+      entry: 'src/lambda/sendEmail/main.ts',
       environment: {
         SENDER_EMAIL: process.env.SENDER_EMAIL || 'info@example.com',
       },
       timeout: Duration.seconds(10),
       memorySize: 256,
-      role: new Role(this, 'SendEmailv2ConsumerRole', {
+      role: new Role(this, 'SendEmailConsumerRole', {
         assumedBy: new ServicePrincipal('lambda.amazonaws.com'),
         managedPolicies: [ManagedPolicy.fromAwsManagedPolicyName('service-role/AWSLambdaBasicExecutionRole')],
       }),
     });
     // Add permission send email
-    sendEmailv2Function.addToRolePolicy(
+    sendEmailFunction.addToRolePolicy(
       new PolicyStatement({
         effect: Effect.ALLOW,
         actions: ['ses:SendTemplatedEmail'],
@@ -89,13 +89,6 @@ export class MessagingStack extends Stack {
       },
       timeout: Duration.seconds(20),
       memorySize: 512,
-      // role: new Role(this, 'SendRemindersConsumerRole', {
-      //   assumedBy: new ServicePrincipal('lambda.amazonaws.com'),
-      //   managedPolicies: [
-      //     ManagedPolicy.fromAwsManagedPolicyName('service-role/AWSLambdaBasicExecutionRole'),
-      //     ManagedPolicy.fromAwsManagedPolicyName('service-role/AmazonEventBridgeFullAccess'),
-      //   ],
-      // }),
     });
     // Add permission to query DynamoDB
     sendRemindersFunction.addToRolePolicy(
@@ -133,7 +126,7 @@ export class MessagingStack extends Stack {
       },
     });
     sendEmailRule.addTarget(
-      new LambdaFunction(sendEmailv2Function, {
+      new LambdaFunction(sendEmailFunction, {
         maxEventAge: Duration.hours(2),
         retryAttempts: 2,
       })
@@ -154,13 +147,8 @@ export class MessagingStack extends Stack {
     });
 
     new CfnOutput(this, 'SendEmailFunctionArn', {
-      value: sendEmailv2Function.functionArn,
+      value: sendEmailFunction.functionArn,
       exportName: `${props.appName}-${props.envName}-sendEmailFunctionArn`,
-    });
-
-    new CfnOutput(this, 'SendEmailv2FunctionArn', {
-      value: sendEmailv2Function.functionArn,
-      exportName: `${props.appName}-${props.envName}-sendEmailv2FunctionArn`,
     });
 
     new CfnOutput(this, 'SendRemindersFunctionArn', {
