@@ -23,17 +23,15 @@ exports.handler = async (event: EventBridgeEvent<string, Booking>) => {
   const client = new SESClient({});
 
   let template: string = '';
-  switch (event['detail-type']) {
-    case 'BookingCreated':
-      template = 'AppointmentConfirmation';
-      break;
-    case 'BookingCancelled':
-      template = 'AppointmentConfirmation';
-      break;
-    case 'BookingReminder':
-      template = 'BookingReminder';
-      break;
+  console.log('Event Type', event['detail-type']);
+  if (event['detail-type'] === 'BookingCreated') {
+    template = 'AppointmentConfirmation';
+  } else if (event['detail-type'] === 'BookingCancelled') {
+    template = 'AppointmentCancellation';
+  } else if (event['detail-type'] === 'BookingReminder') {
+    template = 'BookingReminder';
   }
+  console.log('Template ', template);
 
   // Send templated email
   const input: SendTemplatedEmailCommandInput = {

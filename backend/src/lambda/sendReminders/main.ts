@@ -1,4 +1,5 @@
 import { DynamoDBClient, QueryCommand, QueryCommandInput, QueryCommandOutput } from '@aws-sdk/client-dynamodb';
+import { unmarshall } from '@aws-sdk/util-dynamodb';
 import { EventBridgeClient, PutEventsCommand, PutEventsCommandInput, PutEventsCommandOutput } from '@aws-sdk/client-eventbridge';
 
 exports.handler = async () => {
@@ -40,7 +41,7 @@ exports.handler = async () => {
             Source: 'custom.schedular',
             EventBusName: process.env.EVENTBUS_NAME,
             DetailType: 'BookingReminder',
-            Detail: JSON.stringify(r),
+            Detail: JSON.stringify(unmarshall(r)),
           },
         ],
       };

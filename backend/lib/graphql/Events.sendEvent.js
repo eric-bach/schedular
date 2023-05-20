@@ -3,13 +3,21 @@ import { util } from '@aws-appsync/utils';
 export function request(ctx) {
   console.log('🔔 SendEvent Request: ', ctx);
 
+  let eventName = 'Default';
+  if (ctx.prev.result.appointmentDetails.status === 'booked') {
+    eventName = 'BookingCreated';
+  } else if (ctx.prev.result.appointmentDetails.status === 'cancelled') {
+    eventName = 'BookingCancelled';
+  }
+  console.log('🔔 EventName: ', eventName);
+
   return {
     operation: 'PutEvents',
     events: [
       {
         source: 'custom.schedular',
         detail: ctx.prev.result,
-        detailType: 'BookingCreated',
+        detailType: eventName,
       },
     ],
   };
