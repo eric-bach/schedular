@@ -118,8 +118,7 @@ export class MessagingStack extends Stack {
     // EventBridge rule that runs everyday at 6pm
     const cronRule = new Rule(this, 'CronRule', {
       schedule: Schedule.expression('cron(0 18 * * ? *)'),
-      // TODO Enable
-      enabled: false,
+      enabled: true,
     });
     // Set Lambda function as target for EventBridge
     cronRule.addTarget(new LambdaFunction(sendRemindersFunction));
