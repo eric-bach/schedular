@@ -16,7 +16,6 @@ import {
 } from 'aws-cdk-lib/aws-appsync';
 import { NodejsFunction } from 'aws-cdk-lib/aws-lambda-nodejs';
 import { Runtime } from 'aws-cdk-lib/aws-lambda';
-import { Queue } from 'aws-cdk-lib/aws-sqs';
 import { Effect, PolicyDocument, PolicyStatement, Role, ServicePrincipal } from 'aws-cdk-lib/aws-iam';
 
 const dotenv = require('dotenv');
@@ -32,7 +31,6 @@ export class ApiStack extends Stack {
 
     const userPool = UserPool.fromUserPoolId(this, 'userPool', props.params.userPoolId);
     const dataTable = Table.fromTableArn(this, 'table', props.params.dataTableArn);
-    const queue = Queue.fromQueueArn(this, 'queue', props.params.queueArn);
     const eventBus = EventBus.fromEventBusArn(this, 'eventBus', props.params.eventBusArn);
 
     // Resolver for Cognito user service
@@ -111,23 +109,9 @@ export class ApiStack extends Stack {
         },
       }),
     });
-    const httpDataSource = api.addHttpDataSource('httpDataSource', `https://sqs.${this.region}.amazonaws.com`, {
-      name: 'httpDataSource',
-      authorizationConfig: {
-        signingRegion: this.region,
-        signingServiceName: 'sqs',
-      },
+    const eventBridgeDataSource = api.addEventBridgeDataSource('eventBridgeDataSource', eventBus, {
+      name: 'eventBridgeDataSource',
     });
-    const eventsHttpDataSource = api.addHttpDataSource('eventsHttpDataSource', `https://events.${this.region}.amazonaws.com`, {
-      name: 'eventsHttpDataSource',
-      authorizationConfig: {
-        signingRegion: this.region,
-        signingServiceName: 'events',
-      },
-    });
-
-    eventBus.grantPutEventsTo(eventsHttpDataSource.grantPrincipal);
-    queue.grantSendMessages(httpDataSource.grantPrincipal);
 
     // AppSync JS Resolvers
     const getAvailableAppointmentsFunction = new AppsyncFunction(this, 'getAvailableAppointmentsFunction', {
@@ -186,79 +170,11 @@ export class ApiStack extends Stack {
       code: Code.fromAsset(path.join(__dirname, '/graphql/Mutation.cancelBooking.js')),
       runtime: FunctionRuntime.JS_1_0_0,
     });
-    const sqsSendEMailFunction = new AppsyncFunction(this, 'SqsSendEmailFunction', {
-      name: 'sqsSendEmail',
-      api: api,
-      dataSource: httpDataSource,
-      // Have to use inline code to set dynamic resourcePath
-      code: Code.fromInline(`
-        import { util } from '@aws-appsync/utils';
-
-        export function request(ctx) {
-          console.log('🔔 SqsSendEmailFunction Request:', ctx);
-
-          const message = util.urlEncode(ctx.prev.result);
-          return {
-            version: '2018-05-29',
-            method: 'POST',
-            params: {
-              body: \`Action=SendMessage&MessageBody=$\{message\}&Version=2012-11-05\`,
-              headers: {
-                'Content-Type': 'application/x-www-form-urlencoded',
-              },
-            },
-            resourcePath: '/${this.account}/${queue.queueName}/',
-          };
-        }
-
-        export function response(ctx) {
-          console.log('🔔 SqsSendEmailFunction Response:', ctx);
-
-          if (ctx.error) {
-            util.error(ctx.error.message, ctx.error.type, ctx.result);
-          }
-          return ctx.prev.result;
-        }
-      `),
-      runtime: FunctionRuntime.JS_1_0_0,
-    });
     const sendToEventBridgeFunction = new AppsyncFunction(this, 'eventBridgeFunction', {
       name: 'eventBridgeFunction',
       api: api,
-      dataSource: eventsHttpDataSource,
-      code: Code.fromInline(`
-        import { util } from '@aws-appsync/utils';
-        export function request(ctx) {
-          return {
-            version: '2018-05-29',
-            method: 'POST',
-            resourcePath: '/',
-            params: {
-              headers: {
-                "content-type": "application/x-amz-json-1.1",
-                "x-amz-target": "AWSEvents.PutEvents"
-              },
-              body: {
-                Entries: [
-                  {
-                    Source: 'custom.schedular',
-                    EventBusName: \`$\{eventBus.eventBusName\}\`,
-                    Detail: \`$\{ctx.prev.result\}\`,
-                    DetailType: 'BookingCreated'
-                  }
-                ]
-              }
-            },
-          };
-        }
-
-        export function response(ctx) {
-          if (ctx.error) {
-            util.error(ctx.error.message, ctx.error.type, ctx.result);
-          }
-          return ctx.prev.result;
-        }
-      `),
+      dataSource: eventBridgeDataSource,
+      code: Code.fromAsset(path.join(__dirname, '/graphql/Events.sendEvent.js')),
       runtime: FunctionRuntime.JS_1_0_0,
     });
     const upsertAppointmentsFunction = new AppsyncFunction(this, 'upsertAppointmentsFunction', {
@@ -351,7 +267,7 @@ export class ApiStack extends Stack {
       typeName: 'Mutation',
       fieldName: 'cancelBooking',
       runtime: FunctionRuntime.JS_1_0_0,
-      pipelineConfig: [cancelBookingFunction, getBookingFunction, sqsSendEMailFunction],
+      pipelineConfig: [cancelBookingFunction, getBookingFunction, sendToEventBridgeFunction],
       code: passthrough,
     });
     const upsertDeleteAppointmentsResolver = new Resolver(this, 'upsertDeleteAppointmentsResolver', {

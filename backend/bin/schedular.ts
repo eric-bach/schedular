@@ -58,7 +58,6 @@ switch (stage) {
       params: {
         userPoolId: auth.userPoolId,
         dataTableArn: database.dataTableArn,
-        queueArn: messaging.queueArn,
         eventBusArn: messaging.eventBusArn,
       },
     });

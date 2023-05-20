@@ -3,8 +3,7 @@ import { Construct } from 'constructs';
 import { EmailIdentity } from 'aws-cdk-lib/aws-ses';
 import { aws_ses as ses } from 'aws-cdk-lib';
 import { NodejsFunction } from 'aws-cdk-lib/aws-lambda-nodejs';
-import { EventSourceMapping, Runtime } from 'aws-cdk-lib/aws-lambda';
-import { Queue } from 'aws-cdk-lib/aws-sqs';
+import { Runtime } from 'aws-cdk-lib/aws-lambda';
 import { Effect, ManagedPolicy, PolicyStatement, Role, ServicePrincipal } from 'aws-cdk-lib/aws-iam';
 import { SchedularMessagingStackProps } from './types/SchedularStackProps';
 import { EventBus, Rule, Schedule } from 'aws-cdk-lib/aws-events';
@@ -16,7 +15,6 @@ const dotenv = require('dotenv');
 dotenv.config();
 
 export class MessagingStack extends Stack {
-  public queueArn: string;
   public eventBusArn: string;
 
   constructor(scope: Construct, id: string, props: SchedularMessagingStackProps) {
@@ -53,53 +51,6 @@ export class MessagingStack extends Stack {
       },
     });
 
-    // SQS
-    const emailQueue = new Queue(this, `${props.appName}-${props.envName}-emailDelivery`, {
-      queueName: `${props.appName}-${props.envName}-emailDelivery`,
-      retentionPeriod: Duration.minutes(1),
-      // TODO Remove in Prod
-      deadLetterQueue: {
-        queue: new Queue(this, `${props.appName}-${props.envName}-sendEmailDeadLetter`, {
-          queueName: `${props.appName}-${props.envName}-sendEmailDeadLetter`,
-        }),
-        maxReceiveCount: 1,
-      },
-    });
-
-    // Email Lambda
-    const sendEmailFunction = new NodejsFunction(this, 'SendEmailFunction', {
-      functionName: `${props.appName}-${props.envName}-SendEmail`,
-      runtime: Runtime.NODEJS_16_X,
-      handler: 'handler',
-      entry: 'src/lambda/sendEmail/main.ts',
-      environment: {
-        SENDER_EMAIL: process.env.SENDER_EMAIL || 'info@example.com',
-      },
-      timeout: Duration.seconds(10),
-      memorySize: 256,
-      role: new Role(this, 'SendEmailConsumerRole', {
-        assumedBy: new ServicePrincipal('lambda.amazonaws.com'),
-        managedPolicies: [
-          ManagedPolicy.fromAwsManagedPolicyName('service-role/AWSLambdaBasicExecutionRole'),
-          ManagedPolicy.fromAwsManagedPolicyName('service-role/AWSLambdaSQSQueueExecutionRole'),
-        ],
-      }),
-    });
-    // Add permission send email
-    sendEmailFunction.addToRolePolicy(
-      new PolicyStatement({
-        effect: Effect.ALLOW,
-        actions: ['ses:SendTemplatedEmail'],
-        resources: [`arn:aws:ses:${this.region}:${this.account}:identity/*`, `arn:aws:ses:${this.region}:${this.account}:template/*`],
-      })
-    );
-    // Event Source Mapping to SQS
-    new EventSourceMapping(this, 'SendEmailSQSEvent', {
-      target: sendEmailFunction,
-      batchSize: 10,
-      eventSourceArn: emailQueue.queueArn,
-    });
-
     // Email Lambda v2
     const sendEmailv2Function = new NodejsFunction(this, 'SendEmailv2Function', {
       functionName: `${props.appName}-${props.envName}-SendEmailv2`,
@@ -117,7 +68,7 @@ export class MessagingStack extends Stack {
       }),
     });
     // Add permission send email
-    sendEmailFunction.addToRolePolicy(
+    sendEmailv2Function.addToRolePolicy(
       new PolicyStatement({
         effect: Effect.ALLOW,
         actions: ['ses:SendTemplatedEmail'],
@@ -169,7 +120,7 @@ export class MessagingStack extends Stack {
       enabled: false,
     });
     // Set Lambda function as target for EventBridge
-    cronRule.addTarget(new LambdaFunction(sendEmailFunction));
+    cronRule.addTarget(new LambdaFunction(sendRemindersFunction));
 
     // EventBus Rule -
     const sendEmailRule = new Rule(this, 'SendEmailRule', {
@@ -183,7 +134,6 @@ export class MessagingStack extends Stack {
     });
     sendEmailRule.addTarget(
       new LambdaFunction(sendEmailv2Function, {
-        //deadLetterQueue: SqsQueue,
         maxEventAge: Duration.hours(2),
         retryAttempts: 2,
       })
@@ -203,13 +153,8 @@ export class MessagingStack extends Stack {
       exportName: `${props.appName}-${props.envName}-eventBusArn`,
     });
 
-    new CfnOutput(this, 'EmailQueueArn', {
-      value: emailQueue.queueArn,
-      exportName: `${props.appName}-${props.envName}-emailQueueArn`,
-    });
-
     new CfnOutput(this, 'SendEmailFunctionArn', {
-      value: sendEmailFunction.functionArn,
+      value: sendEmailv2Function.functionArn,
       exportName: `${props.appName}-${props.envName}-sendEmailFunctionArn`,
     });
 
@@ -227,7 +172,6 @@ export class MessagingStack extends Stack {
      *** Properties
      ***/
 
-    this.queueArn = emailQueue.queueArn;
     this.eventBusArn = eventBus.eventBusArn;
   }
 }
