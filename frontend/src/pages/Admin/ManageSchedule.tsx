@@ -194,24 +194,18 @@ function ManageSchedule() {
 
   return (
     <Container maxWidth='lg' sx={{ mt: 5 }}>
-      <Grid container spacing={{ md: 1, lg: 1 }} columns={{ md: 6, lg: 6 }}>
-        <Grid md={2} lg={2}>
+      <Grid container justifyContent='center' columns={12}>
+        <Grid xs={12} lg={4}>
           <LocalizationProvider dateAdapter={AdapterDayjs}>
-            <DateCalendar
-              value={date}
-              minDate={dayjs()}
-              maxDate={dayjs().add(1, 'year')}
-              onChange={(newDate) => dateSelected(newDate ?? dayjs())}
-            />
+            <DateCalendar value={date} minDate={dayjs()} maxDate={dayjs().add(1, 'year')} onChange={(newDate) => dateSelected(newDate ?? dayjs())} />
           </LocalizationProvider>
         </Grid>
 
-        <Grid md={4} lg={4}>
-          {isLoading ? (
-            <Loader variation='linear' filledColor='#1976d2' />
-          ) : (
+        <Grid xs={10} lg={6}>
+          {isLoading && <Loader variation='linear' filledColor='#1976d2' />}
+          {!isLoading && (
             <React.Fragment>
-              <Typography variant='h5' fontWeight='bold' align='left' color='textPrimary' gutterBottom sx={{ mt: 2 }}>
+              <Typography variant='h5' fontWeight='bold' align='left' color='textPrimary' gutterBottom sx={{ mt: 1 }}>
                 Schedule for {formatLongDateString(date)}
               </Typography>
 
@@ -224,7 +218,6 @@ function ManageSchedule() {
               >
                 {({ values, errors, touched, handleChange, handleBlur }) => (
                   <Form>
-                    {/* Display */}
                     {getIn(errors, `appointments`) && (
                       <Alert color='error' sx={{ mb: 2 }}>
                         There are some invalid values in the schedule. Please correct them before proceeding.
@@ -239,14 +232,12 @@ function ManageSchedule() {
                     <FieldArray name='appointments'>
                       {({ insert, remove, push }) => (
                         <React.Fragment>
-                          {values.appointments.length === 0 && (
-                            <Typography>No scheduled appointments today. Click below to create one.</Typography>
-                          )}
+                          {values.appointments.length === 0 && <Typography>No scheduled appointments today. Click below to create one.</Typography>}
                           {values.appointments.length > 0 &&
                             values.appointments.map((appt, index) => (
                               <React.Fragment key={appt.pk}>
-                                <Grid container spacing={{ xs: 1 }} columns={{ xs: 9 }}>
-                                  <Grid xs={2}>
+                                <Grid container spacing={0.5} columns={12}>
+                                  <Grid xs={4} lg={3}>
                                     <LocalizationProvider dateAdapter={AdapterDayjs}>
                                       {/* <TimePicker
                                         label='Start Time'
@@ -268,29 +259,23 @@ function ManageSchedule() {
                                         helperText={getIn(errors, `appointments.${index}.sk`)}
                                       />
                                       {/* TODO Field error/helperText does not work so using ErrorMessage with a custom styled component */}
-                                      <ErrorMessage
-                                        name={`appointments.${index}.sk`}
-                                        component={InvalidTimeComponent}
-                                        className='field-error'
-                                      />
+                                      <ErrorMessage name={`appointments.${index}.sk`} component={InvalidTimeComponent} className='field-error' />
                                     </LocalizationProvider>
                                   </Grid>
 
-                                  <Grid xs={1}>
+                                  <Grid xs={2} lg={2}>
                                     <Field
                                       as={TextField}
                                       name={`appointments.${index}.duration`}
                                       value={values.appointments[index].duration}
                                       onChange={handleChange}
                                       onBlur={handleBlur}
-                                      error={
-                                        getIn(errors, `appointments.${index}.duration`) && getIn(touched, `appointments.${index}.duration`)
-                                      }
+                                      error={getIn(errors, `appointments.${index}.duration`) && getIn(touched, `appointments.${index}.duration`)}
                                       helperText={getIn(errors, `appointments.${index}.duration`)}
                                     />
                                   </Grid>
 
-                                  <Grid xs={1}>
+                                  <Grid xs={4} lg={2}>
                                     {values.appointments[index].status && (
                                       <Chip
                                         label={values.appointments[index].status}
@@ -301,7 +286,7 @@ function ManageSchedule() {
                                     )}
                                   </Grid>
 
-                                  <Grid xs={2}>
+                                  <Grid xs={2} lg={1}>
                                     {values.appointments[index].status !== 'booked' && (
                                       <IconButton aria-label='remove'>
                                         <CancelIcon color='error' onClick={() => removeField(values.appointments, index)} sx={{ m: 1 }} />
@@ -316,7 +301,7 @@ function ManageSchedule() {
                     </FieldArray>
 
                     <IconButton aria-label='add'>
-                      <AddCircleIcon color='success' onClick={() => addField(values.appointments)} sx={{ m: 1 }} />
+                      <AddCircleIcon color='success' onClick={() => addField(values.appointments)} sx={{ mt: 1.5 }} />
                     </IconButton>
                     <Button type='submit' variant='contained' color='primary' sx={{ mt: 1.5, ml: 0.5 }}>
                       Save

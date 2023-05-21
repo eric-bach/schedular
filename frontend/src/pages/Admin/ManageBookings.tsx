@@ -58,33 +58,24 @@ function ManageBookings() {
 
   return (
     <Container maxWidth='lg' sx={{ mt: 5 }}>
-      <Grid container spacing={{ md: 1, lg: 1 }} columns={{ md: 6, lg: 6 }}>
-        <Grid md={2} lg={2}>
+      <Grid container justifyContent='center' columns={12}>
+        <Grid xs={12} lg={4}>
           <LocalizationProvider dateAdapter={AdapterDayjs}>
-            <DateCalendar
-              value={date}
-              minDate={dayjs()}
-              maxDate={dayjs().add(1, 'month')}
-              onChange={(newValue) => dateSelected(newValue)}
-            />
+            <DateCalendar value={date} minDate={dayjs()} maxDate={dayjs().add(1, 'month')} onChange={(newValue) => dateSelected(newValue)} />
           </LocalizationProvider>
         </Grid>
 
-        <Grid md={4} lg={4}>
-          {isLoading ? (
-            <Loader variation='linear' filledColor='#1976d2' />
-          ) : (
-            <>
-              <Typography variant='h5' fontWeight='bold' align='left' color='textPrimary' gutterBottom sx={{ mt: 2 }}>
-                {/* Schedule for {dateHeading}: */}
+        <Grid xs={10} lg={5}>
+          {isLoading && <Loader variation='linear' filledColor='#1976d2' />}
+          {!isLoading && (
+            <React.Fragment>
+              <Typography variant='h5' fontWeight='bold' align='left' color='textPrimary' gutterBottom sx={{ mt: 1 }}>
                 Schedule for {formatLongDateString(dayjs(date))}
               </Typography>
               <List sx={{ bgcolor: 'background.paper' }}>
                 {(!appointments || appointments.length < 1) && <Typography>No Appointments Today 😄</Typography>}
 
                 {appointments?.map((appt) => {
-                  if (!appt) return <></>;
-
                   const heading = `${formatLocalTimeString(appt.sk, 0)} to ${formatLocalTimeString(appt.sk, appt.duration ?? 0)}`;
 
                   return (
@@ -94,7 +85,7 @@ function ManageBookings() {
                         secondaryAction={
                           <Chip
                             label={appt?.status}
-                            color={appt?.status === 'booked' ? 'primary' : 'success'}
+                            color={appt?.status === 'booked' ? 'success' : 'primary'}
                             variant={appt?.status === 'cancelled' ? 'outlined' : 'filled'}
                             sx={{ mb: 1 }}
                           />
@@ -139,7 +130,7 @@ function ManageBookings() {
                   );
                 })}
               </List>
-            </>
+            </React.Fragment>
           )}
         </Grid>
       </Grid>

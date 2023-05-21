@@ -40,9 +40,7 @@ function Calendar() {
 
     try {
       setLoading(true);
-      const appointments = await API.graphql<GraphQLQuery<GetAvailableAppointmentsResponse>>(
-        graphqlOperation(GET_AVAILABLE_APPOINTMENTS, { from, to })
-      );
+      const appointments = await API.graphql<GraphQLQuery<GetAvailableAppointmentsResponse>>(graphqlOperation(GET_AVAILABLE_APPOINTMENTS, { from, to }));
       setAppointments(appointments.data?.getAvailableAppointments?.items);
       setLoading(false);
 
@@ -119,11 +117,11 @@ function Calendar() {
   }
 
   return (
-    <Box sx={{ flexGrow: 1, mt: 5 }}>
+    <Box sx={{ mt: 5 }}>
       <Grid
         container
-        spacing={{ xs: 2, sm: 3, md: 3, lg: 3 }}
-        columns={{ xs: 4, sm: 8, md: 12, lg: 12 }}
+        justifyContent='center'
+        columns={12}
         // sx={{
         //   '--Grid-borderWidth': '1px',
         //   borderTop: 'var(--Grid-borderWidth) solid',
@@ -136,9 +134,8 @@ function Calendar() {
         //   },
         // }}
       >
-        <Grid xs={0} sm={0} md={3} />
-        <Grid xs={12} sm={12} md={6}>
-          {isError && (
+        {isError && (
+          <Grid xs={2}>
             <Alert
               severity='error'
               onClose={() => {
@@ -148,27 +145,19 @@ function Calendar() {
               <AlertTitle>Error</AlertTitle>
               Could not book appointment, the time may no longer be available. Please try again.
             </Alert>
-          )}
-        </Grid>
-        <Grid xs={0} sm={0} md={3} />
-
-        <Grid xs={0} sm={0} md={0} lg={3} />
-        <Grid xs={6} sm={6} md={6} lg={3}>
+          </Grid>
+        )}
+        <Grid xs={12} lg={3}>
           <LocalizationProvider dateAdapter={AdapterDayjs}>
-            <DateCalendar
-              value={selectedDate}
-              minDate={dayjs()}
-              maxDate={dayjs().add(1, 'month')}
-              onChange={(newValue) => dateSelected(newValue)}
-            />
+            <DateCalendar value={selectedDate} minDate={dayjs()} maxDate={dayjs().add(1, 'month')} onChange={(newValue) => dateSelected(newValue)} />
           </LocalizationProvider>
         </Grid>
-        <Grid xs={6} sm={6} md={6} lg={3}>
-          {isLoading && <Loader variation='linear' filledColor='#1976d2' />}
+        <Grid xs={8} lg={3}>
+          {isLoading && <Loader variation='linear' filledColor='#1976d2' style={{ marginTop: 5 }} />}
           {selectedDate && !isLoading && (
-            <>
-              <Stack spacing={2} alignItems='flex-start'>
-                <Typography variant='h5' fontWeight='bold' align='left' color='textPrimary' gutterBottom sx={{ mt: 2 }}>
+            <React.Fragment>
+              <Stack spacing={1.5} alignItems='flex-start'>
+                <Typography variant='h5' fontWeight='bold' align='left' color='textPrimary' gutterBottom sx={{ mt: 1 }}>
                   Available Times:
                 </Typography>
                 {(!appointments || appointments.length < 1) && <Typography>No times available today 😢</Typography>}
@@ -193,7 +182,7 @@ function Calendar() {
               </Stack>
 
               {selectedAppointment && (
-                <Card sx={{ maxWidth: 345, mt: 3, ml: -2, border: 'none' }} raised={true} variant='outlined'>
+                <Card sx={{ mt: 2, ml: -2, border: 'none' }} raised={true} variant='outlined'>
                   <CardContent>
                     <Typography gutterBottom variant='h5' component='div'>
                       Confirm Appointment
@@ -206,16 +195,15 @@ function Calendar() {
                     </Typography>
                   </CardContent>
                   <CardActions>
-                    <Button variant='contained' color='success' onClick={bookAppointment} sx={{ ml: 0.5 }}>
+                    <Button variant='contained' color='success' onClick={bookAppointment} sx={{ ml: 0.5, mt: -2 }}>
                       Confirm Appointment
                     </Button>
                   </CardActions>
                 </Card>
               )}
-            </>
+            </React.Fragment>
           )}
         </Grid>
-        <Grid xs={0} sm={0} md={0} lg={3} />
       </Grid>
     </Box>
   );
