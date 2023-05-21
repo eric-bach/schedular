@@ -1,7 +1,6 @@
 import React from 'react';
 import { Outlet, useNavigate } from 'react-router-dom';
 import { useAuthenticator } from '@aws-amplify/ui-react';
-
 import AppBar from '@mui/material/AppBar';
 import Box from '@mui/material/Box';
 import Toolbar from '@mui/material/Toolbar';
@@ -16,7 +15,7 @@ import Tooltip from '@mui/material/Tooltip';
 import MenuItem from '@mui/material/MenuItem';
 import SpaIcon from '@mui/icons-material/Spa';
 
-const pages = ['Services', 'Pricing', 'Book Appointment'];
+const pages = ['Book Appointment'];
 const settings = ['My Profile', 'My Bookings', 'Logout'];
 const adminPages = ['Manage Customers', 'Manage Bookings', 'Manage Schedule'];
 
@@ -44,11 +43,7 @@ export function Header() {
   const handleCloseNavMenu = (e: any) => {
     setAnchorElNav(null);
 
-    if (e.target.textContent === 'Services') {
-      navigate('/services');
-    } else if (e.target.textContent === 'Pricing') {
-      navigate('/pricing');
-    } else if (e.target.textContent === 'Book Appointment') {
+    if (e.target.textContent === 'Book Appointment') {
       navigate('/calendar');
     }
   };
