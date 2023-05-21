@@ -1,3 +1,19 @@
 body {
   margin: 0;
 }
+
+.container {
+  margin-top: auto;
+  padding-bottom: 200px; /* Adjust the value as needed */
+}
+
+footer {
+  position: fixed;
+  bottom: 0;
+  left: 0;
+  width: 100%;
+  background-color: #1976d2;
+  color: #fff;
+  padding: 40px 0;
+  text-align: center;
+}
