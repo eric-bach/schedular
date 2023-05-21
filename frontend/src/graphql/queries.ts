@@ -60,8 +60,44 @@ export const GET_APPOINTMENTS = `query GetAppointments($from: String!, $to: Stri
   }
 }`;
 
-export const GET_BOOKINGS = `query GetBookings($customerId: String!, $datetime: String!, $lastEvaluatedKey: LastEvaluatedKey) {
-  getBookings(customerId: $customerId, datetime: $datetime, lastEvaluatedKey: $lastEvaluatedKey) {
+export const GET_BOOKINGS = `query GetBookings($datetime: String!, $lastEvaluatedKey: LastEvaluatedKey) {
+  getBookings(datetime: $datetime, lastEvaluatedKey: $lastEvaluatedKey) {
+    items {
+      pk
+      sk
+      type
+      appointmentDetails {
+        pk
+        sk
+        duration
+        type
+        category
+        status
+      }
+      administratorDetails {
+        id
+        firstName
+        lastName
+      }
+      customerId
+      customerDetails {
+        id
+        firstName
+        lastName
+        email
+        phone
+      }
+    }
+    lastEvaluatedKey
+    {
+      pk
+      sk
+    }
+  }
+}`;
+
+export const GET_USER_BOOKINGS = `query GetUserBookings($customerId: String!, $datetime: String!, $lastEvaluatedKey: LastEvaluatedKey) {
+  getUserBookings(customerId: $customerId, datetime: $datetime, lastEvaluatedKey: $lastEvaluatedKey) {
     items {
       pk
       sk

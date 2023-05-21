@@ -302,9 +302,6 @@ function ManageSchedule() {
                                   </Grid>
 
                                   <Grid xs={2}>
-                                    <IconButton aria-label='add'>
-                                      <AddCircleIcon color='success' onClick={() => addField(values.appointments)} sx={{ m: 1 }} />
-                                    </IconButton>
                                     {values.appointments[index].status !== 'booked' && (
                                       <IconButton aria-label='remove'>
                                         <CancelIcon color='error' onClick={() => removeField(values.appointments, index)} sx={{ m: 1 }} />
@@ -318,6 +315,9 @@ function ManageSchedule() {
                       )}
                     </FieldArray>
 
+                    <IconButton aria-label='add'>
+                      <AddCircleIcon color='success' onClick={() => addField(values.appointments)} sx={{ m: 1 }} />
+                    </IconButton>
                     <Button type='submit' variant='contained' color='primary' sx={{ mt: 1.5, ml: 0.5 }}>
                       Save
                     </Button>

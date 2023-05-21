@@ -55,7 +55,7 @@ function Calendar() {
 
   useEffect(() => {
     getAppointments(selectedDate ?? dayjs());
-  }, []);
+  }, [selectedDate]);
 
   async function dateSelected(date: Dayjs | null) {
     // Reset timeslot

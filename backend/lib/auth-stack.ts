@@ -15,11 +15,11 @@ export class AuthStack extends Stack {
     super(scope, id, props);
 
     // AWS Cognito post-confirmation lambda function
-    const cognitoPostConfirmationTrigger = new NodejsFunction(this, 'CognitoPostConfirmationTrigger', {
-      runtime: Runtime.NODEJS_14_X,
-      functionName: `${props.appName}-${props.envName}-CognitoPostConfirmationTrigger`,
+    const cognitoPostConfirmationTrigger = new NodejsFunction(this, 'CognitoAddUser', {
+      runtime: Runtime.NODEJS_18_X,
+      functionName: `${props.appName}-${props.envName}-CognitoAddUser`,
       handler: 'handler',
-      entry: path.resolve(__dirname, '../src/lambda/cognitoPostConfirmation/main.ts'),
+      entry: path.resolve(__dirname, '../src/lambda/cognitoAddUser/main.ts'),
       memorySize: 768,
       timeout: Duration.seconds(5),
       environment: {
@@ -106,6 +106,7 @@ export class AuthStack extends Stack {
       value: userPool.userPoolId,
       exportName: `${props.appName}-${props.envName}-userPoolId`,
     });
+
     new CfnOutput(this, 'UserPoolClientId', { value: userPoolClient.userPoolClientId });
 
     /***

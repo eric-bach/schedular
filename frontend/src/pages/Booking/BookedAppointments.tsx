@@ -23,13 +23,18 @@ import {
   useMediaQuery,
   useTheme,
 } from '@mui/material';
-import Grid from '@mui/material/Unstable_Grid2';
 import DeleteIcon from '@mui/icons-material/Delete';
 import { styled } from '@mui/material/styles';
 import Switch, { SwitchProps } from '@mui/material/Switch';
 
-import { GetBookingsResponse, BookingItem, CancelBookingInput, CancelBookingResponse, OnCancelBookingResponse } from '../../types/Types';
-import { CANCEL_BOOKING, GET_BOOKINGS, ON_CANCEL_BOOKING } from '../../graphql/queries';
+import {
+  GetUserBookingsResponse,
+  BookingItem,
+  CancelBookingInput,
+  CancelBookingResponse,
+  OnCancelBookingResponse,
+} from '../../types/Types';
+import { CANCEL_BOOKING, GET_USER_BOOKINGS, ON_CANCEL_BOOKING } from '../../graphql/queries';
 import { formatLocalTimeString, formateLocalLongDate } from '../../helpers/utils';
 
 import '@aws-amplify/ui-react/styles.css';
@@ -96,28 +101,28 @@ function BookedAppointments(state: any) {
   const theme = useTheme();
   const fullScreen = useMediaQuery(theme.breakpoints.down('md'));
 
-  const getBookings = async (customerId: string) => {
+  const getUserBookings = async (customerId: string) => {
     //console.debug('[BOOKINGS] Getting appointments for', new Date().toISOString());
 
     try {
       setLoading(true);
-      const result = await API.graphql<GraphQLQuery<GetBookingsResponse>>(
-        graphqlOperation(GET_BOOKINGS, {
+      const result = await API.graphql<GraphQLQuery<GetUserBookingsResponse>>(
+        graphqlOperation(GET_USER_BOOKINGS, {
           customerId: customerId,
           datetime: new Date().toISOString(),
         })
       );
 
       console.debug('[BOOKINGS] Found bookings', result);
-      setBookings(result.data?.getBookings?.items);
+      setBookings(result.data?.getUserBookings?.items);
       setDisplayBookings(
         showCancelledBookings
-          ? result.data?.getBookings?.items
-          : result.data?.getBookings?.items.filter((b) => b.appointmentDetails.status != 'cancelled')
+          ? result.data?.getUserBookings?.items
+          : result.data?.getUserBookings?.items.filter((b) => b.appointmentDetails.status !== 'cancelled')
       );
       setLoading(false);
 
-      return result.data?.getBookings?.items;
+      return result.data?.getUserBookings?.items;
     } catch (error) {
       console.error('[BOOKINGS] Error', error);
       setLoading(false);
@@ -139,7 +144,7 @@ function BookedAppointments(state: any) {
         console.log('[BOOKINGS] Updated bookings:', filteredBookings);
         setBookings(filteredBookings);
         setDisplayBookings(
-          showCancelledBookings ? filteredBookings : filteredBookings?.filter((b) => b?.appointmentDetails.status != 'cancelled')
+          showCancelledBookings ? filteredBookings : filteredBookings?.filter((b) => b?.appointmentDetails.status !== 'cancelled')
         );
       },
       error: (error: any) => setError(true),
@@ -149,7 +154,7 @@ function BookedAppointments(state: any) {
   }, [bookings]);
 
   useEffect(() => {
-    getBookings(customer.id).then((resp) => {
+    getUserBookings(customer.id).then((resp) => {
       //console.debug('[BOOKINGS] Found bookings', resp);
     });
   }, []);
@@ -180,7 +185,7 @@ function BookedAppointments(state: any) {
   };
 
   const handleToggle = () => {
-    setDisplayBookings(!showCancelledBookings ? bookings : bookings?.filter((b) => b?.appointmentDetails.status != 'cancelled'));
+    setDisplayBookings(!showCancelledBookings ? bookings : bookings?.filter((b) => b?.appointmentDetails.status !== 'cancelled'));
     setShowCancelledBookings(!showCancelledBookings);
   };
 

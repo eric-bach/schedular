@@ -5,9 +5,9 @@ import {
 } from '@aws-sdk/client-cognito-identity-provider';
 import { Handler, PostConfirmationTriggerEvent, Context, Callback } from 'aws-lambda';
 
-export const handler: Handler = async (event: PostConfirmationTriggerEvent, _context: Context, callback: Callback): Promise<void> => {
+export const handler: Handler = async (event: PostConfirmationTriggerEvent, context: Context, callback: Callback): Promise<void> => {
   console.log('EVENT:', event);
-  console.log('CONTEXT:', _context);
+  console.log('CONTEXT:', context);
   console.log('CALLBACK:', callback);
 
   const { userPoolId, userName } = event;

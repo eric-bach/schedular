@@ -2,13 +2,14 @@ import { AppSyncClient, EvaluateCodeCommand, EvaluateCodeCommandInput } from '@a
 import { unmarshall } from '@aws-sdk/util-dynamodb';
 import { readFile } from 'fs/promises';
 const appsync = new AppSyncClient({ region: 'us-east-1' });
-const file = './lib/graphql/Query.getBookings.js';
+const file = './lib/graphql/Query.getUserBookings.js';
 
-describe('getBookings', () => {
-  it('should get confirmed bookings for a date', async () => {
+describe('getUserBookings', () => {
+  it('should get bookings for a customer', async () => {
     // Arrange
     const context = {
       arguments: {
+        customerId: '123',
         datetime: new Date().toISOString(),
       },
     };
@@ -30,13 +31,14 @@ describe('getBookings', () => {
 
     const result = JSON.parse(response.evaluationResult ?? '{}');
     expect(result.operation).toEqual('Query');
-    expect(result.query.expression).toEqual('#type = :type AND begins_with(sk, :datetime)');
+    expect(result.query.expression).toEqual('customerId = :customerId AND sk >= :datetime');
 
     const expressionValues = unmarshall(result.query.expressionValues);
+    expect(expressionValues[':customerId']).toEqual(`user#${context.arguments.customerId}`);
     expect(expressionValues[':datetime']).toEqual(context.arguments.datetime);
 
     // Type is filtered to 'booking'
     const filterValues = unmarshall(result.filter.expressionValues);
-    expect(filterValues[':booked']).toEqual('booked');
+    expect(filterValues[':type']).toEqual('booking');
   }, 20000);
 });
