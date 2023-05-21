@@ -21,11 +21,8 @@ import {
   TextField,
   Typography,
 } from '@mui/material';
-import {
-  GppMaybe as GppMaybeIcon,
-  VerifiedUser as VerifiedUserIcon,
-  AdminPanelSettings as AdminPanelSettingsIcon,
-} from '@mui/icons-material';
+import Grid from '@mui/material/Unstable_Grid2';
+import { GppMaybe as GppMaybeIcon, VerifiedUser as VerifiedUserIcon, AdminPanelSettings as AdminPanelSettingsIcon } from '@mui/icons-material';
 
 import { ADD_USER_TO_GROUP, LIST_USERS_IN_GROUP } from '../../graphql/queries';
 import { ListUsersResponse, Users } from '../../types/Types';
@@ -50,7 +47,7 @@ function ManageCustomers() {
   const listUsersInGroup = async (index: number, nextToken: string | undefined) => {
     setLoading(true);
     const result = await API.graphql<GraphQLQuery<ListUsersResponse>>(
-      graphqlOperation(LIST_USERS_IN_GROUP, { groupName: groupNames[index], limit: 1, nextToken: nextToken })
+      graphqlOperation(LIST_USERS_IN_GROUP, { groupName: groupNames[index], limit: 2, nextToken: nextToken })
     );
 
     if (nextToken && result.data?.listUsersInGroup.users) {
@@ -92,7 +89,6 @@ function ManageCustomers() {
     if (tab === 0) {
       await addToGroup(index);
     } else {
-      // TODO Open user profile
       navigate(`/admin/customer/${users[index].id}`, { state: { customer: users[index] } });
     }
   };
@@ -122,6 +118,7 @@ function ManageCustomers() {
           <Tab icon={<AdminPanelSettingsIcon />} label='Administrators' />
         </Tabs>
         <Autocomplete
+          hidden={true}
           disabled // TODO Search feature not built yet
           freeSolo
           options={users.map((option: any) => `${option.firstName} ${option.lastName}`)}
@@ -143,41 +140,47 @@ function ManageCustomers() {
           )}
         />
       </Box>
-      {isLoading && <Loader variation='linear' filledColor='#1976d2' style={{ margin: '15' }} />}
-      {!isLoading && (
-        <React.Fragment>
-          {(!users || users.length < 1) && <Typography sx={{ mt: '1rem' }}>No users found</Typography>}
-          <List sx={{ bgcolor: 'background.paper' }}>
-            {users.map((user, index) => (
-              <List key={user.id}>
-                <ListItem disablePadding>
-                  <ListItemButton onClick={() => handleClick(index)}>
-                    <ListItemAvatar>
-                      <Avatar {...stringAvatar(`${user.firstName} ${user.lastName}`)} />
-                    </ListItemAvatar>
-                    <ListItemText
-                      primary={`${user.firstName} ${user.lastName}`}
-                      secondary={
-                        <React.Fragment>
-                          <Typography sx={{ display: 'block' }} component='span' variant='body2'>
-                            {user.email} | {user.phoneNumber}
-                          </Typography>
-                          <Typography sx={{ display: 'block' }} component='span' variant='body2'></Typography>
-                        </React.Fragment>
-                      }
-                    />
-                  </ListItemButton>
-                </ListItem>
+      <Grid container justifyContent='center' columns={12}>
+        <Grid xs={10} lg={12}>
+          {isLoading && <Loader variation='linear' filledColor='#1976d2' style={{ margin: '15' }} />}
+        </Grid>
+        <Grid xs={12} lg={12}>
+          {!isLoading && (
+            <React.Fragment>
+              {(!users || users.length < 1) && <Typography sx={{ mt: '1rem' }}>No users found</Typography>}
+              <List sx={{ bgcolor: 'background.paper' }}>
+                {users.map((user, index) => (
+                  <List key={user.id}>
+                    <ListItem disablePadding>
+                      <ListItemButton onClick={() => handleClick(index)}>
+                        <ListItemAvatar>
+                          <Avatar {...stringAvatar(`${user.firstName} ${user.lastName}`)} />
+                        </ListItemAvatar>
+                        <ListItemText
+                          primary={`${user.firstName} ${user.lastName}`}
+                          secondary={
+                            <React.Fragment>
+                              <Typography sx={{ display: 'block' }} component='span' variant='body2'>
+                                {user.email} | {user.phoneNumber}
+                              </Typography>
+                              <Typography sx={{ display: 'block' }} component='span' variant='body2'></Typography>
+                            </React.Fragment>
+                          }
+                        />
+                      </ListItemButton>
+                    </ListItem>
+                  </List>
+                ))}
               </List>
-            ))}
-          </List>
-          {nextToken && (
-            <Button variant='outlined' onClick={() => listUsersInGroup(tab, nextToken)}>
-              Load More
-            </Button>
+              {nextToken && (
+                <Button variant='outlined' onClick={() => listUsersInGroup(tab, nextToken)}>
+                  Load More
+                </Button>
+              )}
+            </React.Fragment>
           )}
-        </React.Fragment>
-      )}
+        </Grid>
+      </Grid>
       <Snackbar open={open} autoHideDuration={6000} onClose={handleClose}>
         <Alert onClose={handleClose} severity='success' sx={{ width: '100%' }}>
           User Authorized

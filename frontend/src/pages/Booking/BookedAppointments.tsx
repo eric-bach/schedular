@@ -27,65 +27,57 @@ import DeleteIcon from '@mui/icons-material/Delete';
 import { styled } from '@mui/material/styles';
 import Switch, { SwitchProps } from '@mui/material/Switch';
 
-import {
-  GetUserBookingsResponse,
-  BookingItem,
-  CancelBookingInput,
-  CancelBookingResponse,
-  OnCancelBookingResponse,
-} from '../../types/Types';
+import { GetUserBookingsResponse, BookingItem, CancelBookingInput, CancelBookingResponse, OnCancelBookingResponse } from '../../types/Types';
 import { CANCEL_BOOKING, GET_USER_BOOKINGS, ON_CANCEL_BOOKING } from '../../graphql/queries';
 import { formatLocalTimeString, formateLocalLongDate } from '../../helpers/utils';
 
 import '@aws-amplify/ui-react/styles.css';
 
-const IOSSwitch = styled((props: SwitchProps) => <Switch focusVisibleClassName='.Mui-focusVisible' disableRipple {...props} />)(
-  ({ theme }) => ({
-    width: 42,
-    height: 25,
+const IOSSwitch = styled((props: SwitchProps) => <Switch focusVisibleClassName='.Mui-focusVisible' disableRipple {...props} />)(({ theme }) => ({
+  width: 42,
+  height: 25,
+  padding: 0,
+  '& .MuiSwitch-switchBase': {
     padding: 0,
-    '& .MuiSwitch-switchBase': {
-      padding: 0,
-      margin: 2,
-      transitionDuration: '300ms',
-      '&.Mui-checked': {
-        transform: 'translateX(16px)',
-        color: '#fff',
-        '& + .MuiSwitch-track': {
-          backgroundColor: theme.palette.mode === 'dark' ? '#2ECA45' : '#1976d2',
-          opacity: 1,
-          border: 0,
-        },
-        '&.Mui-disabled + .MuiSwitch-track': {
-          opacity: 0.5,
-        },
-      },
-      '&.Mui-focusVisible .MuiSwitch-thumb': {
-        color: '#33cf4d',
-        border: '6px solid #fff',
-      },
-      '&.Mui-disabled .MuiSwitch-thumb': {
-        color: theme.palette.mode === 'light' ? theme.palette.grey[100] : theme.palette.grey[600],
+    margin: 2,
+    transitionDuration: '300ms',
+    '&.Mui-checked': {
+      transform: 'translateX(16px)',
+      color: '#fff',
+      '& + .MuiSwitch-track': {
+        backgroundColor: theme.palette.mode === 'dark' ? '#2ECA45' : '#1976d2',
+        opacity: 1,
+        border: 0,
       },
       '&.Mui-disabled + .MuiSwitch-track': {
-        opacity: theme.palette.mode === 'light' ? 0.7 : 0.3,
+        opacity: 0.5,
       },
     },
-    '& .MuiSwitch-thumb': {
-      boxSizing: 'border-box',
-      width: 22,
-      height: 21,
+    '&.Mui-focusVisible .MuiSwitch-thumb': {
+      color: '#33cf4d',
+      border: '6px solid #fff',
     },
-    '& .MuiSwitch-track': {
-      borderRadius: 25 / 2,
-      backgroundColor: theme.palette.mode === 'light' ? '#E9E9EA' : '#39393D',
-      opacity: 1,
-      transition: theme.transitions.create(['background-color'], {
-        duration: 500,
-      }),
+    '&.Mui-disabled .MuiSwitch-thumb': {
+      color: theme.palette.mode === 'light' ? theme.palette.grey[100] : theme.palette.grey[600],
     },
-  })
-);
+    '&.Mui-disabled + .MuiSwitch-track': {
+      opacity: theme.palette.mode === 'light' ? 0.7 : 0.3,
+    },
+  },
+  '& .MuiSwitch-thumb': {
+    boxSizing: 'border-box',
+    width: 22,
+    height: 21,
+  },
+  '& .MuiSwitch-track': {
+    borderRadius: 25 / 2,
+    backgroundColor: theme.palette.mode === 'light' ? '#E9E9EA' : '#39393D',
+    opacity: 1,
+    transition: theme.transitions.create(['background-color'], {
+      duration: 500,
+    }),
+  },
+}));
 
 function BookedAppointments(state: any) {
   const { customer } = state;
@@ -131,9 +123,7 @@ function BookedAppointments(state: any) {
 
   // Subscribe to creation of Todo
   useEffect(() => {
-    const onCancelBookingListener = API.graphql<GraphQLSubscription<OnCancelBookingResponse>>(
-      graphqlOperation(ON_CANCEL_BOOKING)
-    ).subscribe({
+    const onCancelBookingListener = API.graphql<GraphQLSubscription<OnCancelBookingResponse>>(graphqlOperation(ON_CANCEL_BOOKING)).subscribe({
       next: async ({ provider, value }: any) => {
         console.log('[BOOKINGS] Received subscription event', value);
         setOpen(false);
@@ -143,9 +133,7 @@ function BookedAppointments(state: any) {
         filteredBookings?.push(value.data.onCancelBooking);
         console.log('[BOOKINGS] Updated bookings:', filteredBookings);
         setBookings(filteredBookings);
-        setDisplayBookings(
-          showCancelledBookings ? filteredBookings : filteredBookings?.filter((b) => b?.appointmentDetails.status !== 'cancelled')
-        );
+        setDisplayBookings(showCancelledBookings ? filteredBookings : filteredBookings?.filter((b) => b?.appointmentDetails.status !== 'cancelled'));
       },
       error: (error: any) => setError(true),
     });
@@ -224,7 +212,6 @@ function BookedAppointments(state: any) {
 
             const { status } = booking.appointmentDetails;
             let heading = `${formateLocalLongDate(booking.sk)} at ${formatLocalTimeString(booking.sk, 0)}`;
-            let chipColor = status === 'booked' ? '#1976D2' : status === 'cancelled' ? '#f44336' : 'white';
 
             return (
               <React.Fragment key={booking.pk}>
@@ -232,17 +219,13 @@ function BookedAppointments(state: any) {
                   alignItems='flex-start'
                   secondaryAction={
                     <Stack direction='row' spacing={1}>
-                      <Chip
-                        label={status}
-                        variant={status === 'booked' ? 'filled' : 'outlined'}
-                        sx={{ mb: 1, backgroundColor: chipColor, color: 'white' }}
-                      />
+                      {status === 'cancelled' && <Chip label='cancelled' sx={{ mb: 1, backgroundColor: 'red', color: 'white' }} />}
                       {status === 'booked' && (
                         <Chip
                           label='cancel'
                           onClick={() => handleClickOpen(booking)}
                           onDelete={() => handleClickOpen(booking)}
-                          sx={{ backgroundColor: '#bebebe', color: 'white', mb: 1 }}
+                          sx={{ backgroundColor: '#1976D2', color: 'white', mb: 1 }}
                           deleteIcon={<DeleteIcon />}
                         />
                       )}
@@ -254,20 +237,21 @@ function BookedAppointments(state: any) {
                     secondary={
                       <React.Fragment>
                         <Typography component='span' variant='subtitle2' color='text.primary' sx={{ display: 'inline' }}>
-                          Type:{' '}
+                          Status:{' '}
                         </Typography>
-                        {booking.appointmentDetails.category}
+                        <Typography component='span' variant='button' sx={{ color: status === 'booked' ? 'green' : 'red', display: 'inline' }}>
+                          {status}
+                        </Typography>
+                        <Typography sx={{ display: 'block' }} />
+                        <Typography component='span' variant='subtitle2' color='text.primary' sx={{ display: 'inline' }}>
+                          Duration:{' '}
+                        </Typography>
+                        {booking.appointmentDetails.duration}
                         <Typography sx={{ display: 'block' }} />
                         <Typography component='span' variant='subtitle2' color='text.primary' sx={{ display: 'inline' }}>
                           Therapist:{' '}
                         </Typography>
                         {booking.administratorDetails.firstName} {booking.administratorDetails.lastName}
-                        <Typography sx={{ display: 'block' }} />
-                        <Typography component='span' variant='subtitle2' color='text.primary' sx={{ display: 'inline' }}>
-                          Confirmation Id:{' '}
-                        </Typography>
-                        {booking.pk.split('#')[1]}
-                        <Typography sx={{ display: 'block' }} />
                       </React.Fragment>
                     }
                   />
@@ -276,8 +260,8 @@ function BookedAppointments(state: any) {
                       <DialogTitle id='responsive-dialog-title'>{'Cancel appointment?'}</DialogTitle>
                       <DialogContent>
                         <DialogContentText>
-                          Are you sure you want to cancel your appointment on {formateLocalLongDate(selectedBooking.appointmentDetails.sk)}{' '}
-                          at {formatLocalTimeString(selectedBooking.sk, 0)}?
+                          Are you sure you want to cancel your appointment on {formateLocalLongDate(selectedBooking.appointmentDetails.sk)} at{' '}
+                          {formatLocalTimeString(selectedBooking.sk, 0)}?
                         </DialogContentText>
                       </DialogContent>
                       <DialogActions>

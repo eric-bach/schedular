@@ -21,28 +21,25 @@ export default function Confirmation() {
         Appointment Details <Chip label='booked' color='primary' />
       </Typography>
 
-      <Typography variant='h6' gutterBottom>
+      <Typography variant='h6' gutterBottom sx={{ mt: 3 }}>
         Client Information:
       </Typography>
-      <Typography variant='body1'>{state.customer.name}</Typography>
+      <Typography variant='body1'>
+        {state.customer.given_name} {state.customer.family_name}
+      </Typography>
       <Typography variant='body1'>{state.customer.email}</Typography>
-      <Typography variant='body1' gutterBottom>
-        {state.customer.phone}
+      <Typography variant='body1' gutterBottom sx={{ mb: 3 }}>
+        {state.customer.phone_number}
       </Typography>
 
       <Typography variant='h6' gutterBottom>
         Appointment Information:
       </Typography>
+      <Typography variant='body1'>{formateLocalLongDate(state.appointment.sk)}</Typography>
+      <Typography variant='body1'>{formatLocalTimeString(state.appointment.sk, 0)}</Typography>
       <Typography variant='body1' gutterBottom>
-        Date: {formateLocalLongDate(state.appointment.sk)} at {formatLocalTimeString(state.appointment.sk, 0)}
+        with {state.appointment.administratorDetails.firstName} {state.appointment.administratorDetails.lastName}
       </Typography>
-      <Typography variant='body1' gutterBottom>
-        Therapist: {state.appointment.administratorDetails.firstName} {state.appointment.administratorDetails.lastName}
-      </Typography>
-      <Typography variant='h6' gutterBottom>
-        Booking Reference:
-      </Typography>
-      <Typography variant='body1'>Confirmation Id: {confirmationId}</Typography>
 
       <Button
         variant='contained'

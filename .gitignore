@@ -17,6 +17,7 @@ node_modules
 # CDK asset staging directory
 .cdk.staging
 cdk.out
+cdk.context.json
 
 # Exclude configuration files (provided with *.example files)
 .env*
