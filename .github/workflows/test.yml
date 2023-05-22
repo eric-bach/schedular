@@ -28,24 +28,24 @@ jobs:
         run: npm ci
         working-directory: backend
 
-      # - name: Install NPM Dependencies
-      #   run: npm run cinstall-all
-      #   working-directory: backend
-      - name: Install Lambda Dependencies
-        run: npm ci
-        working-directory: backend/src/lambda/cognitoAddUser
-      - name: Install Lambda Dependencies
-        run: npm ci
-        working-directory: backend/src/lambda/sendReminders
-      - name: Install Lambda Dependencies
-        run: npm ci
-        working-directory: backend/src/lambda/userService
-      - name: Build Backend
-        run: npm run build
+      - name: Install NPM Dependencies
+        run: npm run cinstall-all
         working-directory: backend
-      - name: Install NPM Dependencies (Frontend)
-        run: npm ci
-        working-directory: frontend
+      # - name: Install Lambda Dependencies
+      #   run: npm ci
+      #   working-directory: backend/src/lambda/cognitoAddUser
+      # - name: Install Lambda Dependencies
+      #   run: npm ci
+      #   working-directory: backend/src/lambda/sendReminders
+      # - name: Install Lambda Dependencies
+      #   run: npm ci
+      #   working-directory: backend/src/lambda/userService
+      # - name: Build Backend
+      #   run: npm run build
+      #   working-directory: backend
+      # - name: Install NPM Dependencies (Frontend)
+      #   run: npm ci
+      #   working-directory: frontend
 
       - name: Create frontend/src/aws-exports.js file
         run: |
@@ -55,16 +55,17 @@ jobs:
           cat aws-exports.js
         working-directory: frontend/src
 
-      # - name: Build Backend
-      #   run: npm run build-all
-      #   working-directory: backend
-      - name: Build Frontend
-        run: npm run build
-        working-directory: frontend
-
-      - name: Run CDK Unit Tests
-        run: npm run test
+      - name: Build Backend
+        run: npm run build-all
         working-directory: backend
+      # - name: Build Frontend
+      #   run: npm run build
+      #   working-directory: frontend
+
+      # Requires an AWS credential
+      # - name: Run CDK Unit Tests
+      #   run: npm run test
+      #   working-directory: backend
 
   # integration-tests:
   #   name: Integration Tests
