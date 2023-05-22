@@ -49,7 +49,7 @@ jobs:
       # - name: Build Backend
       #   run: npm run build-all
       #   working-directory: backend
-       - name: Build Frontend
+      - name: Build Frontend
         run: npm run build
         working-directory: frontend
 
