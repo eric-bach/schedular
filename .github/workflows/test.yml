@@ -47,13 +47,15 @@ jobs:
         run: npm ci
         working-directory: frontend
 
-      # - name: Create frontend/src/aws-exports.js file
-      #   run: |
-      #     touch aws-exports.js
-      #     echo const awsmobile = { aws_project_region: \'${{ secrets.CDK_DEFAULT_REGION }}\', aws_cognito_region: \'${{ secrets.CDK_DEFAULT_REGION }}\', aws_user_pools_id: \'${{secrets.COGNITO_USERPOOL_ID}}\', aws_user_pools_web_client_id: \'${{ secrets.COGNITO_WEB_CLIENT_ID }}\', aws_appsync_graphqlEndpoint: \'${{ secrets.GRAPHQL_ENDPOINT }}\', aws_appsync_region: \'${{ secrets.CDK_DEFAULT_REGION }}\', aws_appsync_authenticationType: \'AMAZON_COGNITO_USER_POOLS\' }\; >> aws-exports.js
-      #     echo export default awsmobile\; >> aws-exports.js
-      #     cat aws-exports.js
-      #   working-directory: frontend/src
+      #echo const awsmobile = { aws_project_region: \'${{ secrets.CDK_DEFAULT_REGION }}\', aws_cognito_region: \'${{ secrets.CDK_DEFAULT_REGION }}\', aws_user_pools_id: \'${{secrets.COGNITO_USERPOOL_ID}}\', aws_user_pools_web_client_id: \'${{ secrets.COGNITO_WEB_CLIENT_ID }}\', aws_appsync_graphqlEndpoint: \'${{ secrets.GRAPHQL_ENDPOINT }}\', aws_appsync_region: \'${{ secrets.CDK_DEFAULT_REGION }}\', aws_appsync_authenticationType: \'AMAZON_COGNITO_USER_POOLS\' }\; >> aws-exports.js
+      - name: Create frontend/src/aws-exports.js file
+        run: |
+          touch aws-exports.js
+          echo \/* eslint-disable *\/ >> aws-exports.js
+          echo const awsmobile = { aws_project_region: \'${{ secrets.CDK_DEFAULT_REGION }}\' }\; >> aws-exports.js
+          echo export default awsmobile\; >> aws-exports.js
+          cat aws-exports.js
+        working-directory: frontend/src
 
       # - name: Build Backend
       #   run: npm run build-all
