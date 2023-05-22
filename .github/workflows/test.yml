@@ -24,6 +24,12 @@ jobs:
         with:
           node-version: 18.x
 
+      - name: Configure AWS credentials
+        uses: aws-actions/configure-aws-credentials@v2
+        with:
+          role-to-assume: ${{ secrets.AWS_ACCESS_ARN }}
+          aws-region: us-east-1
+
       - name: Install NPM Dependencies (Backend)
         run: npm ci
         working-directory: backend
@@ -63,9 +69,9 @@ jobs:
       #   working-directory: frontend
 
       # Requires an AWS credential
-      # - name: Run CDK Unit Tests
-      #   run: npm run test
-      #   working-directory: backend
+      - name: Run CDK Unit Tests
+        run: npm run test
+        working-directory: backend
 
   # integration-tests:
   #   name: Integration Tests
