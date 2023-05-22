@@ -22,7 +22,7 @@ cdk.context.json
 # Exclude configuration files (provided with *.example files)
 .env*
 backend/deploy.sh
-aws-exports.js
+#aws-exports.js
 
 !webpack.*.js
 !jest.config.js
