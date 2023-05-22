@@ -8,7 +8,7 @@ import BookedAppointments from '../Booking/BookedAppointments';
 import aws_exports from '../../aws-exports';
 import '@aws-amplify/ui-react/styles.css';
 
-Amplify.configure(aws_exports);
+// Amplify.configure(aws_exports);
 
 function Bookings() {
   const { user } = useAuthenticator((context) => [context.route]);
