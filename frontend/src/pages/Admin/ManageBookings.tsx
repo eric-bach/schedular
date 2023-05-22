@@ -54,6 +54,7 @@ function ManageBookings() {
     } else {
       // TODO Return error
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   return (

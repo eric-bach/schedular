@@ -81,6 +81,7 @@ function ManageCustomers() {
   useEffect(() => {
     setTab(0);
     listUsersInGroup(0, undefined);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   const handleClick = async (index: number) => {

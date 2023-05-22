@@ -1,11 +1,10 @@
 import React from 'react';
-import { useLocation, useNavigate, useParams } from 'react-router-dom';
+import { useLocation, useNavigate } from 'react-router-dom';
 import { Alert, AlertTitle, Button, Container, Chip, Typography } from '@mui/material';
 
 import { formateLocalLongDate, formatLocalTimeString } from '../../helpers/utils';
 
 export default function Confirmation() {
-  const { id: confirmationId } = useParams();
   const { state } = useLocation();
 
   const navigate = useNavigate();
