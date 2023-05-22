@@ -31,6 +31,15 @@ jobs:
       # - name: Install NPM Dependencies
       #   run: npm run cinstall-all
       #   working-directory: backend
+      - name: Install Lambda Dependencies
+        run: npm ci
+        working-directory: backend/src/lambda/cognitoAddUser
+      - name: Install Lambda Dependencies
+        run: npm ci
+        working-directory: backend/src/lambda/sendReminders
+      - name: Install Lambda Dependencies
+        run: npm ci
+        working-directory: backend/src/lambda/userService
       - name: Build Backend
         run: npm run build
         working-directory: backend
