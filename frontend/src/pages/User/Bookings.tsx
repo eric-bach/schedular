@@ -5,7 +5,7 @@ import { Container, Typography } from '@mui/material';
 
 import BookedAppointments from '../Booking/BookedAppointments';
 
-import aws_exports from '../../aws-exports';
+// import aws_exports from '../../aws-exports';
 import '@aws-amplify/ui-react/styles.css';
 
 // Amplify.configure(aws_exports);
