@@ -52,7 +52,7 @@ jobs:
       - name: Create frontend/src/aws-exports.js file
         run: |
           touch aws-exports.js
-          echo /* eslint-disable */ >> aws-exports.js
+          echo // eslint-disable >> aws-exports.js
           echo const awsmobile = { aws_project_region: \'${{ secrets.CDK_DEFAULT_REGION }}\' }\; >> aws-exports.js
           echo export default awsmobile\; >> aws-exports.js
           cat aws-exports.js
