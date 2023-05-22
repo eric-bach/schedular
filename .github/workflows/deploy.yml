@@ -1,0 +1,106 @@
+name: deploy
+
+on:
+  pull_request:
+    types:
+      - closed
+    branches:
+      - main
+
+jobs:
+  deploy-backend:
+    name: Deploy Backend
+    runs-on: ubuntu-latest
+    permissions:
+      actions: write
+      contents: read
+      id-token: write
+
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v3
+
+      - name: Configure Node
+        uses: actions/setup-node@v3
+        with:
+          node-version: 18.x
+
+      - name: Configure AWS credentials
+        uses: aws-actions/configure-aws-credentials@v1
+        with:
+          role-to-assume: ${{ secrets.AWS_ACCESS_ARN }}
+          aws-region: us-east-1
+
+      - name: Install NPM Dependencies (Backend)
+        run: npm ci
+        working-directory: backend
+
+      - name: Create backend/.env file
+        run: |
+          touch .env
+          echo CERTIFICATE_ARN=${{ secrets.CERTIFICATE_ARN }} >> .env
+          echo SENDER_EMAIL=${{ secrets.SENDER_EMAIL }} >> .env
+          cat .env
+        working-directory: backend
+
+      - name: Install NPM Dependencies
+        run: npm run cinstall-all
+        working-directory: backend
+
+      - name: CDK Deploy Backend
+        run: npm run deploy-backend prod
+        env:
+          CERTIFICATE_ARN: ${{secrets.CERTIFICATE_ARN}}
+          SENDER_EMAIL: ${{secrets.SENDER_EMAIL}}
+        working-directory: backend
+
+  deploy-frontend:
+    name: Deploy Frontend
+    runs-on: ubuntu-latest
+    needs: deploy-backend
+    permissions:
+      actions: write
+      contents: read
+      id-token: write
+
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v3
+
+      - name: Configure Node
+        uses: actions/setup-node@v3
+        with:
+          node-version: 18.x
+
+      - name: Configure AWS credentials
+        uses: aws-actions/configure-aws-credentials@v1
+        with:
+          role-to-assume: ${{ secrets.AWS_ACCESS_ARN }}
+          aws-region: us-east-1
+
+      - name: Install NPM Dependencies (Backend)
+        run: npm ci
+        working-directory: backend
+
+      - name: Install NPM Dependencies
+        run: npm run cinstall-all
+        working-directory: backend
+
+      - name: Build All
+        run: npm run build-all
+        working-directory: backend
+
+      - name: Create frontend/src/aws-exports.js file
+        run: |
+          touch aws-exports.js
+          echo const awsmobile = { aws_project_region: '${{ secrets.CDK_DEFAULT_REGION }}', aws_cognito_region: '${{ secrets.CDK_DEFAULT_REGION }}', aws_user_pools_id: '${{secrets.COGNITO_USERPOOL_ID}}', aws_user_pools_web_client_id: '${{ secrets.COGNITO_WEB_CLIENT_ID }}', mandatorySignIn: true, aws_appsync_graphqlEndpoint: '${{ secrets.GRAPHQL_ENDPOINT }}', aws_appsync_region: '${{ secrets.CDK_DEFAULT_REGION }}', aws_appsync_authenticationType: 'AMAZON_COGNITO_USER_POOLS', }; >> aws-exports.js
+          echo export default awsmobile; >> aws-exports.js
+          cat aws-exports.js
+        working-directory: frontend/src
+
+      - name: CDK Deploy Frontend
+        run: npm run deploy-frontend prod
+        env:
+          CERTIFICATE_ARN: ${{secrets.CERTIFICATE_ARN}}
+          DLQ_NOTIFICATIONS: ${{secrets.DLQ_NOTIFICATIONS}}
+        working-directory: backend

@@ -107,6 +107,28 @@ The Schedular application consists of the CDK backend and React frontend, each o
    $ npm run deploy-frontend dev PROFILE_NAME
    ```
 
+## Deployment with GitHub Actions
+
+1. Create an AWS role that can be assumed by GitHub Actions
+
+   ```
+   $ npm run deploy-cicd prod PROFILE_NAME
+   ```
+
+2. Add the following GitHub Secrets to the repository
+
+   ```
+   AWS_ACCESS_ARN - AWS ARN of the GitHub Actions Role to Assume (from step 1)
+   CDK_DEFAULT_REGION - AWS default region for all resources to be created
+   CERTIFICATE_ARN - ARN to ACM certificate for CloudFront Distribution
+   COGNITO_USERPOOL_ID - Cognito User Pool Id
+   COGNITO_WEB_CLIENT_ID - Cognito User Pool Web Client Id
+   GRAPHQL_ENDPOINT - AppSync GraphQL Endpoint URL
+   SENDER_EMAIL - Email address where notifications are sent from
+   CYPRESS_USERNAME - A valid Cognito username for Cypress integration testing
+   CYPRESS_PASSWORD - The Cognito password for Cypress integration testing
+   ```
+
 # Seed Data
 
 ## Seed Test Data
