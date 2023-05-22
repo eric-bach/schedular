@@ -25,9 +25,9 @@ jobs:
           node-version: 18.x
 
       - name: Configure AWS credentials
-        uses: aws-actions/configure-aws-credentials@v2
+        uses: aws-actions/configure-aws-credentials@v
         with:
-          role-to-assume: ${{ secrets.AWS_ACCESS_ARN }}
+          role-to-assume: ${{ secrets.AWS_TEST_SERVICE_ROLE_ARN }}
           aws-region: us-east-1
 
       - name: Install NPM Dependencies (Backend)
