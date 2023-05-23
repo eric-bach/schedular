@@ -42,7 +42,7 @@ jobs:
       - name: Create backend/.env file
         run: |
           touch .env
-          echo CERTIFICATE_ARN=${{ secrets.CERTIFICATE_ARN }} >> .env
+          echo CERTIFICATE_ARN=${{ secrets.CERTIFICATE_ARN_PROD }} >> .env
           echo SENDER_EMAIL=${{ secrets.SENDER_EMAIL }} >> .env
           cat .env
         working-directory: backend
@@ -62,7 +62,7 @@ jobs:
       - name: CDK Deploy Backend
         run: npm run deploy-backend prod
         env:
-          CERTIFICATE_ARN: ${{secrets.CERTIFICATE_ARN}}
+          CERTIFICATE_ARN: ${{secrets.CERTIFICATE_ARN_PROD}}
           SENDER_EMAIL: ${{secrets.SENDER_EMAIL}}
         working-directory: backend
 
@@ -113,5 +113,5 @@ jobs:
       - name: CDK Deploy Frontend
         run: npm run deploy-frontend prod
         env:
-          CERTIFICATE_ARN: ${{secrets.CERTIFICATE_ARN}}
+          CERTIFICATE_ARN: ${{secrets.CERTIFICATE_ARN_PROD}}
         working-directory: backend
