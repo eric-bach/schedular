@@ -4,6 +4,10 @@
   </p>
 </h1>
 
+[![Build](https://github.com/eric-bach/schedular/actions/workflows/test.yml/badge.svg)](https://github.com/eric-bach/schedular/actions/workflows/test.yml)
+[![Deploy](https://github.com/eric-bach/schedular/actions/workflows/deploy.yml/badge.svg)](https://github.com/eric-bach/schedular/actions/workflows/deploy.yml)
+[![CodeFactor](https://www.codefactor.io/repository/github/eric-bach/schedular/badge?s=5328dde3eb9cb4aa1d0e1f9dcc877fd08654c714)](https://www.codefactor.io/repository/github/eric-bach/schedular)
+
 <p align="center">
   <a href="#getting-started">Getting Started</a> |
   <a href="#architecture">Architecture</a> |
@@ -117,12 +121,14 @@ The Schedular application consists of the CDK backend and React frontend, each o
 3. Add the following GitHub Secrets to the repository
 
    Common
+
    ```
    CDK_DEFAULT_REGION - AWS default region for all resources to be created
    SENDER_EMAIL - Email address where notifications are sent from
    ```
 
    Dev environment
+
    ```
    AWS_SERVICE_ROLE_DEV - AWS ARN of the GitHub Actions Role to Assume (from step 1)
    COGNITO_USERPOOL_ID_DEV - Cognito User Pool Id
@@ -133,6 +139,7 @@ The Schedular application consists of the CDK backend and React frontend, each o
    ```
 
    Prod environment
+
    ```
    AWS_SERVICE_ROLE_PROD - AWS ARN of the GitHub Actions Role to Assume (from step 1)
    COGNITO_USERPOOL_ID_PROD - Cognito User Pool Id
@@ -140,7 +147,7 @@ The Schedular application consists of the CDK backend and React frontend, each o
    GRAPHQL_ENDPOINT_PROD - AppSync GraphQL Endpoint URL
    CERTIFICATE_ARN_PROD - ARN to ACM certificate for CloudFront Distribution (for Prod only)
    ```
-   
+
 # Seed Data
 
 ## Seed Test Data
