@@ -33,25 +33,21 @@ jobs:
           role-to-assume: ${{ secrets.AWS_SERVICE_ROLE_DEV }}
           aws-region: us-east-1
 
-      - name: Install NPM Dependencies (Backend)
-        run: npm ci
-        working-directory: backend
+      # - name: Install NPM Dependencies (Backend)
+      #   run: npm ci
+      #   working-directory: backend
 
       - name: Install NPM Dependencies
-        run: npm run cinstall-all
+        run: npm run cinstall-all-backend
         working-directory: backend
 
-      - name: Create frontend/src/aws-exports.js file
-        run: |
-          touch aws-exports.js
-          echo const awsmobile = { aws_project_region: \'${{ secrets.CDK_DEFAULT_REGION }}\', aws_cognito_region: \'${{ secrets.CDK_DEFAULT_REGION }}\', aws_user_pools_id: \'${{secrets.COGNITO_USERPOOL_ID_DEV}}\', aws_user_pools_web_client_id: \'${{ secrets.COGNITO_WEB_CLIENT_ID_DEV }}\', mandatorySignIn: true, aws_appsync_graphqlEndpoint: \'${{ secrets.GRAPHQL_ENDPOINT_DEV }}\', aws_appsync_region: \'${{ secrets.CDK_DEFAULT_REGION }}\', aws_appsync_authenticationType: \'AMAZON_COGNITO_USER_POOLS\' } >> aws-exports.js
-          echo export default awsmobile >> aws-exports.js
-          cat aws-exports.js
-        working-directory: frontend/src
-
-      # - name: Build Backend
-      #   run: npm run build-all
-      #   working-directory: backend
+      # - name: Create frontend/src/aws-exports.js file
+      #   run: |
+      #     touch aws-exports.js
+      #     echo const awsmobile = { aws_project_region: \'${{ secrets.CDK_DEFAULT_REGION }}\', aws_cognito_region: \'${{ secrets.CDK_DEFAULT_REGION }}\', aws_user_pools_id: \'${{secrets.COGNITO_USERPOOL_ID_DEV}}\', aws_user_pools_web_client_id: \'${{ secrets.COGNITO_WEB_CLIENT_ID_DEV }}\', mandatorySignIn: true, aws_appsync_graphqlEndpoint: \'${{ secrets.GRAPHQL_ENDPOINT_DEV }}\', aws_appsync_region: \'${{ secrets.CDK_DEFAULT_REGION }}\', aws_appsync_authenticationType: \'AMAZON_COGNITO_USER_POOLS\' } >> aws-exports.js
+      #     echo export default awsmobile >> aws-exports.js
+      #     cat aws-exports.js
+      #   working-directory: frontend/src
 
       - name: Run CDK Unit Tests
         run: npm run test
