@@ -31,7 +31,7 @@ jobs:
           role-to-assume: ${{ secrets.AWS_SERVICE_ROLE_PROD }}
           aws-region: ${{ secrets.CDK_DEFAULT_REGION }}
 
-      - name: Install NPM Dependencies
+      - name: Install Backend Dependencies
         run: npm run cinstall-all-backend
         working-directory: backend
 
@@ -78,11 +78,11 @@ jobs:
           role-to-assume: ${{ secrets.AWS_SERVICE_ROLE_PROD }}
           aws-region: us-east-1
 
-      - name: Install NPM Dependencies (Backend)
+      - name: Install CDK Dependencies
         run: npm ci
         working-directory: backend
 
-      - name: Install NPM Dependencies
+      - name: Install Frontend Dependencies
         run: npm run cinstall-all-frontend
         working-directory: backend
 
@@ -94,9 +94,9 @@ jobs:
           cat aws-exports.js
         working-directory: frontend/src
 
-      # - name: Build Backend
-      #   run: npm run build-all
-      #   working-directory: backend
+      - name: Build Frontend
+        run: npm run build-all-frontend
+        working-directory: backend
 
       - name: CDK Deploy Frontend
         run: npm run deploy-frontend prod
