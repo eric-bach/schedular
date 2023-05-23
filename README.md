@@ -6,7 +6,7 @@
 
 [![Build](https://github.com/eric-bach/schedular/actions/workflows/test.yml/badge.svg)](https://github.com/eric-bach/schedular/actions/workflows/test.yml)
 [![Deploy](https://github.com/eric-bach/schedular/actions/workflows/deploy.yml/badge.svg)](https://github.com/eric-bach/schedular/actions/workflows/deploy.yml)
-[![CodeFactor](https://www.codefactor.io/repository/github/eric-bach/schedular/badge.svg)](https://www.codefactor.io/repository/github/eric-bach/schedular)
+[![CodeFactor](https://www.codefactor.io/repository/github/eric-bach/schedular/badge?s=5328dde3eb9cb4aa1d0e1f9dcc877fd08654c714)](https://www.codefactor.io/repository/github/eric-bach/schedular)
 
 <p align="center">
   <a href="#getting-started">Getting Started</a> |
