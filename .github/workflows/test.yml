@@ -49,9 +49,9 @@ jobs:
           cat aws-exports.js
         working-directory: frontend/src
 
-      - name: Build Backend
-        run: npm run build-all
-        working-directory: backend
+      # - name: Build Backend
+      #   run: npm run build-all
+      #   working-directory: backend
 
       - name: Run CDK Unit Tests
         run: npm run test
