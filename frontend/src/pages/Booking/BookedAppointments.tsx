@@ -139,12 +139,14 @@ function BookedAppointments(state: any) {
     });
 
     return () => onCancelBookingListener.unsubscribe();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [bookings]);
 
   useEffect(() => {
     getUserBookings(customer.id).then((resp) => {
       //console.debug('[BOOKINGS] Found bookings', resp);
     });
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   function dismissError() {

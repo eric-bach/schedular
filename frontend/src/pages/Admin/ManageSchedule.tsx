@@ -90,9 +90,8 @@ function ManageSchedule() {
       getAppointments(dayjs().hour(0).minute(0).second(0), dayjs().hour(0).minute(0).second(0).add(1, 'day')).then((result) => {
         console.debug('[SCHEDULE] Loaded initial appointments', result);
       });
-    } else {
-      // TODO Return error
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   function addField(values: InputValues[]) {

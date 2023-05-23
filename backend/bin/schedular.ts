@@ -2,12 +2,11 @@
 import 'source-map-support/register';
 import * as cdk from 'aws-cdk-lib';
 import { AuthStack } from '../lib/auth-stack';
-import { SchedularBaseStackProps, GitHubStackProps } from '../lib/types/SchedularStackProps';
-import { APP_NAME, DEFAULT_VALUES } from '../lib/constants';
+import { SchedularBaseStackProps } from '../lib/types/SchedularStackProps';
+import { APP_NAME } from '../lib/constants';
 import { DatabaseStack } from '../lib/database-stack';
 import { ApiStack } from '../lib/api-stack';
 import { FrontendStack } from '../lib/frontend-stack';
-import { CiCdStack } from '../lib/cicd-stack';
 import { MessagingStack } from '../lib/messaging-stack';
 
 const app = new cdk.App();
@@ -29,20 +28,6 @@ const baseProps: SchedularBaseStackProps = {
 };
 
 switch (stage) {
-  case 'cicd': {
-    const gitHubProps: GitHubStackProps = {
-      repositoryConfig: [
-        {
-          owner: DEFAULT_VALUES.GITHUB_OWNER,
-          repo: APP_NAME,
-        },
-      ],
-    };
-    new CiCdStack(app, `${APP_NAME}-cicd-${envName}`, { ...baseProps, ...gitHubProps });
-
-    break;
-  }
-
   case 'backend': {
     const auth = new AuthStack(app, `${APP_NAME}-auth-${envName}`, baseProps);
 

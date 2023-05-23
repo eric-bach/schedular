@@ -107,6 +107,40 @@ The Schedular application consists of the CDK backend and React frontend, each o
    $ npm run deploy-frontend dev PROFILE_NAME
    ```
 
+## Deployment with GitHub Actions
+
+1. Deploy the [Github Actions Open ID Connect Provider stack](https://github.com/eric-bach/github-actions-oidc)
+   https://github.com/eric-bach/github-actions-oidc
+
+2. Repeat step 1 in the Prod account
+
+3. Add the following GitHub Secrets to the repository
+
+   Common
+   ```
+   CDK_DEFAULT_REGION - AWS default region for all resources to be created
+   SENDER_EMAIL - Email address where notifications are sent from
+   ```
+
+   Dev environment
+   ```
+   AWS_SERVICE_ROLE_DEV - AWS ARN of the GitHub Actions Role to Assume (from step 1)
+   COGNITO_USERPOOL_ID_DEV - Cognito User Pool Id
+   COGNITO_WEB_CLIENT_ID_DEV - Cognito User Pool Web Client Id
+   GRAPHQL_ENDPOINT_DEV - AppSync GraphQL Endpoint URL
+   CYPRESS_USERNAME - A valid Cognito username for Cypress integration testing
+   CYPRESS_PASSWORD - The Cognito password for Cypress integration testing
+   ```
+
+   Prod environment
+   ```
+   AWS_SERVICE_ROLE_PROD - AWS ARN of the GitHub Actions Role to Assume (from step 1)
+   COGNITO_USERPOOL_ID_PROD - Cognito User Pool Id
+   COGNITO_WEB_CLIENT_ID_PROD - Cognito User Pool Web Client Id
+   GRAPHQL_ENDPOINT_PROD - AppSync GraphQL Endpoint URL
+   CERTIFICATE_ARN_PROD - ARN to ACM certificate for CloudFront Distribution (for Prod only)
+   ```
+   
 # Seed Data
 
 ## Seed Test Data
