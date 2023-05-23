@@ -54,9 +54,13 @@ jobs:
   #       with:
   #         node-version: 18.x
 
-  #     - name: Install NPM Dependencies
-  #       run: npm run cinstall-all
-  #       working-directory: backend
+  #   - name: Install CDK Dependencies
+  #   run: npm ci
+  #   working-directory: backend
+
+  # - name: Install Frontend Dependencies
+  #   run: npm run cinstall-all-frontend
+  #   working-directory: backend
 
   #     - name: Create frontend/src/aws-exports.js file
   #       run: |

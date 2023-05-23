@@ -43,10 +43,6 @@ jobs:
           cat .env
         working-directory: backend
 
-      # - name: Build Backend
-      #   run: npm run build-all-backend
-      #   working-directory: backend
-
       - name: CDK Deploy Backend
         run: npm run deploy-backend prod
         env:
