@@ -26,13 +26,17 @@ jobs:
           node-version: 18.x
 
       - name: Configure AWS credentials
-        uses: aws-actions/configure-aws-credentials@v1
+        uses: aws-actions/configure-aws-credentials@v2
         with:
-          role-to-assume: ${{ secrets.AWS_ACCESS_ARN }}
+          role-to-assume: ${{ secrets.AWS_SERVICE_ROLE_PROD }}
           aws-region: us-east-1
 
       - name: Install NPM Dependencies (Backend)
         run: npm ci
+        working-directory: backend
+
+      - name: Install NPM Dependencies
+        run: npm run cinstall-all
         working-directory: backend
 
       - name: Create backend/.env file
@@ -46,13 +50,13 @@ jobs:
       - name: Create frontend/src/aws-exports.js file
         run: |
           touch aws-exports.js
-          echo const awsmobile = { aws_project_region: '${{ secrets.CDK_DEFAULT_REGION }}', aws_cognito_region: '${{ secrets.CDK_DEFAULT_REGION }}', aws_user_pools_id: '${{secrets.COGNITO_USERPOOL_ID}}', aws_user_pools_web_client_id: '${{ secrets.COGNITO_WEB_CLIENT_ID }}', mandatorySignIn: true, aws_appsync_graphqlEndpoint: '${{ secrets.GRAPHQL_ENDPOINT }}', aws_appsync_region: '${{ secrets.CDK_DEFAULT_REGION }}', aws_appsync_authenticationType: 'AMAZON_COGNITO_USER_POOLS', }; >> aws-exports.js
-          echo export default awsmobile; >> aws-exports.js
+          echo const awsmobile = { aws_project_region: \'${{ secrets.CDK_DEFAULT_REGION }}\', aws_cognito_region: \'${{ secrets.CDK_DEFAULT_REGION }}\', aws_user_pools_id: \'${{secrets.COGNITO_USERPOOL_ID}}\', aws_user_pools_web_client_id: \'${{ secrets.COGNITO_WEB_CLIENT_ID }}\', mandatorySignIn: true, aws_appsync_graphqlEndpoint: \'${{ secrets.GRAPHQL_ENDPOINT }}\', aws_appsync_region: \'${{ secrets.CDK_DEFAULT_REGION }}\', aws_appsync_authenticationType: \'AMAZON_COGNITO_USER_POOLS\' } >> aws-exports.js
+          echo export default awsmobile >> aws-exports.js
           cat aws-exports.js
         working-directory: frontend/src
 
-      - name: Install NPM Dependencies
-        run: npm run cinstall-all
+      - name: Build Backend
+        run: npm run build-all
         working-directory: backend
 
       - name: CDK Deploy Backend
@@ -81,9 +85,9 @@ jobs:
           node-version: 18.x
 
       - name: Configure AWS credentials
-        uses: aws-actions/configure-aws-credentials@v1
+        uses: aws-actions/configure-aws-credentials@v2
         with:
-          role-to-assume: ${{ secrets.AWS_ACCESS_ARN }}
+          role-to-assume: ${{ secrets.AWS_SERVICE_ROLE_PROD }}
           aws-region: us-east-1
 
       - name: Install NPM Dependencies (Backend)
@@ -94,21 +98,20 @@ jobs:
         run: npm run cinstall-all
         working-directory: backend
 
-      - name: Build All
-        run: npm run build-all
-        working-directory: backend
-
       - name: Create frontend/src/aws-exports.js file
         run: |
           touch aws-exports.js
-          echo const awsmobile = { aws_project_region: '${{ secrets.CDK_DEFAULT_REGION }}', aws_cognito_region: '${{ secrets.CDK_DEFAULT_REGION }}', aws_user_pools_id: '${{secrets.COGNITO_USERPOOL_ID}}', aws_user_pools_web_client_id: '${{ secrets.COGNITO_WEB_CLIENT_ID }}', mandatorySignIn: true, aws_appsync_graphqlEndpoint: '${{ secrets.GRAPHQL_ENDPOINT }}', aws_appsync_region: '${{ secrets.CDK_DEFAULT_REGION }}', aws_appsync_authenticationType: 'AMAZON_COGNITO_USER_POOLS', }; >> aws-exports.js
-          echo export default awsmobile; >> aws-exports.js
+          echo const awsmobile = { aws_project_region: \'${{ secrets.CDK_DEFAULT_REGION }}\', aws_cognito_region: \'${{ secrets.CDK_DEFAULT_REGION }}\', aws_user_pools_id: \'${{secrets.COGNITO_USERPOOL_ID}}\', aws_user_pools_web_client_id: \'${{ secrets.COGNITO_WEB_CLIENT_ID }}\', mandatorySignIn: true, aws_appsync_graphqlEndpoint: \'${{ secrets.GRAPHQL_ENDPOINT }}\', aws_appsync_region: \'${{ secrets.CDK_DEFAULT_REGION }}\', aws_appsync_authenticationType: \'AMAZON_COGNITO_USER_POOLS\' } >> aws-exports.js
+          echo export default awsmobile >> aws-exports.js
           cat aws-exports.js
         working-directory: frontend/src
+
+      - name: Build Backend
+        run: npm run build-all
+        working-directory: backend
 
       - name: CDK Deploy Frontend
         run: npm run deploy-frontend prod
         env:
           CERTIFICATE_ARN: ${{secrets.CERTIFICATE_ARN}}
-          DLQ_NOTIFICATIONS: ${{secrets.DLQ_NOTIFICATIONS}}
         working-directory: backend
