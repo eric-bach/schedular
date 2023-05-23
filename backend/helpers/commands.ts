@@ -28,12 +28,13 @@ const execCmd = (cmd: string, dir: any, excludedDirs: string[]) => {
 const runCmd = () => {
   try {
     const program = new Command();
-    program.arguments('<cmd> [excludedDirs]');
+    program.arguments('<cmd> [dir] [excludedDirs]');
     program.parse();
 
     const cmd = program.args[0] ?? '';
-    const root = path.resolve(process.cwd() + '/..');
-    const excludedDirs = program.args.length > 1 ? program.args[1].split(',') ?? [] : [];
+    const dir = program.args[1] ? process.cwd() + '/../' + program.args[1] : process.cwd() + '/..';
+    const root = path.resolve(dir);
+    const excludedDirs = program.args.length > 2 ? program.args[2].split(',') : ['node_modules', 'cdk.out', 'build'];
 
     execCmd(cmd, root, excludedDirs);
   } catch (error) {
