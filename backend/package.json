@@ -14,6 +14,7 @@
     "cdk-clear-context": "npm run cdk -- context --clear",
     "cinstall-all": "npm i && npm run cdk-clear-context && ts-node ./helpers/commands.ts \"npm ci\"",
     "cinstall-all-backend": "npm i && npm run cdk-clear-context && ts-node ./helpers/commands.ts \"npm ci\" \"backend\"",
+    "cinstall-all-frontend": "npm i && npm run cdk-clear-context && ts-node ./helpers/commands.ts \"npm ci\" \"frontend\"",
     "clean-all": "npm run cdk-clear-context && ts-node ./helpers/commands.ts \"rm -fR node_modules\"",
     "deploy": "npm run build && npm run build-all && ts-node ./helpers/deploy.ts",
     "deploy-backend": "npm run quick-deploy -- -s backend",
