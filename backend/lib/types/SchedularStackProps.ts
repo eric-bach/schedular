@@ -14,6 +14,7 @@ export interface SchedularFrontendStackProps extends SchedularBaseStackProps {
 export interface SchedularMessagingStackProps extends SchedularBaseStackProps {
   params: {
     dataTableArn: string;
+    sendEmailFunctionArn: string;
   };
 }
 

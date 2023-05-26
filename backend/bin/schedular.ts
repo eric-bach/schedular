@@ -35,7 +35,7 @@ switch (stage) {
 
     const messaging = new MessagingStack(app, `${APP_NAME}-messaging-${envName}`, {
       ...baseProps,
-      params: { dataTableArn: database.dataTableArn },
+      params: { dataTableArn: database.dataTableArn, sendEmailFunctionArn: database.sendEmailFunctionArn },
     });
 
     new ApiStack(app, `${APP_NAME}-api-${envName}`, {

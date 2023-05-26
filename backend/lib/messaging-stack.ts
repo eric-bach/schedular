@@ -3,12 +3,14 @@ import { Construct } from 'constructs';
 import { EmailIdentity } from 'aws-cdk-lib/aws-ses';
 import { aws_ses as ses } from 'aws-cdk-lib';
 import { NodejsFunction } from 'aws-cdk-lib/aws-lambda-nodejs';
-import { Runtime } from 'aws-cdk-lib/aws-lambda';
+import { FilterCriteria, FilterRule, Function, Runtime, StartingPosition } from 'aws-cdk-lib/aws-lambda';
 import { Effect, ManagedPolicy, PolicyStatement, Role, ServicePrincipal } from 'aws-cdk-lib/aws-iam';
 import { SchedularMessagingStackProps } from './types/SchedularStackProps';
 import { EventBus, Rule, Schedule } from 'aws-cdk-lib/aws-events';
 import { LambdaFunction } from 'aws-cdk-lib/aws-events-targets';
 import { Table } from 'aws-cdk-lib/aws-dynamodb';
+import { CfnPipe } from 'aws-cdk-lib/aws-pipes';
+import { DynamoEventSource } from 'aws-cdk-lib/aws-lambda-event-sources';
 
 const dotenv = require('dotenv');
 
@@ -21,6 +23,7 @@ export class MessagingStack extends Stack {
     super(scope, id, props);
 
     const dataTable = Table.fromTableArn(this, 'table', props.params.dataTableArn);
+    const sendEmailFunction = Function.fromFunctionArn(this, 'sendEmailFunction', props.params.sendEmailFunctionArn);
 
     // EventBus
     const eventBus = new EventBus(this, 'SchedularEventBus', {
@@ -60,30 +63,30 @@ export class MessagingStack extends Stack {
       },
     });
 
-    // Email Lambda
-    const sendEmailFunction = new NodejsFunction(this, 'SendEmailFunction', {
-      functionName: `${props.appName}-${props.envName}-SendEmail`,
-      runtime: Runtime.NODEJS_18_X,
-      handler: 'handler',
-      entry: 'src/lambda/sendEmail/main.ts',
-      environment: {
-        SENDER_EMAIL: process.env.SENDER_EMAIL || 'info@example.com',
-      },
-      timeout: Duration.seconds(10),
-      memorySize: 256,
-      role: new Role(this, 'SendEmailConsumerRole', {
-        assumedBy: new ServicePrincipal('lambda.amazonaws.com'),
-        managedPolicies: [ManagedPolicy.fromAwsManagedPolicyName('service-role/AWSLambdaBasicExecutionRole')],
-      }),
-    });
-    // Add permission send email
-    sendEmailFunction.addToRolePolicy(
-      new PolicyStatement({
-        effect: Effect.ALLOW,
-        actions: ['ses:SendTemplatedEmail'],
-        resources: [`arn:aws:ses:${this.region}:${this.account}:identity/*`, `arn:aws:ses:${this.region}:${this.account}:template/*`],
-      })
-    );
+    // // Email Lambda
+    // const sendEmailFunction = new NodejsFunction(this, 'SendEmailFunction', {
+    //   functionName: `${props.appName}-${props.envName}-SendEmail`,
+    //   runtime: Runtime.NODEJS_18_X,
+    //   handler: 'handler',
+    //   entry: 'src/lambda/sendEmail/main.ts',
+    //   environment: {
+    //     SENDER_EMAIL: process.env.SENDER_EMAIL || 'info@example.com',
+    //   },
+    //   timeout: Duration.seconds(10),
+    //   memorySize: 256,
+    //   role: new Role(this, 'SendEmailConsumerRole', {
+    //     assumedBy: new ServicePrincipal('lambda.amazonaws.com'),
+    //     managedPolicies: [ManagedPolicy.fromAwsManagedPolicyName('service-role/AWSLambdaBasicExecutionRole')],
+    //   }),
+    // });
+    // // Add permission send email
+    // sendEmailFunction.addToRolePolicy(
+    //   new PolicyStatement({
+    //     effect: Effect.ALLOW,
+    //     actions: ['ses:SendTemplatedEmail'],
+    //     resources: [`arn:aws:ses:${this.region}:${this.account}:identity/*`, `arn:aws:ses:${this.region}:${this.account}:template/*`],
+    //   })
+    // );
 
     // Reminders Lambda
     const sendRemindersFunction = new NodejsFunction(this, 'SendRemindersFunction', {
@@ -152,11 +155,6 @@ export class MessagingStack extends Stack {
     new CfnOutput(this, 'EventBusArn', {
       value: eventBus.eventBusArn,
       exportName: `${props.appName}-${props.envName}-eventBusArn`,
-    });
-
-    new CfnOutput(this, 'SendEmailFunctionArn', {
-      value: sendEmailFunction.functionArn,
-      exportName: `${props.appName}-${props.envName}-sendEmailFunctionArn`,
     });
 
     new CfnOutput(this, 'SendRemindersFunctionArn', {

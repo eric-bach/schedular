@@ -22,32 +22,33 @@ exports.handler = async (event: EventBridgeEvent<string, Booking>) => {
   // Send email confirmation
   const client = new SESClient({});
 
-  let template: string = '';
-  if (event['detail-type'] === 'BookingCreated') {
-    template = 'AppointmentConfirmation';
-  } else if (event['detail-type'] === 'BookingCancelled') {
-    template = 'AppointmentCancellation';
-  } else if (event['detail-type'] === 'BookingReminder') {
-    template = 'BookingReminder';
-  }
+  // let template: string = '';
+  // if (event['detail-type'] === 'BookingCreated') {
+  //   template = 'AppointmentConfirmation';
+  // } else if (event['detail-type'] === 'BookingCancelled') {
+  //   template = 'AppointmentCancellation';
+  // } else if (event['detail-type'] === 'BookingReminder') {
+  //   template = 'BookingReminder';
+  // }
 
-  // Send templated email
-  const input: SendTemplatedEmailCommandInput = {
-    Source: process.env.SENDER_EMAIL,
-    Destination: { ToAddresses: [event.detail.customerDetails.email] },
-    Template: template,
-    TemplateData: `{
-      "name": "${event.detail.customerDetails.firstName} ${event.detail.customerDetails.lastName}",
-      "date": "${formateLocalLongDate(event.detail.sk)}",
-      "time": "${formatLocalTimeString(event.detail.sk, 0)}",
-      "administrator": "${event.detail.administratorDetails.firstName} ${event.detail.administratorDetails.lastName}" }`,
-  };
-  console.log(`🔔 Send Email:  ${JSON.stringify(input)}`);
+  // // Send templated email
+  // const input: SendTemplatedEmailCommandInput = {
+  //   Source: process.env.SENDER_EMAIL,
+  //   Destination: { ToAddresses: [event.detail.customerDetails.email] },
+  //   Template: template,
+  //   TemplateData: `{
+  //     "name": "${event.detail.customerDetails.firstName} ${event.detail.customerDetails.lastName}",
+  //     "date": "${formateLocalLongDate(event.detail.sk)}",
+  //     "time": "${formatLocalTimeString(event.detail.sk, 0)}",
+  //     "administrator": "${event.detail.administratorDetails.firstName} ${event.detail.administratorDetails.lastName}" }`,
+  // };
+  // console.log(`🔔 Send Email:  ${JSON.stringify(input)}`);
 
-  const command = new SendTemplatedEmailCommand(input);
-  const response = await client.send(command);
+  // const command = new SendTemplatedEmailCommand(input);
+  // const response = await client.send(command);
 
-  console.log(`✅ Appointment notification sent: {result: ${JSON.stringify(response)}}}`);
+  // console.log(`✅ Appointment notification sent: {result: ${JSON.stringify(response)}}}`);
+  console.log(`✅ Done`);
 };
 
 // Returns the local time part (including offset) of an ISO8601 datetime string
