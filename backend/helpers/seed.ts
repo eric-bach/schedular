@@ -85,10 +85,10 @@ function generateRandomSeedData() {
 }
 
 async function getTableName(): Promise<string> {
-  var tableName: string = `${appName}-${env}-Data`;
+  var tableName: string = `${appName}-Data`;
 
   const client = new CloudFormationClient({ credentials: fromIni({ profile: profile }) });
-  const command = new DescribeStacksCommand({ StackName: `${appName}-database-${env}` });
+  const command = new DescribeStacksCommand({ StackName: `${appName}-data-messaging-${env}` });
   const response = await client.send(command);
 
   if (response && response.$metadata.httpStatusCode === 200) {

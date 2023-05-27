@@ -15,7 +15,7 @@ export class AuthStack extends Stack {
     super(scope, id, props);
 
     // AWS Cognito post-confirmation lambda function
-    const cognitoPostConfirmationTrigger = new NodejsFunction(this, 'CognitoAddUser', {
+    const cognitoAddUser = new NodejsFunction(this, 'CognitoAddUser', {
       runtime: Runtime.NODEJS_18_X,
       functionName: `${props.appName}-${props.envName}-CognitoAddUser`,
       handler: 'handler',
@@ -28,7 +28,7 @@ export class AuthStack extends Stack {
     });
 
     // Cognito user pool
-    const userPool = new UserPool(this, `${props.appName}UserPool`, {
+    const userPool = new UserPool(this, 'UserPool', {
       userPoolName: `${props.appName}_user_pool_${props.envName}`,
       selfSignUpEnabled: true,
       accountRecovery: AccountRecovery.EMAIL_ONLY,
@@ -46,25 +46,25 @@ export class AuthStack extends Stack {
         },
       },
       lambdaTriggers: {
-        postConfirmation: cognitoPostConfirmationTrigger,
+        postConfirmation: cognitoAddUser,
       },
       removalPolicy: RemovalPolicy.DESTROY,
     });
 
     // Cognito user pool group
-    new CfnUserPoolGroup(this, `${props.appName}AdminsGroup`, {
+    new CfnUserPoolGroup(this, 'UserPoolAdminsGroup', {
       userPoolId: userPool.userPoolId,
       groupName: 'Admins',
       description: 'Aministrators',
     });
 
-    new CfnUserPoolGroup(this, `${props.appName}PublicGroup`, {
+    new CfnUserPoolGroup(this, 'UserPoolPublicGroup', {
       userPoolId: userPool.userPoolId,
       groupName: 'Public',
       description: 'Public users - not confirmed',
     });
 
-    new CfnUserPoolGroup(this, `${props.appName}ClientsGroup`, {
+    new CfnUserPoolGroup(this, 'UserPoolClientsGroup', {
       userPoolId: userPool.userPoolId,
       groupName: 'Clients',
       description: 'Confirmed users',
@@ -79,7 +79,7 @@ export class AuthStack extends Stack {
     });
 
     // Cognito user client
-    const userPoolClient = new UserPoolClient(this, `${props.appName}UserClient`, {
+    const userPoolClient = new UserPoolClient(this, 'UserPoolWebClient', {
       userPoolClientName: `${props.appName}_user_client`,
       accessTokenValidity: Duration.hours(8),
       idTokenValidity: Duration.hours(8),
@@ -87,7 +87,7 @@ export class AuthStack extends Stack {
     });
 
     // Add permissions to add user to Cognito User Pool
-    cognitoPostConfirmationTrigger.role!.attachInlinePolicy(
+    cognitoAddUser.role!.attachInlinePolicy(
       new Policy(this, 'userpool-policy', {
         statements: [
           new PolicyStatement({

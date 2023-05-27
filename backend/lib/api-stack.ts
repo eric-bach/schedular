@@ -17,12 +17,11 @@ import {
 import { NodejsFunction } from 'aws-cdk-lib/aws-lambda-nodejs';
 import { Runtime } from 'aws-cdk-lib/aws-lambda';
 import { Effect, PolicyDocument, PolicyStatement, Role, ServicePrincipal } from 'aws-cdk-lib/aws-iam';
-
-const dotenv = require('dotenv');
+import { EventBus } from 'aws-cdk-lib/aws-events';
 import * as path from 'path';
 import { SchedularApiStackProps } from './types/SchedularStackProps';
-import { EventBus } from 'aws-cdk-lib/aws-events';
 
+const dotenv = require('dotenv');
 dotenv.config();
 
 export class ApiStack extends Stack {
@@ -34,7 +33,7 @@ export class ApiStack extends Stack {
     const eventBus = EventBus.fromEventBusArn(this, 'eventBus', props.params.eventBusArn);
 
     // Resolver for Cognito user service
-    const userServiceFunction = new NodejsFunction(this, 'UserService', {
+    const userServiceFunction = new NodejsFunction(this, 'UserServiceFunction', {
       functionName: `${props.appName}-${props.envName}-UserService`,
       runtime: Runtime.NODEJS_18_X,
       handler: 'handler',
@@ -55,7 +54,7 @@ export class ApiStack extends Stack {
     );
 
     // AppSync API
-    const api = new GraphqlApi(this, `${props.appName}Api`, {
+    const api = new GraphqlApi(this, 'AppSyncApi', {
       name: `${props.appName}-${props.envName}-api`,
       logConfig: {
         fieldLogLevel: FieldLogLevel.ALL,
@@ -72,10 +71,10 @@ export class ApiStack extends Stack {
     });
 
     // AppSync DataSources
-    const userServiceLambdaDataSource = api.addLambdaDataSource('upsertAppointmentsDataSource', userServiceFunction, {
-      name: 'userServiceLambdaDataSource',
+    const userServiceLambdaDataSource = api.addLambdaDataSource('AppSyncUserServiceLambdaDataSource', userServiceFunction, {
+      name: 'UserServiceLambdaDataSource',
     });
-    const dynamoDbDataSource = new DynamoDbDataSource(this, `dynamoDBDataSource`, {
+    const dynamoDbDataSource = new DynamoDbDataSource(this, 'AppSyncDynamoDBDataSource', {
       api: api,
       table: dataTable,
       description: 'DynamoDbDataSource',
@@ -109,8 +108,8 @@ export class ApiStack extends Stack {
         },
       }),
     });
-    const eventBridgeDataSource = api.addEventBridgeDataSource('eventBridgeDataSource', eventBus, {
-      name: 'eventBridgeDataSource',
+    const eventBridgeDataSource = api.addEventBridgeDataSource('AppSyncEventBridgeDataSource', eventBus, {
+      name: 'AppSyncEventBridgeDataSource',
     });
 
     // AppSync JS Resolvers
@@ -259,7 +258,7 @@ export class ApiStack extends Stack {
       typeName: 'Mutation',
       fieldName: 'createBooking',
       runtime: FunctionRuntime.JS_1_0_0,
-      pipelineConfig: [createBookingFunction, getBookingFunction, sendToEventBridgeFunction],
+      pipelineConfig: [createBookingFunction, getBookingFunction],
       code: passthrough,
     });
     const cancelBookingResolver = new Resolver(this, 'cancelBookingResolver', {
@@ -267,7 +266,7 @@ export class ApiStack extends Stack {
       typeName: 'Mutation',
       fieldName: 'cancelBooking',
       runtime: FunctionRuntime.JS_1_0_0,
-      pipelineConfig: [cancelBookingFunction, getBookingFunction, sendToEventBridgeFunction],
+      pipelineConfig: [cancelBookingFunction, getBookingFunction],
       code: passthrough,
     });
     const upsertDeleteAppointmentsResolver = new Resolver(this, 'upsertDeleteAppointmentsResolver', {
