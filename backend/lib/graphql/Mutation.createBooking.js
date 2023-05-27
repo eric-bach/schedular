@@ -39,6 +39,7 @@ export function request(ctx) {
             email: customer.email,
             phone: customer.phone,
           }),
+          reminders: 0,
           createdAt: util.dynamodb.toDynamoDB(util.time.nowISO8601()),
           updatedAt: util.dynamodb.toDynamoDB(util.time.nowISO8601()),
         },

@@ -1,10 +1,14 @@
 import { SESClient, SendTemplatedEmailCommand, SendTemplatedEmailCommandInput } from '@aws-sdk/client-ses'; // ES Modules import
-import { EventBridgeEvent } from 'aws-lambda';
+import { unmarshall } from '@aws-sdk/util-dynamodb';
+import { DynamoDBRecord } from 'aws-lambda';
 
 type Booking = {
   administratorDetails: {
     firstName: string;
     lastName: string;
+  };
+  appointmentDetails: {
+    status: string;
   };
   customerDetails: {
     firstName: string;
@@ -14,40 +18,55 @@ type Booking = {
   };
   pk: string;
   sk: string;
+  reminders: number;
 };
 
-exports.handler = async (event: EventBridgeEvent<string, Booking>) => {
-  console.debug(`🕧 Received event: ${JSON.stringify(event)}`);
+exports.handler = async (event: DynamoDBRecord[]) => {
+  console.debug('🕧 Received event: ', JSON.stringify(event));
+
+  if (event.length < 0) {
+    console.debug('🛑 No valid DynamoDB Streams records found in event');
+    return;
+  }
 
   // Send email confirmation
   const client = new SESClient({});
 
-  let template: string = '';
-  if (event['detail-type'] === 'BookingCreated') {
-    template = 'AppointmentConfirmation';
-  } else if (event['detail-type'] === 'BookingCancelled') {
-    template = 'AppointmentCancellation';
-  } else if (event['detail-type'] === 'BookingReminder') {
-    template = 'BookingReminder';
-  }
+  await Promise.all(
+    event.map(async (e) => {
+      //@ts-ignore
+      const data: Booking = unmarshall(e.dynamodb?.NewImage);
 
-  // Send templated email
-  const input: SendTemplatedEmailCommandInput = {
-    Source: process.env.SENDER_EMAIL,
-    Destination: { ToAddresses: [event.detail.customerDetails.email] },
-    Template: template,
-    TemplateData: `{
-      "name": "${event.detail.customerDetails.firstName} ${event.detail.customerDetails.lastName}",
-      "date": "${formateLocalLongDate(event.detail.sk)}",
-      "time": "${formatLocalTimeString(event.detail.sk, 0)}",
-      "administrator": "${event.detail.administratorDetails.firstName} ${event.detail.administratorDetails.lastName}" }`,
-  };
-  console.log(`🔔 Send Email:  ${JSON.stringify(input)}`);
+      let template: string = '';
+      if (data.appointmentDetails.status === 'booked' && data.reminders === 0) {
+        template = 'AppointmentConfirmation';
+      } else if (data.appointmentDetails.status === 'cancelled') {
+        template = 'AppointmentCancellation';
+      } else if (data.appointmentDetails.status === 'booked' && data.reminders > 0) {
+        template = 'BookingReminder';
+      }
 
-  const command = new SendTemplatedEmailCommand(input);
-  const response = await client.send(command);
+      // Send templated email
+      const input: SendTemplatedEmailCommandInput = {
+        Source: process.env.SENDER_EMAIL,
+        Destination: { ToAddresses: [data.customerDetails.email] },
+        Template: template,
+        TemplateData: `{
+      "name": "${data.customerDetails.firstName} ${data.customerDetails.lastName}",
+      "date": "${formateLocalLongDate(data.sk)}",
+      "time": "${formatLocalTimeString(data.sk, 0)}",
+      "administrator": "${data.administratorDetails.firstName} ${data.administratorDetails.lastName}" }`,
+      };
+      console.log(`🔔 Send Email:  ${JSON.stringify(input)}`);
 
-  console.log(`✅ Appointment notification sent: {result: ${JSON.stringify(response)}}}`);
+      const command = new SendTemplatedEmailCommand(input);
+      const response = await client.send(command);
+
+      console.log(`🔔 Appointment notification sent: {result: ${JSON.stringify(response)}}}`);
+    })
+  );
+
+  console.log(`✅ Send ${event.length} notifications`);
 };
 
 // Returns the local time part (including offset) of an ISO8601 datetime string
