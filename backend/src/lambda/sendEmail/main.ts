@@ -18,12 +18,13 @@ type Booking = {
   };
   pk: string;
   sk: string;
+  reminders: number;
 };
 
 exports.handler = async (event: DynamoDBRecord[]) => {
-  console.debug(`🕧 Received event: ${JSON.stringify(event)}`);
+  console.debug('🕧 Received event: ', JSON.stringify(event));
 
-  if (!event[0].dynamodb) {
+  if (event.length < 0) {
     console.debug('🛑 No valid DynamoDB Streams records found in event');
     return;
   }
@@ -31,38 +32,41 @@ exports.handler = async (event: DynamoDBRecord[]) => {
   // Send email confirmation
   const client = new SESClient({});
 
-  //@ts-ignore
-  const data: Booking = unmarshall(event[0].dynamodb?.NewImage);
-  console.log(data);
+  await Promise.all(
+    event.map(async (e) => {
+      //@ts-ignore
+      const data: Booking = unmarshall(e.dynamodb?.NewImage);
 
-  let template: string = '';
-  if (data.appointmentDetails.status === 'booked') {
-    // TODO Filter out reminders
-    template = 'AppointmentConfirmation';
-  } else if (data.appointmentDetails.status === 'cancelled') {
-    template = 'AppointmentCancellation';
-  }
-  // else if (data.appointmentDetails.status === 'booked') {
-  //   template = 'BookingReminder';
-  // }
+      let template: string = '';
+      if (data.appointmentDetails.status === 'booked' && data.reminders === 0) {
+        template = 'AppointmentConfirmation';
+      } else if (data.appointmentDetails.status === 'cancelled') {
+        template = 'AppointmentCancellation';
+      } else if (data.appointmentDetails.status === 'booked' && data.reminders > 0) {
+        template = 'BookingReminder';
+      }
 
-  // Send templated email
-  const input: SendTemplatedEmailCommandInput = {
-    Source: process.env.SENDER_EMAIL,
-    Destination: { ToAddresses: [data.customerDetails.email] },
-    Template: template,
-    TemplateData: `{
+      // Send templated email
+      const input: SendTemplatedEmailCommandInput = {
+        Source: process.env.SENDER_EMAIL,
+        Destination: { ToAddresses: [data.customerDetails.email] },
+        Template: template,
+        TemplateData: `{
       "name": "${data.customerDetails.firstName} ${data.customerDetails.lastName}",
       "date": "${formateLocalLongDate(data.sk)}",
       "time": "${formatLocalTimeString(data.sk, 0)}",
       "administrator": "${data.administratorDetails.firstName} ${data.administratorDetails.lastName}" }`,
-  };
-  console.log(`🔔 Send Email:  ${JSON.stringify(input)}`);
+      };
+      console.log(`🔔 Send Email:  ${JSON.stringify(input)}`);
 
-  const command = new SendTemplatedEmailCommand(input);
-  const response = await client.send(command);
+      const command = new SendTemplatedEmailCommand(input);
+      const response = await client.send(command);
 
-  console.log(`✅ Appointment notification sent: {result: ${JSON.stringify(response)}}}`);
+      console.log(`🔔 Appointment notification sent: {result: ${JSON.stringify(response)}}}`);
+    })
+  );
+
+  console.log(`✅ Send ${event.length} notifications`);
 };
 
 // Returns the local time part (including offset) of an ISO8601 datetime string

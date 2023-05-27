@@ -38,7 +38,6 @@ switch (stage) {
       params: {
         userPoolId: auth.userPoolId,
         dataTableArn: dataMessaging.dataTableArn,
-        eventBusArn: dataMessaging.eventBusArn,
       },
     });
 

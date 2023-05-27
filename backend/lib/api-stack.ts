@@ -17,7 +17,6 @@ import {
 import { NodejsFunction } from 'aws-cdk-lib/aws-lambda-nodejs';
 import { Runtime } from 'aws-cdk-lib/aws-lambda';
 import { Effect, PolicyDocument, PolicyStatement, Role, ServicePrincipal } from 'aws-cdk-lib/aws-iam';
-import { EventBus } from 'aws-cdk-lib/aws-events';
 import * as path from 'path';
 import { SchedularApiStackProps } from './types/SchedularStackProps';
 
@@ -30,7 +29,6 @@ export class ApiStack extends Stack {
 
     const userPool = UserPool.fromUserPoolId(this, 'userPool', props.params.userPoolId);
     const dataTable = Table.fromTableArn(this, 'table', props.params.dataTableArn);
-    const eventBus = EventBus.fromEventBusArn(this, 'eventBus', props.params.eventBusArn);
 
     // Resolver for Cognito user service
     const userServiceFunction = new NodejsFunction(this, 'UserServiceFunction', {
@@ -108,9 +106,6 @@ export class ApiStack extends Stack {
         },
       }),
     });
-    const eventBridgeDataSource = api.addEventBridgeDataSource('AppSyncEventBridgeDataSource', eventBus, {
-      name: 'AppSyncEventBridgeDataSource',
-    });
 
     // AppSync JS Resolvers
     const getAvailableAppointmentsFunction = new AppsyncFunction(this, 'getAvailableAppointmentsFunction', {
@@ -167,13 +162,6 @@ export class ApiStack extends Stack {
       api: api,
       dataSource: dynamoDbDataSource,
       code: Code.fromAsset(path.join(__dirname, '/graphql/Mutation.cancelBooking.js')),
-      runtime: FunctionRuntime.JS_1_0_0,
-    });
-    const sendToEventBridgeFunction = new AppsyncFunction(this, 'eventBridgeFunction', {
-      name: 'eventBridgeFunction',
-      api: api,
-      dataSource: eventBridgeDataSource,
-      code: Code.fromAsset(path.join(__dirname, '/graphql/Events.sendEvent.js')),
       runtime: FunctionRuntime.JS_1_0_0,
     });
     const upsertAppointmentsFunction = new AppsyncFunction(this, 'upsertAppointmentsFunction', {

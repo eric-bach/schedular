@@ -6,7 +6,7 @@ import { NodejsFunction } from 'aws-cdk-lib/aws-lambda-nodejs';
 import { Runtime, StartingPosition } from 'aws-cdk-lib/aws-lambda';
 import { Effect, ManagedPolicy, PolicyStatement, Role, ServicePrincipal } from 'aws-cdk-lib/aws-iam';
 import { CfnPipe } from 'aws-cdk-lib/aws-pipes';
-import { EventBus, Rule, Schedule } from 'aws-cdk-lib/aws-events';
+import { Rule, Schedule } from 'aws-cdk-lib/aws-events';
 import { CfnTemplate, EmailIdentity } from 'aws-cdk-lib/aws-ses';
 import { LambdaFunction } from 'aws-cdk-lib/aws-events-targets';
 
@@ -15,7 +15,6 @@ dotenv.config();
 
 export class DataMessagingStack extends Stack {
   public dataTableArn: string;
-  public eventBusArn: string;
 
   constructor(scope: Construct, id: string, props: SchedularBaseStackProps) {
     super(scope, id, props);
@@ -64,14 +63,6 @@ export class DataMessagingStack extends Stack {
     });
 
     /***
-     *** EventBridge
-     ***/
-
-    const eventBus = new EventBus(this, 'EventBus', {
-      eventBusName: `${props.appName}-bus-${props.envName}`,
-    });
-
-    /***
      *** Lambda Functions
      ***/
 
@@ -109,7 +100,6 @@ export class DataMessagingStack extends Stack {
       entry: 'src/lambda/sendReminders/main.ts',
       environment: {
         DATA_TABLE_NAME: dataTable.tableName,
-        EVENTBUS_NAME: eventBus.eventBusName,
         REGION: this.region,
       },
       timeout: Duration.seconds(20),
@@ -119,16 +109,8 @@ export class DataMessagingStack extends Stack {
     sendRemindersFunction.addToRolePolicy(
       new PolicyStatement({
         effect: Effect.ALLOW,
-        actions: ['dynamodb:Query'],
-        resources: [dataTable.tableArn + '/index/type-gsi'],
-      })
-    );
-    // Add permission to send to EventBridge
-    sendRemindersFunction.addToRolePolicy(
-      new PolicyStatement({
-        effect: Effect.ALLOW,
-        actions: ['events:PutEvents'],
-        resources: [eventBus.eventBusArn],
+        actions: ['dynamodb:Query', 'dynamodb:UpdateItem'],
+        resources: [dataTable.tableArn + '*'],
       })
     );
 
@@ -170,23 +152,6 @@ export class DataMessagingStack extends Stack {
       enabled: true,
     });
     cronRule.addTarget(new LambdaFunction(sendRemindersFunction));
-
-    // // EventBus Rule
-    // const sendEmailRule = new Rule(this, 'SendEmailRule', {
-    //   ruleName: `${props.appName}-SendEmailRule-${props.envName}`,
-    //   description: 'SendEmail',
-    //   eventBus: eventBus,
-    //   eventPattern: {
-    //     source: ['custom.schedular'],
-    //     detailType: ['BookingReminder', 'BookingCreated', 'BookingCancelled'],
-    //   },
-    // });
-    // sendEmailRule.addTarget(
-    //   new LambdaFunction(sendEmailFunction, {
-    //     maxEventAge: Duration.hours(2),
-    //     retryAttempts: 2,
-    //   })
-    // );
 
     /***
      *** SES
@@ -240,11 +205,6 @@ export class DataMessagingStack extends Stack {
 
     new CfnOutput(this, 'SendRemindersFunctionArn', { value: sendRemindersFunction.functionArn });
 
-    new CfnOutput(this, 'EventBusArn', {
-      value: eventBus.eventBusArn,
-      exportName: `${props.appName}-${props.envName}-eventBusArn`,
-    });
-
     new CfnOutput(this, 'EmailIdentityName', { value: emailIdentity.emailIdentityName });
 
     /***
@@ -252,6 +212,5 @@ export class DataMessagingStack extends Stack {
      ***/
 
     this.dataTableArn = dataTable.tableArn;
-    this.eventBusArn = eventBus.eventBusArn;
   }
 }
