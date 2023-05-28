@@ -64,7 +64,7 @@ function ManageSchedule() {
   const [appointments, setAppointments] = React.useState<InputValues[]>([]);
 
   const getAppointments = async (from: Dayjs, to: Dayjs) => {
-    console.debug(`[SCHEDULE] Getting schedule from ${from} to ${to}`);
+    //console.debug(`[MANAGE SCHEDULE] Getting schedule from ${from} to ${to}`);
 
     setLoading(true);
 
@@ -77,18 +77,17 @@ function ManageSchedule() {
   };
 
   async function dateSelected(d: Dayjs) {
-    console.log('[SCHEDULE] Date selected', d);
     setDate(d);
     setError(undefined);
 
     const result = await getAppointments(d.hour(0).minute(0).second(0), d.hour(0).minute(0).second(0).add(1, 'day'));
-    console.debug('[SCHEDULE] Found appointments', result);
+    //console.debug('[MANAGE SCHEDULE] Found appointments', result);
   }
 
   useEffect(() => {
     if (authStatus === 'authenticated') {
       getAppointments(dayjs().hour(0).minute(0).second(0), dayjs().hour(0).minute(0).second(0).add(1, 'day')).then((result) => {
-        console.debug('[SCHEDULE] Loaded initial appointments', result);
+        //console.debug('[MANAGE SCHEDULE] Loaded initial appointments', result);
       });
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -111,7 +110,7 @@ function ManageSchedule() {
     values.push(appt);
 
     setAppointments([...appointments, appt]);
-    console.log('ADDED APPOINTMENT', values);
+    //console.debug('[MANAGE SCHEDULE] Added appointment', values);
   }
 
   function removeField(values: InputValues[], index: number) {
@@ -125,7 +124,7 @@ function ManageSchedule() {
     }
 
     setAppointments([...appointments]);
-    console.log('REMOVED APPOINTMENT', values);
+    // console.log('[MANAGE SCHEDULE] Removed appointment', values);
   }
 
   function validSchedule(values: InputValues[]) {
@@ -156,23 +155,17 @@ function ManageSchedule() {
       }
     }
 
-    if (isValid) {
-      console.log('[SCHEDULE] VALIDATION PASSED! SAVING VALUES', values);
-    }
-
     return isValid;
   }
 
   async function handleSubmit(values: InputValues[]) {
     if (validSchedule(values)) {
       values = values.map((p) => (p.status === 'available*' ? { ...p, status: 'available' } : p));
-      console.log('Ready to save', values);
 
-      // TODO Call upsertDeleteAppointments
       const result = await API.graphql<GraphQLQuery<UpsertDeleteAppointmentsResponse>>(
         graphqlOperation(UPSERT_DELETE_APPOINTMENTS, { input: { appointments: values } })
       );
-      console.log('[SCHEDULE] UpsertDelete Response:', result);
+      //console.log('[MANAGE SCHEDULE] UpsertDelete Response:', result);
 
       dateSelected(date ?? dayjs());
     }

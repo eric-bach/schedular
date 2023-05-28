@@ -36,7 +36,7 @@ function Calendar() {
     let fromDate = dayjs(date).set('hour', 0).set('minute', 0).set('second', 0).set('millisecond', 0).valueOf();
     let from = new Date(Math.max(new Date().getTime(), fromDate)).toISOString();
     let to = dayjs(date.add(1, 'day')).set('hour', 0).set('minute', 0).set('second', 0).set('millisecond', 0).toISOString();
-    console.debug(`[BOOKING] Getting schedule from ${from} to ${to}`);
+    //console.debug(`[CALENDAR] Getting schedule from ${from} to ${to}`);
 
     try {
       setLoading(true);
@@ -46,7 +46,7 @@ function Calendar() {
 
       return appointments.data?.getAvailableAppointments?.items;
     } catch (error) {
-      console.error('[BOOKING] Error', error);
+      console.error(error);
       setLoading(false);
     }
   };
@@ -62,11 +62,11 @@ function Calendar() {
     setSelectedDate(date);
 
     await getAppointments(date ?? dayjs());
-    console.debug('[BOOKING] Available appointments', appointments);
+    //console.debug('[CALENDAR] Available appointments', appointments);
   }
 
   function appointmentSelected(appointment: AvailableAppointmentItem) {
-    console.debug('[BOOKING] Selected appointment', appointment);
+    //console.debug('[CALENDAR] Selected appointment', appointment);
     setSelectedAppointment(appointment);
   }
 
@@ -80,11 +80,11 @@ function Calendar() {
       pk: selectedAppointment.pk,
       sk: selectedAppointment.sk,
       customer: {
-        id: user.attributes?.sub,
-        firstName: user.attributes?.given_name,
-        lastName: user.attributes?.family_name,
-        email: user.attributes?.email,
-        phone: user.attributes?.phone_number,
+        id: user.attributes?.sub!,
+        firstName: user.attributes?.given_name!,
+        lastName: user.attributes?.family_name!,
+        email: user.attributes?.email!,
+        phone: user.attributes?.phone_number!,
       },
       administratorDetails: {
         id: selectedAppointment.administratorDetails.id,
@@ -98,9 +98,8 @@ function Calendar() {
       },
     };
 
-    console.debug('[BOOKING] Booking input', input);
     const result = await API.graphql<GraphQLQuery<CreateBookingResponse>>(graphqlOperation(CREATE_BOOKING, { input: input }));
-    console.debug('[BOOKING] Booking result', result.data?.createBooking);
+    //console.debug('[CALENDAR] Booking result', result.data?.createBooking);
 
     if (result.data?.createBooking.appointmentDetails.status === 'booked') {
       navigate(`/confirmation/${result.data.createBooking.pk.slice(8)}`, {
@@ -182,7 +181,7 @@ function Calendar() {
               </Stack>
 
               {selectedAppointment && (
-                <Card sx={{ mt: 2, ml: -2, border: 'none' }} raised={true} variant='outlined'>
+                <Card sx={{ mt: 2, ml: -2, border: 'none' }} variant='outlined'>
                   <CardContent>
                     <Typography gutterBottom variant='h5' component='div'>
                       Confirm Appointment

@@ -1,6 +1,6 @@
 import { Base } from './BaseTypes';
 
-// GetAvailableAppointments - /booking
+// GetAvailableAppointments
 export type AvailableAppointmentItem = {
   pk: string;
   sk: string;
@@ -13,7 +13,6 @@ export type AvailableAppointmentItem = {
     firstName: string;
     lastName: string;
   };
-  bookingId: string;
 };
 export type GetAvailableAppointmentsResponse = {
   getAvailableAppointments: {
@@ -22,7 +21,7 @@ export type GetAvailableAppointmentsResponse = {
   lastEvaluatedKey: Base;
 };
 
-// GetAppointments - /admin/schedule
+// GetAppointments
 export type AppointmentItem = {
   pk: string;
   sk: string;
@@ -51,16 +50,16 @@ export type GetAppointmentsResponse = {
   lastEvaluatedKey: Base;
 };
 
-// CreateBooking - /booking
+// CreateBooking
 export type CreateBookingInput = {
   pk: string;
   sk: string;
   customer: {
-    id: string | undefined;
-    firstName: string | undefined;
-    lastName: string | undefined;
-    email: string | undefined;
-    phone: string | undefined;
+    id: string;
+    firstName: string;
+    lastName: string;
+    email: string;
+    phone: string;
   };
   administratorDetails: {
     id: string;
@@ -79,7 +78,6 @@ export type CreateBookingResponse = {
     sk: string;
     type: string;
     administratorDetails: {
-      id: string;
       firstName: string;
       lastName: string;
     };
@@ -91,18 +89,10 @@ export type CreateBookingResponse = {
       status: string;
       duration: number;
     };
-    customerId: string;
-    customerDetails: {
-      id: string | undefined;
-      firstName: string | undefined;
-      lastName: string | undefined;
-      email: string | undefined;
-      phone: string | undefined;
-    };
   };
 };
 
-// GetUserBookings = /user/appointments
+// GetUserBookings
 export type BookingItem = {
   pk: string;
   sk: string;
@@ -120,14 +110,6 @@ export type BookingItem = {
     firstName: string;
     lastName: string;
   };
-  customerId: String;
-  customerDetails: {
-    id: string;
-    firstName: string;
-    lastName: string;
-    email: string;
-    phone: string;
-  };
 };
 export type GetUserBookingsResponse = {
   getUserBookings: {
@@ -136,7 +118,7 @@ export type GetUserBookingsResponse = {
   lastEvaluatedKey: Base;
 };
 
-// CancelBooking - /user/appointments
+// CancelBooking
 export type CancelBookingInput = {
   bookingId: string;
   appointmentDetails: {
@@ -167,11 +149,11 @@ export type CancelBookingResponse = {
       duration: number;
     };
     customerDetails: {
-      id: string | undefined;
-      firstName: string | undefined;
-      lastName: string | undefined;
-      email: string | undefined;
-      phone: string | undefined;
+      id: string;
+      firstName: string;
+      lastName: string;
+      email: string;
+      phone: string;
     };
   };
 };
@@ -195,11 +177,11 @@ export type OnCancelBookingResponse = {
     duration: number;
   };
   customerDetails: {
-    id: string | undefined;
-    firstName: string | undefined;
-    lastName: string | undefined;
-    email: string | undefined;
-    phone: string | undefined;
+    id: string;
+    firstName: string;
+    lastName: string;
+    email: string;
+    phone: string;
   };
 };
 

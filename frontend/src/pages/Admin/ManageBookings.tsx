@@ -23,8 +23,7 @@ function ManageBookings() {
   const getAppointments = async (d: Dayjs) => {
     let from = dayjs(d).set('hour', 0).set('minute', 0).set('second', 0).set('millisecond', 0).toISOString();
     let to = dayjs(d.add(1, 'day')).set('hour', 0).set('minute', 0).set('second', 0).set('millisecond', 0).toISOString();
-
-    console.debug(`[APPOINTMENTS] Getting schedule from ${from} to ${to}`);
+    //console.debug(`[MANGE BOOKINGS] Getting schedule from ${from} to ${to}`);
 
     setLoading(true);
 
@@ -40,7 +39,7 @@ function ManageBookings() {
     setDate(d);
     await getAppointments(d ?? dayjs());
 
-    console.debug('[APPOINTMENTS] Found appointments', appointments);
+    //console.debug('[MANGE BOOKINGS] Found appointments', appointments);
   }
 
   useEffect(() => {
@@ -49,7 +48,7 @@ function ManageBookings() {
       setDate(d);
 
       getAppointments(d).then((resp) => {
-        //console.debug('[APPOINTMENTS] Loaded initial appointments', resp);
+        //console.debug('[MANGE BOOKINGS] Loaded initial appointments', resp);
       });
     } else {
       // TODO Return error

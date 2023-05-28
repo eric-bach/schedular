@@ -11,15 +11,7 @@ export const GET_AVAILABLE_APPOINTMENTS = `query GetAvailableAppointments($to: S
         id
         firstName
         lastName
-      }
-      bookingId
-      customerDetails {
-        id
-        firstName
-        lastName
-        email
-        phone
-      }
+      }      
     }
     lastEvaluatedKey
     {
@@ -115,14 +107,6 @@ export const GET_USER_BOOKINGS = `query GetUserBookings($customerId: String!, $d
         firstName
         lastName
       }
-      customerId
-      customerDetails {
-        id
-        firstName
-        lastName
-        email
-        phone
-      }
     }
     lastEvaluatedKey
     {
@@ -138,7 +122,6 @@ export const CREATE_BOOKING = `mutation CreateBooking($input: CreateBookingInput
     sk
     type
     administratorDetails {
-      id
       firstName
       lastName
     }
@@ -149,14 +132,6 @@ export const CREATE_BOOKING = `mutation CreateBooking($input: CreateBookingInput
       category
       status
       duration
-    }
-    customerId
-    customerDetails {
-      id
-      firstName
-      lastName
-      email
-      phone
     }
   }
 }`;
@@ -167,7 +142,6 @@ export const CANCEL_BOOKING = `mutation CancelBooking($input: CancelBookingInput
     sk
     type
     administratorDetails {
-      id
       firstName
       lastName
     }
@@ -178,14 +152,6 @@ export const CANCEL_BOOKING = `mutation CancelBooking($input: CancelBookingInput
       category
       status
       duration
-    }
-    customerId
-    customerDetails {
-      id
-      firstName
-      lastName
-      email
-      phone
     }
   }
 }`;
