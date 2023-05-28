@@ -157,6 +157,8 @@ To seed test data
 1. Edit `backend\helpers\seed.ts` with environment name and AWS profile name
 
    ```
+   var appName: string = 'schedular';
+   var userId: string = '123';
    var env: string = 'dev';
    var profile: string = 'default';
    ```

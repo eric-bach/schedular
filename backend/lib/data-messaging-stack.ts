@@ -1,7 +1,7 @@
 import { Stack, RemovalPolicy, CfnOutput, Duration } from 'aws-cdk-lib';
 import { Construct } from 'constructs';
 import { Table, BillingMode, AttributeType, StreamViewType } from 'aws-cdk-lib/aws-dynamodb';
-import { SchedularBaseStackProps } from './types/SchedularStackProps';
+import { SchedularDataStackProps } from './types/SchedularStackProps';
 import { NodejsFunction } from 'aws-cdk-lib/aws-lambda-nodejs';
 import { Runtime, StartingPosition } from 'aws-cdk-lib/aws-lambda';
 import { Effect, ManagedPolicy, PolicyStatement, Role, ServicePrincipal } from 'aws-cdk-lib/aws-iam';
@@ -9,6 +9,7 @@ import { CfnPipe } from 'aws-cdk-lib/aws-pipes';
 import { Rule, Schedule } from 'aws-cdk-lib/aws-events';
 import { CfnTemplate, EmailIdentity } from 'aws-cdk-lib/aws-ses';
 import { LambdaFunction } from 'aws-cdk-lib/aws-events-targets';
+import { UserPool } from 'aws-cdk-lib/aws-cognito';
 
 const dotenv = require('dotenv');
 dotenv.config();
@@ -16,8 +17,10 @@ dotenv.config();
 export class DataMessagingStack extends Stack {
   public dataTableArn: string;
 
-  constructor(scope: Construct, id: string, props: SchedularBaseStackProps) {
+  constructor(scope: Construct, id: string, props: SchedularDataStackProps) {
     super(scope, id, props);
+
+    const userPool = UserPool.fromUserPoolId(this, 'userPool', props.params.userPoolId);
 
     /***
      *** DynamoDB
@@ -114,6 +117,27 @@ export class DataMessagingStack extends Stack {
       })
     );
 
+    // Enrichment Lambda
+    const getAdministratorFunction = new NodejsFunction(this, 'GetAdministratorFunction', {
+      functionName: `${props.appName}-${props.envName}-GetAdministrator`,
+      runtime: Runtime.NODEJS_18_X,
+      handler: 'handler',
+      entry: 'src/lambda/getAdministrators/main.ts',
+      environment: {
+        USER_POOL_ID: userPool.userPoolId,
+      },
+      timeout: Duration.seconds(20),
+      memorySize: 512,
+    });
+    // Add permission to query Cognito
+    getAdministratorFunction.addToRolePolicy(
+      new PolicyStatement({
+        effect: Effect.ALLOW,
+        actions: ['cognito-idp:ListUsers'],
+        resources: [userPool.userPoolArn],
+      })
+    );
+
     /***
      *** EventBridge Pipes
      ***/
@@ -139,12 +163,14 @@ export class DataMessagingStack extends Stack {
           ],
         },
       },
+      enrichment: getAdministratorFunction.functionArn,
       target: sendEmailFunction.functionArn,
     });
 
     // Grant permissions for Pipes
     dataTable.grantStreamRead(pipeRole);
     sendEmailFunction.grantInvoke(pipeRole);
+    getAdministratorFunction.grantInvoke(pipeRole);
 
     // EventBridge rule to send email reminders
     const cronRule = new Rule(this, 'SendRemindersSchedule', {

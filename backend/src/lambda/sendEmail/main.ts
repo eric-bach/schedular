@@ -1,9 +1,8 @@
 import { SESClient, SendTemplatedEmailCommand, SendTemplatedEmailCommandInput } from '@aws-sdk/client-ses'; // ES Modules import
-import { unmarshall } from '@aws-sdk/util-dynamodb';
-import { DynamoDBRecord } from 'aws-lambda';
 
 type Booking = {
   administratorDetails: {
+    email: string | undefined;
     firstName: string;
     lastName: string;
   };
@@ -14,18 +13,17 @@ type Booking = {
     firstName: string;
     lastName: string;
     email: string;
-    string: string;
   };
   pk: string;
   sk: string;
   reminders: number;
 };
 
-exports.handler = async (event: DynamoDBRecord[]) => {
-  console.debug('🕧 Received event: ', JSON.stringify(event));
+exports.handler = async (event: Booking[]) => {
+  console.debug('🕧 Send Email invoked: ', JSON.stringify(event));
 
   if (event.length < 0) {
-    console.debug('🛑 No valid DynamoDB Streams records found in event');
+    console.debug('⚠️ No records to process. Exiting.');
     return;
   }
 
@@ -33,10 +31,7 @@ exports.handler = async (event: DynamoDBRecord[]) => {
   const client = new SESClient({});
 
   await Promise.all(
-    event.map(async (e) => {
-      //@ts-ignore
-      const data: Booking = unmarshall(e.dynamodb?.NewImage);
-
+    event.map(async (data) => {
       let template: string = '';
       if (data.appointmentDetails.status === 'booked' && data.reminders === 0) {
         template = 'AppointmentConfirmation';
@@ -57,12 +52,40 @@ exports.handler = async (event: DynamoDBRecord[]) => {
       "time": "${formatLocalTimeString(data.sk, 0)}",
       "administrator": "${data.administratorDetails.firstName} ${data.administratorDetails.lastName}" }`,
       };
-      console.log(`🔔 Send Email:  ${JSON.stringify(input)}`);
 
       const command = new SendTemplatedEmailCommand(input);
       const response = await client.send(command);
 
       console.log(`🔔 Appointment notification sent: {result: ${JSON.stringify(response)}}}`);
+
+      // TODO Send to Administrator as well
+      if (data.administratorDetails.email) {
+        let template: string = '';
+        if (data.appointmentDetails.status === 'booked' && data.reminders === 0) {
+          template = 'AppointmentConfirmation';
+        } else if (data.appointmentDetails.status === 'cancelled') {
+          template = 'AppointmentCancellation';
+        } else if (data.appointmentDetails.status === 'booked' && data.reminders > 0) {
+          template = 'BookingReminder';
+        }
+
+        // Send templated email
+        const input: SendTemplatedEmailCommandInput = {
+          Source: process.env.SENDER_EMAIL,
+          Destination: { ToAddresses: [data.administratorDetails.email] },
+          Template: template,
+          TemplateData: `{
+        "name": "${data.customerDetails.firstName} ${data.customerDetails.lastName}",
+        "date": "${formateLocalLongDate(data.sk)}",
+        "time": "${formatLocalTimeString(data.sk, 0)}",
+        "administrator": "${data.administratorDetails.firstName} ${data.administratorDetails.lastName}" }`,
+        };
+
+        const command = new SendTemplatedEmailCommand(input);
+        const response = await client.send(command);
+
+        console.log(`🔔 Adminsitrator Appointment notification sent: {result: ${JSON.stringify(response)}}}`);
+      }
     })
   );
 
