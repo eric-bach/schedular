@@ -50,9 +50,10 @@ exports.handler = async () => {
           pk: values.pk,
           sk: values.sk,
         }),
-        UpdateExpression: 'SET reminders = :count',
+        UpdateExpression: 'SET reminders = :count, updatedAt = :updatedAt',
         ExpressionAttributeValues: marshall({
           ':count': values.reminders + 1,
+          ':updatedAt': new Date().toISOString(),
         }),
       };
       let updateResult: UpdateItemCommandOutput | undefined = await dynamoDbCommand(new UpdateItemCommand(input));
