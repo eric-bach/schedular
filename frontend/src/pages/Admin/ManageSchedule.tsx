@@ -80,7 +80,7 @@ function ManageSchedule() {
     setDate(d);
     setError(undefined);
 
-    const result = await getAppointments(d.hour(0).minute(0).second(0), d.hour(0).minute(0).second(0).add(1, 'day'));
+    await getAppointments(d.hour(0).minute(0).second(0), d.hour(0).minute(0).second(0).add(1, 'day'));
     //console.debug('[MANAGE SCHEDULE] Found appointments', result);
   }
 
@@ -162,9 +162,7 @@ function ManageSchedule() {
     if (validSchedule(values)) {
       values = values.map((p) => (p.status === 'available*' ? { ...p, status: 'available' } : p));
 
-      const result = await API.graphql<GraphQLQuery<UpsertDeleteAppointmentsResponse>>(
-        graphqlOperation(UPSERT_DELETE_APPOINTMENTS, { input: { appointments: values } })
-      );
+      await API.graphql<GraphQLQuery<UpsertDeleteAppointmentsResponse>>(graphqlOperation(UPSERT_DELETE_APPOINTMENTS, { input: { appointments: values } }));
       //console.log('[MANAGE SCHEDULE] UpsertDelete Response:', result);
 
       dateSelected(date ?? dayjs());

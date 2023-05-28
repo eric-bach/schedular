@@ -161,7 +161,7 @@ function BookedAppointments(state: any) {
 
     //console.debug('[BOOKED APPOINTMENTS] Cancel booking:', input);
     try {
-      const result = await API.graphql<GraphQLQuery<CancelBookingResponse>>(graphqlOperation(CANCEL_BOOKING, { input: input }));
+      await API.graphql<GraphQLQuery<CancelBookingResponse>>(graphqlOperation(CANCEL_BOOKING, { input: input }));
       //console.debug('[BOOKED APPOINTMENTS] Cancel booking result:', result);
     } catch (error) {
       console.error(error);
