@@ -58,8 +58,9 @@ exports.handler = async (event: Booking[]) => {
 
       console.log(`🔔 Appointment notification sent: {result: ${JSON.stringify(response)}}}`);
 
-      // TODO Send to Administrator as well
+      // Send to Administrator as well
       if (data.administratorDetails.email) {
+        // TODO Create new templates for administrator notifications
         let template: string = '';
         if (data.appointmentDetails.status === 'booked' && data.reminders === 0) {
           template = 'AppointmentConfirmation';
