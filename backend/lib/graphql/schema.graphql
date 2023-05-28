@@ -190,7 +190,7 @@ type UserResponse {
   email: String!
   phoneNumber: String!
 }
-type GetUsersResponse {
+type ListUsersResponse {
   users: [UserResponse]
   nextToken: String
 }
@@ -206,7 +206,7 @@ type Query {
   getUserBookings(customerId: String!, datetime: String!, lastEvaluatedKey: LastEvaluatedKey): GetBookingsResponse
     @aws_auth(cognito_groups: ["Clients", "Admins"])
 
-  listUsersInGroup(groupName: String!, limit: Int, nextToken: String): GetUsersResponse @aws_auth(cognito_groups: ["Admins"])
+  listUsersInGroup(groupName: String!, limit: Int, nextToken: String): ListUsersResponse @aws_auth(cognito_groups: ["Admins"])
 }
 
 type Mutation {

@@ -94,7 +94,7 @@ function BookedAppointments(state: any) {
   const fullScreen = useMediaQuery(theme.breakpoints.down('md'));
 
   const getUserBookings = async (customerId: string) => {
-    //console.debug('[BOOKINGS] Getting appointments for', new Date().toISOString());
+    //console.debug('[BOOKED APPOINTMENTS] Getting appointments for', new Date().toISOString());
 
     try {
       setLoading(true);
@@ -105,7 +105,7 @@ function BookedAppointments(state: any) {
         })
       );
 
-      console.debug('[BOOKINGS] Found bookings', result);
+      //console.debug('[BOOKED APPOINTMENTS] Found bookings', result);
       setBookings(result.data?.getUserBookings?.items);
       setDisplayBookings(
         showCancelledBookings
@@ -116,22 +116,22 @@ function BookedAppointments(state: any) {
 
       return result.data?.getUserBookings?.items;
     } catch (error) {
-      console.error('[BOOKINGS] Error', error);
+      console.error(error);
       setLoading(false);
     }
   };
 
-  // Subscribe to creation of Todo
+  // Subscribe to cancellation
   useEffect(() => {
     const onCancelBookingListener = API.graphql<GraphQLSubscription<OnCancelBookingResponse>>(graphqlOperation(ON_CANCEL_BOOKING)).subscribe({
       next: async ({ provider, value }: any) => {
-        console.log('[BOOKINGS] Received subscription event', value);
+        //console.debug('[BOOKED APPOINTMENTS] Received subscription event', value);
         setOpen(false);
 
         // Update bookings with cancelled booking from GraphQL subscription without calling server
         let filteredBookings = bookings?.filter((b) => b?.pk !== value.data.onCancelBooking.pk);
         filteredBookings?.push(value.data.onCancelBooking);
-        console.log('[BOOKINGS] Updated bookings:', filteredBookings);
+        //console.debug('[BOOKED APPOINTMENTS] Updated bookings:', filteredBookings);
         setBookings(filteredBookings);
         setDisplayBookings(showCancelledBookings ? filteredBookings : filteredBookings?.filter((b) => b?.appointmentDetails.status !== 'cancelled'));
       },
@@ -144,7 +144,7 @@ function BookedAppointments(state: any) {
 
   useEffect(() => {
     getUserBookings(customer.id).then((resp) => {
-      //console.debug('[BOOKINGS] Found bookings', resp);
+      //console.debug('[BOOKED APPOINTMENTS] Found bookings', resp);
     });
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
@@ -159,13 +159,17 @@ function BookedAppointments(state: any) {
       appointmentDetails: booking.appointmentDetails,
     };
 
-    console.debug('[BOOKINGS] Cancel booking:', input);
-    const result = await API.graphql<GraphQLQuery<CancelBookingResponse>>(graphqlOperation(CANCEL_BOOKING, { input: input }));
-    console.debug('[BOOKINGS] Cancel booking result:', result);
+    //console.debug('[BOOKED APPOINTMENTS] Cancel booking:', input);
+    try {
+      const result = await API.graphql<GraphQLQuery<CancelBookingResponse>>(graphqlOperation(CANCEL_BOOKING, { input: input }));
+      //console.debug('[BOOKED APPOINTMENTS] Cancel booking result:', result);
+    } catch (error) {
+      console.error(error);
+      setError(true);
+    }
   };
 
   const handleClickOpen = (booking: BookingItem) => {
-    console.log(booking);
     setSelectedBooking(booking);
     setOpen(true);
   };
@@ -244,16 +248,20 @@ function BookedAppointments(state: any) {
                         <Typography component='span' variant='button' sx={{ color: status === 'booked' ? 'green' : 'red', display: 'inline' }}>
                           {status}
                         </Typography>
-                        <Typography sx={{ display: 'block' }} />
+                        <br />
                         <Typography component='span' variant='subtitle2' color='text.primary' sx={{ display: 'inline' }}>
                           Duration:{' '}
                         </Typography>
-                        {booking.appointmentDetails.duration}
-                        <Typography sx={{ display: 'block' }} />
+                        <Typography component='span' variant='body2' sx={{ display: 'inline' }}>
+                          {booking.appointmentDetails.duration}
+                        </Typography>
+                        <br />
                         <Typography component='span' variant='subtitle2' color='text.primary' sx={{ display: 'inline' }}>
                           Therapist:{' '}
                         </Typography>
-                        {booking.administratorDetails.firstName} {booking.administratorDetails.lastName}
+                        <Typography component='span' variant='body2' sx={{ display: 'inline' }}>
+                          {booking.administratorDetails.firstName} {booking.administratorDetails.lastName}
+                        </Typography>
                       </React.Fragment>
                     }
                   />

@@ -166,14 +166,6 @@ mutation CancelBooking {
       status
       duration
     }
-    customerId
-    customerDetails {
-      id
-      firstName
-      lastName
-      email
-      phone
-    }
   }
 }
 

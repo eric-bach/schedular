@@ -21,7 +21,7 @@ export type GetAvailableAppointmentsResponse = {
   lastEvaluatedKey: Base;
 };
 
-// GetAppointments - /admin/schedule
+// GetAppointments
 export type AppointmentItem = {
   pk: string;
   sk: string;
@@ -50,16 +50,16 @@ export type GetAppointmentsResponse = {
   lastEvaluatedKey: Base;
 };
 
-// CreateBooking - /booking
+// CreateBooking
 export type CreateBookingInput = {
   pk: string;
   sk: string;
   customer: {
-    id: string | undefined;
-    firstName: string | undefined;
-    lastName: string | undefined;
-    email: string | undefined;
-    phone: string | undefined;
+    id: string;
+    firstName: string;
+    lastName: string;
+    email: string;
+    phone: string;
   };
   administratorDetails: {
     id: string;
@@ -92,7 +92,7 @@ export type CreateBookingResponse = {
   };
 };
 
-// GetUserBookings = /user/appointments
+// GetUserBookings
 export type BookingItem = {
   pk: string;
   sk: string;
@@ -110,14 +110,6 @@ export type BookingItem = {
     firstName: string;
     lastName: string;
   };
-  customerId: String;
-  customerDetails: {
-    id: string;
-    firstName: string;
-    lastName: string;
-    email: string;
-    phone: string;
-  };
 };
 export type GetUserBookingsResponse = {
   getUserBookings: {
@@ -126,7 +118,7 @@ export type GetUserBookingsResponse = {
   lastEvaluatedKey: Base;
 };
 
-// CancelBooking - /user/appointments
+// CancelBooking
 export type CancelBookingInput = {
   bookingId: string;
   appointmentDetails: {
@@ -157,11 +149,11 @@ export type CancelBookingResponse = {
       duration: number;
     };
     customerDetails: {
-      id: string | undefined;
-      firstName: string | undefined;
-      lastName: string | undefined;
-      email: string | undefined;
-      phone: string | undefined;
+      id: string;
+      firstName: string;
+      lastName: string;
+      email: string;
+      phone: string;
     };
   };
 };
@@ -185,11 +177,11 @@ export type OnCancelBookingResponse = {
     duration: number;
   };
   customerDetails: {
-    id: string | undefined;
-    firstName: string | undefined;
-    lastName: string | undefined;
-    email: string | undefined;
-    phone: string | undefined;
+    id: string;
+    firstName: string;
+    lastName: string;
+    email: string;
+    phone: string;
   };
 };
 

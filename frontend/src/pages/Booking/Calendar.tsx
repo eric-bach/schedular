@@ -46,7 +46,7 @@ function Calendar() {
 
       return appointments.data?.getAvailableAppointments?.items;
     } catch (error) {
-      //console.error('[CALENDAR] Error', error);
+      console.error(error);
       setLoading(false);
     }
   };
@@ -80,11 +80,11 @@ function Calendar() {
       pk: selectedAppointment.pk,
       sk: selectedAppointment.sk,
       customer: {
-        id: user.attributes?.sub,
-        firstName: user.attributes?.given_name,
-        lastName: user.attributes?.family_name,
-        email: user.attributes?.email,
-        phone: user.attributes?.phone_number,
+        id: user.attributes?.sub!,
+        firstName: user.attributes?.given_name!,
+        lastName: user.attributes?.family_name!,
+        email: user.attributes?.email!,
+        phone: user.attributes?.phone_number!,
       },
       administratorDetails: {
         id: selectedAppointment.administratorDetails.id,

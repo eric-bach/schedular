@@ -47,7 +47,7 @@ function ManageCustomers() {
   const listUsersInGroup = async (index: number, nextToken: string | undefined) => {
     setLoading(true);
     const result = await API.graphql<GraphQLQuery<ListUsersResponse>>(
-      graphqlOperation(LIST_USERS_IN_GROUP, { groupName: groupNames[index], limit: 2, nextToken: nextToken })
+      graphqlOperation(LIST_USERS_IN_GROUP, { groupName: groupNames[index], limit: 10, nextToken: nextToken })
     );
 
     if (nextToken && result.data?.listUsersInGroup.users) {
@@ -55,11 +55,10 @@ function ManageCustomers() {
     } else {
       setUsers(result.data?.listUsersInGroup.users ?? []);
     }
+    //console.log('[CUSTOMERS] Users:', result.data?.listUsersInGroup.users);
 
     setNextToken(result.data?.listUsersInGroup.nextToken);
     setLoading(false);
-    console.log('[CUSTOMERS] Users:', result);
-    console.log('[CUSTOMERS] Next Token:', result.data?.listUsersInGroup.nextToken);
   };
 
   async function addToGroup(index: number) {
@@ -72,7 +71,7 @@ function ManageCustomers() {
       })
     );
 
-    console.log('[CUSTOMERS] Added user to group:', result);
+    //console.log('[CUSTOMERS] Added user to group:', result);
 
     await listUsersInGroup(tab, undefined);
     setOpen(true);
@@ -85,8 +84,6 @@ function ManageCustomers() {
   }, []);
 
   const handleClick = async (index: number) => {
-    console.log('Clicked User ', users[index]);
-
     if (tab === 0) {
       await addToGroup(index);
     } else {

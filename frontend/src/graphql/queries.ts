@@ -107,14 +107,6 @@ export const GET_USER_BOOKINGS = `query GetUserBookings($customerId: String!, $d
         firstName
         lastName
       }
-      customerId
-      customerDetails {
-        id
-        firstName
-        lastName
-        email
-        phone
-      }
     }
     lastEvaluatedKey
     {
@@ -150,7 +142,6 @@ export const CANCEL_BOOKING = `mutation CancelBooking($input: CancelBookingInput
     sk
     type
     administratorDetails {
-      id
       firstName
       lastName
     }
@@ -161,14 +152,6 @@ export const CANCEL_BOOKING = `mutation CancelBooking($input: CancelBookingInput
       category
       status
       duration
-    }
-    customerId
-    customerDetails {
-      id
-      firstName
-      lastName
-      email
-      phone
     }
   }
 }`;
