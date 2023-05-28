@@ -10,11 +10,10 @@ query GetAvailableAppointments {
       category
       duration
       administratorDetails {
-        id
-      	firstName
+      	id
+        firstName
 				lastName
       }
-      bookingId
       updatedAt
       createdAt
     }
@@ -106,17 +105,17 @@ query GetUserBookings {
 
 mutation CreateBooking {
   createBooking(input: {
-		pk: "appt#fed83827-550e-4964-8ab0-6e9f74efcf42",
-		sk: "2023-06-01T14:00:00.000Z"
+		pk: "appt#4f81b5a0-f23b-4d7e-a97f-e31e12c2ddae",
+		sk: "2023-06-01T15:00:00.000Z"
 		customer: {
-      id: "79aea011-a655-447a-92d4-1d17be6d0ea4",
+      id: "dac04046-6c46-4f93-a61b-bef3292b723b",
       firstName: "Eric",
       lastName: "Test",
       email: "test@test.com",
       phone: "123"
     },
     administratorDetails: {
-      id: "28a9cf0c-971a-4765-9721-64a338e57858",
+      id: "dac04046-6c46-4f93-a61b-bef3292b723b",
       firstName: "Jane"
       lastName: "Doe"
     },
@@ -131,7 +130,6 @@ mutation CreateBooking {
     sk
     type
     administratorDetails {
-      id
       firstName
       lastName
     }
@@ -141,14 +139,6 @@ mutation CreateBooking {
       duration
       type
       category
-    }
-    customerId
-    customerDetails  {
-      id
-      firstName
-      lastName
-      email
-      phone
     }
   }
 }

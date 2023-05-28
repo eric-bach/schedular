@@ -1,6 +1,6 @@
 import { Base } from './BaseTypes';
 
-// GetAvailableAppointments - /booking
+// GetAvailableAppointments
 export type AvailableAppointmentItem = {
   pk: string;
   sk: string;
@@ -13,7 +13,6 @@ export type AvailableAppointmentItem = {
     firstName: string;
     lastName: string;
   };
-  bookingId: string;
 };
 export type GetAvailableAppointmentsResponse = {
   getAvailableAppointments: {
@@ -79,7 +78,6 @@ export type CreateBookingResponse = {
     sk: string;
     type: string;
     administratorDetails: {
-      id: string;
       firstName: string;
       lastName: string;
     };
@@ -90,14 +88,6 @@ export type CreateBookingResponse = {
       category: string;
       status: string;
       duration: number;
-    };
-    customerId: string;
-    customerDetails: {
-      id: string | undefined;
-      firstName: string | undefined;
-      lastName: string | undefined;
-      email: string | undefined;
-      phone: string | undefined;
     };
   };
 };
