@@ -8,8 +8,8 @@ import dayjs from 'dayjs';
 
 const appName: string = 'schedular';
 const userId: string = 'dac04046-6c46-4f93-a61b-bef3292b723b';
-const env: string = 'dev';
-const profile: string = 'default';
+var env: string = 'dev';
+var profile: string = 'default';
 
 async function seed() {
   try {
