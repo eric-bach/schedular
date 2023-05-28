@@ -64,7 +64,7 @@ function ManageCustomers() {
   async function addToGroup(index: number) {
     const user = users[index];
 
-    const result = await API.graphql<GraphQLQuery<Boolean>>(
+    await API.graphql<GraphQLQuery<Boolean>>(
       graphqlOperation(ADD_USER_TO_GROUP, {
         userId: user.id,
         groupName: 'Clients',
