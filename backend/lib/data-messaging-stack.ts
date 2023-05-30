@@ -6,7 +6,7 @@ import { NodejsFunction } from 'aws-cdk-lib/aws-lambda-nodejs';
 import { Runtime, StartingPosition } from 'aws-cdk-lib/aws-lambda';
 import { Effect, ManagedPolicy, PolicyStatement, Role, ServicePrincipal } from 'aws-cdk-lib/aws-iam';
 import { CfnPipe } from 'aws-cdk-lib/aws-pipes';
-import { Rule, Schedule } from 'aws-cdk-lib/aws-events';
+import { EventBus, Rule, Schedule } from 'aws-cdk-lib/aws-events';
 import { CfnTemplate, EmailIdentity } from 'aws-cdk-lib/aws-ses';
 import { LambdaFunction } from 'aws-cdk-lib/aws-events-targets';
 import { UserPool } from 'aws-cdk-lib/aws-cognito';
@@ -66,6 +66,14 @@ export class DataMessagingStack extends Stack {
     });
 
     /***
+     *** EventBridge
+     ***/
+
+    const eventBus = new EventBus(this, 'EventBus', {
+      eventBusName: `${props.appName}-${props.envName}-bus`,
+    });
+
+    /***
      *** Lambda Functions
      ***/
 
@@ -103,17 +111,35 @@ export class DataMessagingStack extends Stack {
       entry: 'src/lambda/sendReminders/main.ts',
       environment: {
         DATA_TABLE_NAME: dataTable.tableName,
+        EVENT_BUS_NAME: eventBus.eventBusName,
+        USER_POOL_ID: userPool.userPoolId,
         REGION: this.region,
       },
       timeout: Duration.seconds(20),
       memorySize: 512,
     });
+    // Add permission to publish events
+    sendRemindersFunction.addToRolePolicy(
+      new PolicyStatement({
+        effect: Effect.ALLOW,
+        actions: ['events:PutEvents'],
+        resources: [eventBus.eventBusArn],
+      })
+    );
     // Add permission to query DynamoDB
     sendRemindersFunction.addToRolePolicy(
       new PolicyStatement({
         effect: Effect.ALLOW,
-        actions: ['dynamodb:Query', 'dynamodb:PartiQLUpdate', 'events:PutEvents'],
+        actions: ['dynamodb:Query'],
         resources: [dataTable.tableArn + '*'],
+      })
+    );
+    // Add permission to query Cognito
+    sendRemindersFunction.addToRolePolicy(
+      new PolicyStatement({
+        effect: Effect.ALLOW,
+        actions: ['cognito-idp:ListUsers'],
+        resources: [userPool.userPoolArn],
       })
     );
 
@@ -135,6 +161,27 @@ export class DataMessagingStack extends Stack {
         effect: Effect.ALLOW,
         actions: ['cognito-idp:ListUsers'],
         resources: [userPool.userPoolArn],
+      })
+    );
+
+    /***
+     *** AWS EventBridge - Event Bus Rules
+     ***/
+
+    const sendRemindersRule = new Rule(this, 'SendRemindersRule', {
+      ruleName: `${props.appName}-SendReminders-${props.envName}`,
+      description: 'SendReminders',
+      eventBus: eventBus,
+      eventPattern: {
+        source: ['custom.schedular'],
+        detailType: ['BookingReminder'],
+      },
+    });
+    sendRemindersRule.addTarget(
+      new LambdaFunction(sendEmailFunction, {
+        //deadLetterQueue: SqsQueue,
+        maxEventAge: Duration.hours(2),
+        retryAttempts: 2,
       })
     );
 
@@ -244,6 +291,8 @@ export class DataMessagingStack extends Stack {
     });
 
     new CfnOutput(this, 'DataTableName', { value: dataTable.tableName });
+
+    new CfnOutput(this, 'EventBusArn', { value: eventBus.eventBusArn, exportName: `${props.appName}-${props.envName}-eventBusArn` });
 
     new CfnOutput(this, 'SendEmailFunctionArn', { value: sendEmailFunction.functionArn });
 

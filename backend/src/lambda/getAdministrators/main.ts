@@ -1,5 +1,6 @@
 import { CognitoIdentityProviderClient, ListUsersCommand, ListUsersCommandInput, ListUsersCommandOutput } from '@aws-sdk/client-cognito-identity-provider';
 import { unmarshall } from '@aws-sdk/util-dynamodb';
+import { DynamoDBRecord } from 'aws-lambda';
 
 type Booking = {
   administratorDetails: {
@@ -18,10 +19,9 @@ type Booking = {
   };
   pk: string;
   sk: string;
-  reminders: number;
 };
 
-exports.handler = async (event: any) => {
+exports.handler = async (event: DynamoDBRecord[]) => {
   console.debug('🕧 Get Appointments invoked', JSON.stringify(event));
 
   if (event.length < 0) {

@@ -16,36 +16,39 @@ type Booking = {
   };
   pk: string;
   sk: string;
-  reminders: number;
+  reminder: boolean;
 };
 
-exports.handler = async (event: Booking[]) => {
+exports.handler = async (event: any) => {
   console.debug('🕧 Send Email invoked: ', JSON.stringify(event));
 
-  if (event.length < 0) {
-    console.debug('⚠️ No records to process. Exiting.');
+  // Will either be from EventBridge (contains detail.entries) or from Pipes (just the event object)
+  let values = event.detail?.entries ?? event;
+
+  if (!values || values.length < 0) {
+    console.debug('✅ No records to process. Exiting.');
     return;
   }
 
   await Promise.all(
-    event.map(async (data) => {
+    values.map(async (data: Booking) => {
       // Send customer email
       await sendEmail(
         [data.customerDetails.email],
-        getTemplateName(data),
+        getTemplateName(data, false),
         `{
           "name": "${data.customerDetails.firstName} ${data.customerDetails.lastName}",
           "date": "${formateLocalLongDate(data.sk)}",
           "time": "${formatLocalTimeString(data.sk, 0)}",
-          "administrator": "${data.administratorDetails.firstName} ${data.administratorDetails.lastName}" 
+          "administrator": "${data.administratorDetails.firstName} ${data.administratorDetails.lastName}"
         }`
       );
 
       // Send Administrator email
-      if (data.administratorDetails.email) {
+      if (data.administratorDetails.email && !data.reminder) {
         await sendEmail(
           [data.administratorDetails.email],
-          getAdminTemplateName(data),
+          getTemplateName(data, true),
           `{
             "name": "${data.customerDetails.firstName} ${data.customerDetails.lastName}",
             "date": "${formateLocalLongDate(data.sk)}",
@@ -56,31 +59,24 @@ exports.handler = async (event: Booking[]) => {
     })
   );
 
-  console.log(`✅ Send ${event.length} notifications`);
+  // TODO Send Administrator daily digest for all data.reminder === true
+
+  console.log(`✅ Send ${values.length} notifications`);
 };
 
-function getAdminTemplateName(data: Booking): string {
+function getTemplateName(data: Booking, admin: boolean): string {
   let templateName: string = '';
 
-  if (data.appointmentDetails.status === 'booked' && data.reminders === 0) {
-    templateName = 'AdminAppointmentBooked';
-  } else if (data.appointmentDetails.status === 'cancelled') {
-    templateName = 'AdminAppointmentCancelled';
-  }
-  // TODO Add Daily Digest reminders
-
-  return templateName;
-}
-
-function getTemplateName(data: Booking): string {
-  let templateName: string = '';
-
-  if (data.appointmentDetails.status === 'booked' && data.reminders === 0) {
+  if (data.appointmentDetails.status === 'booked' && !data.reminder) {
     templateName = 'AppointmentConfirmation';
   } else if (data.appointmentDetails.status === 'cancelled') {
     templateName = 'AppointmentCancellation';
-  } else if (data.appointmentDetails.status === 'booked' && data.reminders > 0) {
+  } else if (data.reminder) {
     templateName = 'BookingReminder';
+  } else if (admin && data.appointmentDetails.status === 'booked' && !data.reminder) {
+    templateName = 'AdminAppointmentBooked';
+  } else if (admin && data.appointmentDetails.status === 'cancelled') {
+    templateName = 'AdminAppointmentCancelled';
   }
 
   return templateName;
@@ -97,12 +93,12 @@ async function sendEmail(recipients: string[], template: string, templateData: s
       TemplateData: templateData,
     };
 
-    console.debug(`ℹ️ Sending email ${input}`);
-
     const command = new SendTemplatedEmailCommand(input);
+    console.debug('Executing SES command', JSON.stringify(command));
+
     const response = await client.send(command);
 
-    console.debug(`🔔 ${template} sent`, JSON.stringify(response));
+    console.debug('🔔 SES result', JSON.stringify(response));
   } catch (error) {
     console.error(error);
   }
