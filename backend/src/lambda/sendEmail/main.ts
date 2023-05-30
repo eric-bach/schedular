@@ -27,71 +27,84 @@ exports.handler = async (event: Booking[]) => {
     return;
   }
 
-  // Send email confirmation
-  const client = new SESClient({});
-
   await Promise.all(
     event.map(async (data) => {
-      let template: string = '';
-      if (data.appointmentDetails.status === 'booked' && data.reminders === 0) {
-        template = 'AppointmentConfirmation';
-      } else if (data.appointmentDetails.status === 'cancelled') {
-        template = 'AppointmentCancellation';
-      } else if (data.appointmentDetails.status === 'booked' && data.reminders > 0) {
-        template = 'BookingReminder';
-      }
+      // Send customer email
+      await sendEmail(
+        [data.customerDetails.email],
+        getTemplateName(data),
+        `{
+          "name": "${data.customerDetails.firstName} ${data.customerDetails.lastName}",
+          "date": "${formateLocalLongDate(data.sk)}",
+          "time": "${formatLocalTimeString(data.sk, 0)}",
+          "administrator": "${data.administratorDetails.firstName} ${data.administratorDetails.lastName}" 
+        }`
+      );
 
-      // Send templated email
-      const input: SendTemplatedEmailCommandInput = {
-        Source: process.env.SENDER_EMAIL,
-        Destination: { ToAddresses: [data.customerDetails.email] },
-        Template: template,
-        TemplateData: `{
-      "name": "${data.customerDetails.firstName} ${data.customerDetails.lastName}",
-      "date": "${formateLocalLongDate(data.sk)}",
-      "time": "${formatLocalTimeString(data.sk, 0)}",
-      "administrator": "${data.administratorDetails.firstName} ${data.administratorDetails.lastName}" }`,
-      };
-
-      const command = new SendTemplatedEmailCommand(input);
-      const response = await client.send(command);
-
-      console.log(`🔔 Appointment notification sent: {result: ${JSON.stringify(response)}}}`);
-
-      // Send to Administrator as well
+      // Send Administrator email
       if (data.administratorDetails.email) {
-        // TODO Create new templates for administrator notifications
-        let template: string = '';
-        if (data.appointmentDetails.status === 'booked' && data.reminders === 0) {
-          template = 'AppointmentConfirmation';
-        } else if (data.appointmentDetails.status === 'cancelled') {
-          template = 'AppointmentCancellation';
-        } else if (data.appointmentDetails.status === 'booked' && data.reminders > 0) {
-          template = 'BookingReminder';
-        }
-
-        // Send templated email
-        const input: SendTemplatedEmailCommandInput = {
-          Source: process.env.SENDER_EMAIL,
-          Destination: { ToAddresses: [data.administratorDetails.email] },
-          Template: template,
-          TemplateData: `{
-        "name": "${data.customerDetails.firstName} ${data.customerDetails.lastName}",
-        "date": "${formateLocalLongDate(data.sk)}",
-        "time": "${formatLocalTimeString(data.sk, 0)}",
-        "administrator": "${data.administratorDetails.firstName} ${data.administratorDetails.lastName}" }`,
-        };
-
-        const command = new SendTemplatedEmailCommand(input);
-        const response = await client.send(command);
-
-        console.log(`🔔 Adminsitrator Appointment notification sent: {result: ${JSON.stringify(response)}}}`);
+        await sendEmail(
+          [data.administratorDetails.email],
+          getAdminTemplateName(data),
+          `{
+            "name": "${data.customerDetails.firstName} ${data.customerDetails.lastName}",
+            "date": "${formateLocalLongDate(data.sk)}",
+            "time": "${formatLocalTimeString(data.sk, 0)}"
+          }`
+        );
       }
     })
   );
 
   console.log(`✅ Send ${event.length} notifications`);
 };
+
+function getAdminTemplateName(data: Booking): string {
+  let templateName: string = '';
+
+  if (data.appointmentDetails.status === 'booked' && data.reminders === 0) {
+    templateName = 'AdminAppointmentBooked';
+  } else if (data.appointmentDetails.status === 'cancelled') {
+    templateName = 'AdminAppointmentCancelled';
+  }
+  // TODO Add Daily Digest reminders
+
+  return templateName;
+}
+
+function getTemplateName(data: Booking): string {
+  let templateName: string = '';
+
+  if (data.appointmentDetails.status === 'booked' && data.reminders === 0) {
+    templateName = 'AppointmentConfirmation';
+  } else if (data.appointmentDetails.status === 'cancelled') {
+    templateName = 'AppointmentCancellation';
+  } else if (data.appointmentDetails.status === 'booked' && data.reminders > 0) {
+    templateName = 'BookingReminder';
+  }
+
+  return templateName;
+}
+
+async function sendEmail(recipients: string[], template: string, templateData: string) {
+  try {
+    const client = new SESClient({});
+
+    const input: SendTemplatedEmailCommandInput = {
+      Source: process.env.SENDER_EMAIL,
+      Destination: { ToAddresses: recipients },
+      Template: template,
+      TemplateData: templateData,
+    };
+
+    const command = new SendTemplatedEmailCommand(input);
+    const response = await client.send(command);
+
+    console.log(`🔔 ${template} sent`, JSON.stringify(response));
+  } catch (error) {
+    console.error(error);
+  }
+}
 
 // Returns the local time part (including offset) of an ISO8601 datetime string
 //  Input: 2023-04-06T14:00:00Z, 0
