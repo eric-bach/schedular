@@ -97,10 +97,12 @@ async function sendEmail(recipients: string[], template: string, templateData: s
       TemplateData: templateData,
     };
 
+    console.debug(`ℹ️ Sending email ${input}`);
+
     const command = new SendTemplatedEmailCommand(input);
     const response = await client.send(command);
 
-    console.log(`🔔 ${template} sent`, JSON.stringify(response));
+    console.debug(`🔔 ${template} sent`, JSON.stringify(response));
   } catch (error) {
     console.error(error);
   }

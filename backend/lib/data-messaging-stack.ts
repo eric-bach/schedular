@@ -112,7 +112,7 @@ export class DataMessagingStack extends Stack {
     sendRemindersFunction.addToRolePolicy(
       new PolicyStatement({
         effect: Effect.ALLOW,
-        actions: ['dynamodb:Query', 'dynamodb:UpdateItem'],
+        actions: ['dynamodb:Query', 'dynamodb:PartiQLUpdate', 'events:PutEvents'],
         resources: [dataTable.tableArn + '*'],
       })
     );

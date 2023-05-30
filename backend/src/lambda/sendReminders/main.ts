@@ -1,13 +1,14 @@
 import {
+  BatchExecuteStatementCommand,
+  BatchExecuteStatementCommandInput,
+  BatchExecuteStatementCommandOutput,
+  BatchStatementRequest,
   DynamoDBClient,
   QueryCommand,
   QueryCommandInput,
   QueryCommandOutput,
-  UpdateItemCommand,
-  UpdateItemCommandInput,
-  UpdateItemCommandOutput,
 } from '@aws-sdk/client-dynamodb';
-import { unmarshall, marshall } from '@aws-sdk/util-dynamodb';
+import { unmarshall } from '@aws-sdk/util-dynamodb';
 
 exports.handler = async () => {
   console.debug(`🕧 Send Reminders invoked`);
@@ -39,50 +40,50 @@ exports.handler = async () => {
   }
   console.log(`✅ Found ${result.Items.length} bookings to send reminders for`, result);
 
+  // Build statement
+  let statements: BatchStatementRequest[] = [];
   await Promise.all(
     result.Items.map(async (r) => {
       const values = unmarshall(r);
 
-      // Update DynamoDB
-      let input: UpdateItemCommandInput = {
-        TableName: process.env.DATA_TABLE_NAME,
-        Key: marshall({
-          pk: values.pk,
-          sk: values.sk,
-        }),
-        UpdateExpression: 'SET reminders = :count, updatedAt = :updatedAt',
-        ExpressionAttributeValues: marshall({
-          ':count': values.reminders + 1,
-          ':updatedAt': new Date().toISOString(),
-        }),
+      let statement: BatchStatementRequest = {
+        Statement: `UPDATE "schedular-Data" SET reminders=${values.reminders + 1} SET updatedAt='${new Date().toISOString()}' WHERE pk='${values.pk}' AND sk='${
+          values.sk
+        }'`,
       };
-      let updateResult: UpdateItemCommandOutput | undefined = await dynamoDbCommand(new UpdateItemCommand(input));
 
-      if (updateResult?.$metadata.httpStatusCode !== 200) {
-        console.log('🛑 Could not update item');
-        return;
-      }
-
-      // Send to EventBridge
-      // let params: PutEventsCommandInput = {
-      //   Entries: [
-      //     {
-      //       Source: 'custom.schedular',
-      //       EventBusName: process.env.EVENTBUS_NAME,
-      //       DetailType: 'BookingReminder',
-      //       Detail: JSON.stringify(unmarshall(r)),
-      //     },
-      //   ],
-      // };
-      // var eventResult: PutEventsCommandOutput | undefined = await publishEvent(new PutEventsCommand(params));
-      // if (eventResult?.$metadata.httpStatusCode !== 200) {
-      //   console.error(`🛑 Could not send event to EventBridge`, eventResult);
-      // }
+      statements.push(statement);
     })
   );
 
+  // Batch Update items
+  let batchInput: BatchExecuteStatementCommandInput = {
+    Statements: statements,
+  };
+  let batchResult: BatchExecuteStatementCommandOutput = await dynamoDbCommand(new BatchExecuteStatementCommand(batchInput));
+  if (batchResult.$metadata.httpStatusCode !== 200) {
+    console.log('🛑 Could not update items');
+    return;
+  }
+
+  // Send to EventBridge
+  // let params: PutEventsCommandInput = {
+  //   Entries: [
+  //     {
+  //       Source: 'custom.schedular',
+  //       EventBusName: process.env.EVENTBUS_NAME,
+  //       DetailType: 'BookingReminder',
+  //       Detail: JSON.stringify(unmarshall(r)),
+  //     },
+  //   ],
+  // };
+  // var eventResult: PutEventsCommandOutput | undefined = await publishEvent(new PutEventsCommand(params));
+  // if (eventResult?.$metadata.httpStatusCode !== 200) {
+  //   console.error(`🛑 Could not send event to EventBridge`, eventResult);
+  // }
   //console.log(`✅ Sent ${result.Count} event(s) to EventBridge`);
-  console.log(`✅ Send reminders for ${result.Count} bookings`);
+
+  console.log(`✅ Sent reminders for ${result.Count} bookings`);
 };
 
 // async function publishEvent(command: PutEventsCommand): Promise<PutEventsCommandOutput | undefined> {
