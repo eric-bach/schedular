@@ -123,10 +123,10 @@ jobs:
         with:
           start: npm start
           working-directory: frontend
-      env:
-        url: ${{ secrets.CYRPESS_URL }}
-        CYPRESS_USERNAME: ${{ secrets.CYRPESS_USERNAME }}
-        CYPRESS_PASSWORD: ${{ secrets.CYRPESS_PASSWORD }}
+        env:
+          url: ${{ secrets.CYRPESS_URL }}
+          CYPRESS_USERNAME: ${{ secrets.CYRPESS_USERNAME }}
+          CYPRESS_PASSWORD: ${{ secrets.CYRPESS_PASSWORD }}
 
       # Option 3
       # - name: Run Cypress Frontend Tests
