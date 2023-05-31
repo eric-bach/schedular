@@ -8,8 +8,6 @@ export default defineConfig({
     setupNodeEvents(on, config) {
       require('cypress-log-to-output').install(on);
 
-      console.log('🚀 URL', config.env.url);
-
       config.baseUrl = config.env.url;
 
       return config;
