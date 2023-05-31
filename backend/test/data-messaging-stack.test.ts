@@ -5,6 +5,14 @@ import { DataMessagingStack } from '../lib/data-messaging-stack';
 import { UserPool } from 'aws-cdk-lib/aws-cognito';
 
 describe('Data Messaging Stack', () => {
+  beforeAll(() => {
+    process.env.SENDER_EMAIL = 'test@test.com';
+  });
+
+  afterAll(() => {
+    delete process.env.SENDER_EMAIL;
+  });
+
   const app = new cdk.App();
 
   const props: SchedularDataStackProps = {
