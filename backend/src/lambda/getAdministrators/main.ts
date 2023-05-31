@@ -29,16 +29,15 @@ exports.handler = async (event: DynamoDBRecord[]) => {
     return;
   }
 
-  let records: Booking[] = [];
+  const records: Booking[] = [];
   await Promise.all(
     event.map(async (e: any) => {
-      //@ts-ignore
-      const rec: Booking = unmarshall(e.dynamodb?.NewImage);
+      let rec = unmarshall(e.dynamodb?.NewImage);
 
       const email = await getAdministratorEmail(rec.administratorDetails.id.substring(5));
       rec.administratorDetails.email = email;
 
-      records.push(rec);
+      records.push(rec as Booking);
     })
   );
 
@@ -53,7 +52,7 @@ async function getAdministratorEmail(id: string): Promise<string | undefined> {
     const client = new CognitoIdentityProviderClient({});
     const params: ListUsersCommandInput = {
       UserPoolId: process.env.USER_POOL_ID,
-      Filter: `username=\"${id}\"`,
+      Filter: `username="${id}"`,
       AttributesToGet: ['email'],
     };
 

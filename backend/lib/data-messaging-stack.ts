@@ -235,7 +235,7 @@ export class DataMessagingStack extends Stack {
       identity: { value: process.env.SENDER_EMAIL },
     });
 
-    const conirmationTemplate = new CfnTemplate(this, 'ConfirmationEmailTemplate', {
+    new CfnTemplate(this, 'ConfirmationEmailTemplate', {
       template: {
         subjectPart: 'Appointment Confirmation',
         htmlPart:
@@ -244,7 +244,7 @@ export class DataMessagingStack extends Stack {
         textPart: 'Hi {{name}},\r\nThank you for booking your appointment on {{date}} at {{time}} with {{administrator}}.',
       },
     });
-    const cancellationTemplate = new CfnTemplate(this, 'CancellationEmailTemplate', {
+    new CfnTemplate(this, 'CancellationEmailTemplate', {
       template: {
         subjectPart: 'Appointment Cancellation',
         htmlPart:
@@ -253,7 +253,7 @@ export class DataMessagingStack extends Stack {
         textPart: 'Your appointment on {{date}} at {{time}} with {{administrator}} has been cancelled.',
       },
     });
-    const reminderTemplate = new CfnTemplate(this, 'ReminderEmailTemplate', {
+    new CfnTemplate(this, 'ReminderEmailTemplate', {
       template: {
         subjectPart: 'Appointment Reminder',
         htmlPart:
@@ -262,7 +262,7 @@ export class DataMessagingStack extends Stack {
         textPart: "Hi {{name}},\r\nIt's almost time for your appointment on {{date}} at {{time}} with {{administrator}}.",
       },
     });
-    const adminConfirmationTemplate = new CfnTemplate(this, 'AdminAppopintmentBookedTemplate', {
+    new CfnTemplate(this, 'AdminAppopintmentBookedTemplate', {
       template: {
         subjectPart: 'Appointment Booked',
         htmlPart:
@@ -271,7 +271,7 @@ export class DataMessagingStack extends Stack {
         textPart: 'Hi {{name}},\r\nA new appointment has been booked with you on {{date}} at {{time}}.',
       },
     });
-    const adminCancelledTemplate = new CfnTemplate(this, 'AdminAppopintmentCancelledTemplate', {
+    new CfnTemplate(this, 'AdminAppopintmentCancelledTemplate', {
       template: {
         subjectPart: 'Appointment Cancelled',
         htmlPart:
@@ -280,7 +280,7 @@ export class DataMessagingStack extends Stack {
         textPart: 'Hi {{name}},\r\nAn appointment has been cancelled on {{date}} at {{time}}.',
       },
     });
-    const adminDailyDigestTemplate = new CfnTemplate(this, 'AdminDailyDigestTemplate', {
+    new CfnTemplate(this, 'AdminDailyDigestTemplate', {
       template: {
         subjectPart: "Today's Appointments",
         htmlPart:

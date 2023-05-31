@@ -45,7 +45,7 @@ exports.handler = async () => {
     })
   );
 
-  let params: PutEventsCommandInput = {
+  const params: PutEventsCommandInput = {
     Entries: [
       {
         Source: 'custom.schedular',
@@ -56,7 +56,7 @@ exports.handler = async () => {
     ],
   };
 
-  var eventResult: PutEventsCommandOutput | undefined = await publishEvent(new PutEventsCommand(params));
+  const eventResult: PutEventsCommandOutput | undefined = await publishEvent(new PutEventsCommand(params));
 
   if (eventResult?.$metadata.httpStatusCode !== 200) {
     console.error(`🛑 Could not send events to EventBridge`, eventResult);
@@ -105,7 +105,7 @@ async function getAdministratorEmail(id: string): Promise<string | undefined> {
     const client = new CognitoIdentityProviderClient({});
     const params: ListUsersCommandInput = {
       UserPoolId: process.env.USER_POOL_ID,
-      Filter: `username=\"${id}\"`,
+      Filter: `username="${id}"`,
       AttributesToGet: ['email'],
     };
 
