@@ -7,6 +7,7 @@ import { v4 as uuidv4 } from 'uuid';
 import dayjs from 'dayjs';
 
 const appName: string = 'schedular';
+const userId: string = 'dac04046-6c46-4f93-a61b-bef3292b723b';
 var env: string = 'dev';
 var profile: string = 'default';
 
@@ -76,7 +77,8 @@ function generateRandomSeedData() {
         type: 'appt',
         category: 'massage',
         duration,
-        administratorDetails: { id: `user#${uuidv4()}`, firstName: 'Jane', lastName: 'Doe' },
+        // TODO Set the user id from Cognito
+        administratorDetails: { id: `user#${userId}`, firstName: 'Jane', lastName: 'Doe' },
       });
     }
   }

@@ -1,5 +1,5 @@
 {
-  "name": "sendReminders",
+  "name": "getAppointments",
   "version": "1.0.0",
   "description": "",
   "main": "main.js",
@@ -13,8 +13,5 @@
     "@types/aws-lambda": "^8.10.104",
     "@types/node": "^18.7.18",
     "esbuild": "^0.15.7"
-  },
-  "dependencies": {
-    "@aws-sdk/client-eventbridge": "^3.342.0"
   }
 }
