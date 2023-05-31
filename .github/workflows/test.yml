@@ -121,7 +121,7 @@ jobs:
         with:
           start: npm start
           wait-on: http://localhost:3000
-          wait-on-timeout: 180000
+          wait-on-timeout: 180
           working-directory: frontend
         #env:
         #  url: ${{ secrets.CYRPESS_URL }}

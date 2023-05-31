@@ -2,7 +2,7 @@
 
 describe('Launch App', () => {
   it('should display app', () => {
-    cy.visit(Cypress.env('url'));
+    cy.visit('/');
 
     cy.contains('Welcome to the SPA');
   });
