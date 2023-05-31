@@ -13,6 +13,7 @@ describe('Data Messaging Stack', () => {
     delete process.env.SENDER_EMAIL;
   });
 
+  process.env.SENDER_EMAIL = 'test@test.com';
   const app = new cdk.App();
 
   const props: SchedularDataStackProps = {
@@ -35,6 +36,7 @@ describe('Data Messaging Stack', () => {
   const template = Template.fromStack(stack);
 
   it('has a DynamoDB Table with Streams', () => {
+    process.env.SENDER_EMAIL = 'test@test.com';
     template.hasResourceProperties(
       'AWS::DynamoDB::Table',
       Match.objectLike({
@@ -48,6 +50,7 @@ describe('Data Messaging Stack', () => {
   });
 
   it('has a Pipe', () => {
+    process.env.SENDER_EMAIL = 'test@test.com';
     template.hasResourceProperties(
       'AWS::Pipes::Pipe',
       Match.objectLike({
@@ -66,12 +69,14 @@ describe('Data Messaging Stack', () => {
   });
 
   it('has email templates', () => {
+    process.env.SENDER_EMAIL = 'test@test.com';
     template.hasResourceProperties('AWS::SES::Template', Match.objectLike({ Template: { TemplateName: 'AppointmentConfirmation' } }));
     template.hasResourceProperties('AWS::SES::Template', Match.objectLike({ Template: { TemplateName: 'AppointmentCancellation' } }));
     template.hasResourceProperties('AWS::SES::Template', Match.objectLike({ Template: { TemplateName: 'BookingReminder' } }));
   });
 
   it('has Lambda functions', () => {
+    process.env.SENDER_EMAIL = 'test@test.com';
     template.hasResourceProperties(
       'AWS::Lambda::Function',
       Match.objectLike({
