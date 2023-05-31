@@ -108,7 +108,6 @@ jobs:
       #     echo export default awsmobile >> aws-exports.js
       #     cat aws-exports.js
       #   working-directory: frontend/src
-
       # # Option 1
       # - name: Start frontend
       #   run: npm run start
@@ -116,17 +115,17 @@ jobs:
       # - name: Run Cypress Frontend Tests
       #   run: npx cypress run
       #   working-directory: frontend
-
       # Option 2
       - name: Run Cypress
         uses: cypress-io/github-action@v5
         with:
           start: npm start
+          wait-on: http://localhost:3000
           working-directory: frontend
-        env:
-          url: ${{ secrets.CYRPESS_URL }}
-          CYPRESS_USERNAME: ${{ secrets.CYRPESS_USERNAME }}
-          CYPRESS_PASSWORD: ${{ secrets.CYRPESS_PASSWORD }}
+        #env:
+        #  url: ${{ secrets.CYRPESS_URL }}
+        #  CYPRESS_USERNAME: ${{ secrets.CYRPESS_USERNAME }}
+        #  CYPRESS_PASSWORD: ${{ secrets.CYRPESS_PASSWORD }}
 
       # Option 3
       # - name: Run Cypress Frontend Tests
