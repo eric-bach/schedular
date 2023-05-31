@@ -1,5 +1,5 @@
 import { DynamoDBClient, QueryCommand, QueryCommandInput, QueryCommandOutput } from '@aws-sdk/client-dynamodb';
-import { EventBridgeClient, PutEventsCommand, PutEventsCommandInput, PutEventsCommandOutput, PutEventsRequestEntry } from '@aws-sdk/client-eventbridge';
+import { EventBridgeClient, PutEventsCommand, PutEventsCommandInput, PutEventsCommandOutput } from '@aws-sdk/client-eventbridge';
 import { CognitoIdentityProviderClient, ListUsersCommand, ListUsersCommandInput, ListUsersCommandOutput } from '@aws-sdk/client-cognito-identity-provider';
 import { unmarshall } from '@aws-sdk/util-dynamodb';
 
