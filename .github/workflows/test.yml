@@ -115,15 +115,16 @@ jobs:
       #   run: npm run start
       #   working-directory: frontend
 
-      - name: Run Cypress
-        uses: cypress-io/github-action@v5
-        with:
-          start: npm start
-        env:
-          CYPRESS_URL: ${{ secrets.CYRPESS_URL }}
-          CYPRESS_USERNAME: ${{ secrets.CYRPESS_USERNAME }}
-          CYPRESS_PASSWORD: ${{ secrets.CYRPESS_PASSWORD }}
+      # - name: Run Cypress
+      #   uses: cypress-io/github-action@v5
+      #   with:
+      #     start: npm start
+      #   working-directory: frontend
+      #   env:
+      #     url: ${{ secrets.CYRPESS_URL }}
+      #     CYPRESS_USERNAME: ${{ secrets.CYRPESS_USERNAME }}
+      #     CYPRESS_PASSWORD: ${{ secrets.CYRPESS_PASSWORD }}
 
-      #- name: Run Cypress Frontend Tests
-      #  run: npx cypress run --env url=${{ secrets.CYRPESS_URL }},username=${{ secrets.CYPRESS_USERNAME }},password=${{ secrets.CYPRESS_PASSWORD }}
-      #  working-directory: frontend
+      - name: Run Cypress Frontend Tests
+        run: npx cypress run --env url=${{ secrets.CYPRESS_URL }},username=${{ secrets.CYPRESS_USERNAME }},password=${{ secrets.CYPRESS_PASSWORD }}
+        working-directory: frontend
