@@ -65,9 +65,9 @@ jobs:
       - name: Create frontend/src/aws-exports.js file
         run: |
           touch aws-exports.js
+          echo  \/* eslint-disable *\/
           echo const awsmobile = { aws_project_region: \'${{ secrets.CDK_DEFAULT_REGION }}\', aws_cognito_region: \'${{ secrets.CDK_DEFAULT_REGION }}\', aws_user_pools_id: \'${{secrets.COGNITO_USERPOOL_ID_DEV}}\', aws_user_pools_web_client_id: \'${{ secrets.COGNITO_WEB_CLIENT_ID_DEV }}\', mandatorySignIn: true, aws_appsync_graphqlEndpoint: \'${{ secrets.GRAPHQL_ENDPOINT_DEV }}\', aws_appsync_region: \'${{ secrets.CDK_DEFAULT_REGION }}\', aws_appsync_authenticationType: \'AMAZON_COGNITO_USER_POOLS\' } >> aws-exports.js
           echo export default awsmobile; >> aws-exports.js
-          cat aws-exports.js
         working-directory: frontend/src
 
       - name: Start frontend
