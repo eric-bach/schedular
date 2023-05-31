@@ -1,20 +1,26 @@
 import { Match, Template } from 'aws-cdk-lib/assertions';
 import * as cdk from 'aws-cdk-lib';
-import { AuthStack } from '../lib/auth-stack';
-import { SchedularBaseStackProps } from '../lib/types/SchedularStackProps';
+import { SchedularDataStackProps } from '../lib/types/SchedularStackProps';
 import { DataMessagingStack } from '../lib/data-messaging-stack';
+import { UserPool } from 'aws-cdk-lib/aws-cognito';
 
 describe('Data Messaging Stack', () => {
   const app = new cdk.App();
 
-  const props: SchedularBaseStackProps = {
+  const props: SchedularDataStackProps = {
     appName: 'schedular',
     envName: 'dev',
     tags: {
       env: 'dev',
       application: 'schedular',
     },
+    params: {
+      userPoolId: '123',
+    },
   };
+
+  const fromUserPoolId = jest.spyOn(UserPool, 'fromUserPoolId');
+  fromUserPoolId.mockReturnValue({ userPoolArn: 'arn:aws:Cognito:us-east-1::test' } as UserPool);
 
   const stack = new DataMessagingStack(app, 'SchedularTestStack', props);
 
