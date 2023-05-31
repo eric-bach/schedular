@@ -34,7 +34,7 @@
         line-height: 0.8;
       }
 
-      .appointment-details {
+      .customer-details {
         margin-bottom: 60px;
         font-size: 20px;
         line-height: 0.8;
@@ -67,9 +67,13 @@
   <body>
     <div class="container">
       <h1>Your schedule<br />for today.</h1>
-      <div class="appointment-details">
-        <p>Customer: {{name}}</p>
-        <p>{{date}} at {{time}}</p>
+      <div class="customer-details">
+        <ul>
+          {{#each customers}}
+          <li><p>Customer: {{name}}</p></li>
+          <li><p>{{date}} at {{time}}</p></li>
+          {{/each}}
+        </ul>
       </div>
       <p class="italic" style="font-size: 14px">To view or manage your schedule, please visit our website.</p>
       <a class="button" href="https://www.google.ca">Manage Appointments</a>

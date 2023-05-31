@@ -16,64 +16,131 @@ type Booking = {
   };
   pk: string;
   sk: string;
-  reminder: boolean;
 };
 
 exports.handler = async (event: any) => {
   console.debug('🕧 Send Email invoked: ', JSON.stringify(event));
 
-  // Will either be from EventBridge (contains detail.entries) or from Pipes (just the event object)
-  let values = event.detail?.entries ?? event;
-
-  if (!values || values.length < 0) {
+  // Will either be from EventBridge (event.detail.entries) or from Pipes (event)
+  // If it comes from EventBridge it is reminder notifications, from Pipes it is confirmation or cancellation appointments
+  if (event.detail?.entries?.length < 1 && event.length < 1) {
     console.debug('✅ No records to process. Exiting.');
     return;
   }
 
-  await Promise.all(
-    values.map(async (data: Booking) => {
-      // Send customer email
-      await sendEmail(
-        [data.customerDetails.email],
-        getTemplateName(data, false),
-        `{
+  let isReminders = event.detail?.entries?.length > 0;
+  let values: Booking[] = event.detail?.entries ?? event;
+
+  if (isReminders) {
+    console.debug('🔔 Sending daily digest and reminders');
+
+    await processMapSync(groupByEmail(values));
+  } else {
+    console.debug('🔔 Sending individual notifications');
+
+    await Promise.all(
+      values.map(async (data: Booking) => {
+        // Send customer email
+        await sendEmail(
+          [data.customerDetails.email],
+          getTemplateName(data, false),
+          `{
           "name": "${data.customerDetails.firstName} ${data.customerDetails.lastName}",
           "date": "${formateLocalLongDate(data.sk)}",
           "time": "${formatLocalTimeString(data.sk, 0)}",
           "administrator": "${data.administratorDetails.firstName} ${data.administratorDetails.lastName}"
         }`
-      );
+        );
 
-      // Send Administrator email
-      if (data.administratorDetails.email && !data.reminder) {
-        await sendEmail(
-          [data.administratorDetails.email],
-          getTemplateName(data, true),
-          `{
+        // Send Administrator email
+        if (data.administratorDetails.email) {
+          await sendEmail(
+            [data.administratorDetails.email],
+            getTemplateName(data, true),
+            `{
             "name": "${data.customerDetails.firstName} ${data.customerDetails.lastName}",
             "date": "${formateLocalLongDate(data.sk)}",
             "time": "${formatLocalTimeString(data.sk, 0)}"
           }`
-        );
-      }
-    })
-  );
-
-  // TODO Send Administrator daily digest for all data.reminder === true
+          );
+        }
+      })
+    );
+  }
 
   console.log(`✅ Send ${values.length} notifications`);
 };
 
+// Sends daily digest and reminders asynchronously while iterating through the Map
+const processAsyncTask = async (email: string, bookings: Booking[]) => {
+  const customers: any[] = [];
+  await Promise.all(
+    bookings.map(async (booking: Booking) => {
+      const c = {
+        name: `${booking.customerDetails.firstName} ${booking.customerDetails.lastName}`,
+        date: `${formateLocalLongDate(booking.sk)}`,
+        time: `${formatLocalTimeString(booking.sk, 0)}`,
+      };
+      customers.push(c);
+
+      // Send individual customer reminders
+      await sendEmail(
+        [booking.customerDetails.email],
+        'BookingReminder',
+        `{
+          "name": "${booking.customerDetails.firstName} ${booking.customerDetails.lastName}",
+          "date": "${formateLocalLongDate(booking.sk)}",
+          "time": "${formatLocalTimeString(booking.sk, 0)}",
+          "administrator": "${booking.administratorDetails.firstName} ${booking.administratorDetails.lastName}"
+        }`
+      );
+    })
+  );
+
+  // Send administrator daily digest
+  await sendEmail([email], 'AdminDailyDigest', `${JSON.stringify({ customers: customers })}`);
+};
+
+// Processes the map of Bookings by email synchronously
+const processMapSync = async (bookingsByEmail: Map<string, Booking[]>) => {
+  for (const [email, bookings] of bookingsByEmail) {
+    await processAsyncTask(email, bookings);
+  }
+};
+
+// Create a Map of Bookings with the administrator email as the key
+// To iterate through each
+//    map?.forEach((values) => {
+//      values.map((v) => {
+//        console.log(v?.sk);
+//      });
+//    });
+function groupByEmail(items: Booking[]) {
+  const map = new Map<string, [Booking]>();
+
+  if (items) {
+    items.forEach((item) => {
+      const key = item.administratorDetails.email ?? '';
+      const value = map.get(key);
+      if (value) {
+        value.push(item);
+      } else {
+        map.set(key, [item]);
+      }
+    });
+  }
+
+  return map;
+}
+
 function getTemplateName(data: Booking, admin: boolean): string {
   let templateName: string = '';
 
-  if (data.appointmentDetails.status === 'booked' && !data.reminder) {
+  if (!admin && data.appointmentDetails.status === 'booked') {
     templateName = 'AppointmentConfirmation';
-  } else if (data.appointmentDetails.status === 'cancelled') {
+  } else if (!admin && data.appointmentDetails.status === 'cancelled') {
     templateName = 'AppointmentCancellation';
-  } else if (data.reminder) {
-    templateName = 'BookingReminder';
-  } else if (admin && data.appointmentDetails.status === 'booked' && !data.reminder) {
+  } else if (admin && data.appointmentDetails.status === 'booked') {
     templateName = 'AdminAppointmentBooked';
   } else if (admin && data.appointmentDetails.status === 'cancelled') {
     templateName = 'AdminAppointmentCancelled';

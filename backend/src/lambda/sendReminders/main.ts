@@ -40,7 +40,6 @@ exports.handler = async () => {
       const value = unmarshall(r);
 
       value.administratorDetails.email = (await getAdministratorEmail(value.administratorDetails.id.substring(5))) ?? undefined;
-      value.reminder = true;
 
       details.push(value);
     })

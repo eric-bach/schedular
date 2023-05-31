@@ -280,6 +280,14 @@ export class DataMessagingStack extends Stack {
         textPart: 'Hi {{name}},\r\nAn appointment has been cancelled on {{date}} at {{time}}.',
       },
     });
+    const adminDailyDigestTemplate = new CfnTemplate(this, 'AdminDailyDigestTemplate', {
+      template: {
+        subjectPart: "Today's Appointments",
+        htmlPart:
+          '<!DOCTYPE html><html lang="en"><head><title>Daily Digest</title><style>body{background-color:#f6f6f6;padding:20px}.container{max-width:600px;margin:0 auto;background-color:#1976d2;padding:20px;border-radius:5px;color:#fff}h1{font-size:28px;line-height:1.2;margin-top:0;margin-bottom:20px}p{margin-bottom:10px}.heading{margin-top:40px;font-size:18px;line-height:.8}.customer-details{margin-bottom:60px;font-size:20px;line-height:.8}.button{display:inline-block;background-color:#4caf50;color:#fff;text-align:center;padding:10px 20px;text-decoration:none;border-radius:5px}.button:hover{background-color:#45a049}.italic{font-style:italic}.footer{margin-top:40px;line-height:.6}</style></head><body><div class="container"><h1>Your schedule<br>for today.</h1><div class="customer-details"><ul>{{#each customers}}<li><p>Customer: {{name}}</p></li><li><p>{{date}} at {{time}}</p></li>{{/each}}</ul></div><p class="italic" style="font-size:14px">To view or manage your schedule, please visit our website.</p><a class="button" href="https://www.google.ca">Manage Appointments</a><div class="footer"><hr><p style="font-size:14px">Best regards,</p><p style="font-size:14px">TBD</p></div></div></body></html>',
+        templateName: 'AdminDailyDigest',
+      },
+    });
 
     /***
      *** Outputs
