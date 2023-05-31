@@ -5,11 +5,11 @@ import { DataMessagingStack } from '../lib/data-messaging-stack';
 import { UserPool } from 'aws-cdk-lib/aws-cognito';
 
 describe('Data Messaging Stack', () => {
-  beforeAll(() => {
+  beforeEach(() => {
     process.env.SENDER_EMAIL = 'test@test.com';
   });
 
-  afterAll(() => {
+  afterEach(() => {
     delete process.env.SENDER_EMAIL;
   });
 

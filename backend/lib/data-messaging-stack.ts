@@ -233,7 +233,7 @@ export class DataMessagingStack extends Stack {
 
     const emailIdentity = new EmailIdentity(this, 'EmailIdentity', {
       //@ts-ignore
-      identity: { value: process.env.SENDER_EMAIL ?? 'test@test.com' },
+      identity: { value: process.env.SENDER_EMAIL },
     });
 
     new CfnTemplate(this, 'ConfirmationEmailTemplate', {
