@@ -81,6 +81,12 @@ jobs:
           cat .env
         working-directory: backend
 
+      - name: CDK Deploy Backend
+        run: npm run deploy-backend dev
+        env:
+          SENDER_EMAIL: ${{secrets.SENDER_EMAIL}}
+        working-directory: backend
+
       - name: Create frontend/src/aws-exports.js file
         run: |
           touch aws-exports.js
@@ -89,46 +95,14 @@ jobs:
           cat aws-exports.js
         working-directory: frontend/src
 
-      - name: CDK Deploy
-        run: npm run deploy dev
-        env:
-          SENDER_EMAIL: ${{secrets.SENDER_EMAIL}}
-        working-directory: backend
-
-      # - name: Install CDK Dependencies
-      #   run: npm ci
-      #   working-directory: backend
-      # - name: Install Frontend Dependencies
-      #   run: npm run cinstall-all-frontend
-      #   working-directory: backend
-      # - name: Create frontend/src/aws-exports.js file
-      #   run: |
-      #     touch aws-exports.js
-      #     echo const awsmobile = { aws_project_region: \'${{ secrets.CDK_DEFAULT_REGION }}\', aws_cognito_region: \'${{ secrets.CDK_DEFAULT_REGION }}\', aws_user_pools_id: \'${{secrets.COGNITO_USERPOOL_ID_DEV}}\', aws_user_pools_web_client_id: \'${{ secrets.COGNITO_WEB_CLIENT_ID_DEV }}\', mandatorySignIn: true, aws_appsync_graphqlEndpoint: \'${{ secrets.GRAPHQL_ENDPOINT_DEV }}\', aws_appsync_region: \'${{ secrets.CDK_DEFAULT_REGION }}\', aws_appsync_authenticationType: \'AMAZON_COGNITO_USER_POOLS\' } >> aws-exports.js
-      #     echo export default awsmobile >> aws-exports.js
-      #     cat aws-exports.js
-      #   working-directory: frontend/src
-      # # Option 1
-      # - name: Start frontend
-      #   run: npm run start
-      #   working-directory: frontend
-      # - name: Run Cypress Frontend Tests
-      #   run: npx cypress run
-      #   working-directory: frontend
-      # Option 2
       - name: Run Cypress
         uses: cypress-io/github-action@v5
         with:
           start: npm start
           wait-on: http://localhost:3000
-          wait-on-timeout: 180
+          wait-on-timeout: 120
           working-directory: frontend
         #env:
         #  url: ${{ secrets.CYRPESS_URL }}
         #  CYPRESS_USERNAME: ${{ secrets.CYRPESS_USERNAME }}
         #  CYPRESS_PASSWORD: ${{ secrets.CYRPESS_PASSWORD }}
-
-      # Option 3
-      # - name: Run Cypress Frontend Tests
-      #   run: npx cypress run --env url=${{ secrets.CYPRESS_URL }},username=${{ secrets.CYPRESS_USERNAME }},password=${{ secrets.CYPRESS_PASSWORD }}
-      #   working-directory: frontend
