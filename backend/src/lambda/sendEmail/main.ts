@@ -1,9 +1,13 @@
 import { SESClient, SendTemplatedEmailCommand, SendTemplatedEmailCommandInput } from '@aws-sdk/client-ses'; // ES Modules import
-import { unmarshall } from '@aws-sdk/util-dynamodb';
-import { DynamoDBRecord } from 'aws-lambda';
 
+type Customer = {
+  name: string;
+  date: string;
+  time: string;
+};
 type Booking = {
   administratorDetails: {
+    email: string | undefined;
     firstName: string;
     lastName: string;
   };
@@ -14,60 +18,163 @@ type Booking = {
     firstName: string;
     lastName: string;
     email: string;
-    string: string;
   };
   pk: string;
   sk: string;
-  reminders: number;
 };
 
-exports.handler = async (event: DynamoDBRecord[]) => {
-  console.debug('🕧 Received event: ', JSON.stringify(event));
+exports.handler = async (event: any) => {
+  console.debug('🕧 Send Email invoked: ', JSON.stringify(event));
 
-  if (event.length < 0) {
-    console.debug('🛑 No valid DynamoDB Streams records found in event');
+  // Will either be from EventBridge (event.detail.entries) or from Pipes (event)
+  // If it comes from EventBridge it is reminder notifications, from Pipes it is confirmation or cancellation appointments
+  if (event.detail?.entries?.length < 1 && event.length < 1) {
+    console.debug('✅ No records to process. Exiting.');
     return;
   }
 
-  // Send email confirmation
-  const client = new SESClient({});
+  const isReminders = event.detail?.entries?.length > 0;
+  const values: Booking[] = event.detail?.entries ?? event;
 
+  if (isReminders) {
+    console.debug('🔔 Sending daily digest and reminders');
+
+    await processMapSync(groupByEmail(values));
+  } else {
+    console.debug('🔔 Sending individual notifications');
+
+    await Promise.all(
+      values.map(async (data: Booking) => {
+        // Send customer email
+        await sendEmail(
+          [data.customerDetails.email],
+          getTemplateName(data, false),
+          `{
+          "name": "${data.customerDetails.firstName} ${data.customerDetails.lastName}",
+          "date": "${formateLocalLongDate(data.sk)}",
+          "time": "${formatLocalTimeString(data.sk, 0)}",
+          "administrator": "${data.administratorDetails.firstName} ${data.administratorDetails.lastName}"
+        }`
+        );
+
+        // Send Administrator email
+        if (data.administratorDetails.email) {
+          await sendEmail(
+            [data.administratorDetails.email],
+            getTemplateName(data, true),
+            `{
+            "name": "${data.customerDetails.firstName} ${data.customerDetails.lastName}",
+            "date": "${formateLocalLongDate(data.sk)}",
+            "time": "${formatLocalTimeString(data.sk, 0)}"
+          }`
+          );
+        }
+      })
+    );
+  }
+
+  console.log(`✅ Send ${values.length} notifications`);
+};
+
+// Sends daily digest and reminders asynchronously while iterating through the Map
+const processAsyncTask = async (email: string, bookings: Booking[]) => {
+  const customers: Customer[] = [];
   await Promise.all(
-    event.map(async (e) => {
-      //@ts-ignore
-      const data: Booking = unmarshall(e.dynamodb?.NewImage);
-
-      let template: string = '';
-      if (data.appointmentDetails.status === 'booked' && data.reminders === 0) {
-        template = 'AppointmentConfirmation';
-      } else if (data.appointmentDetails.status === 'cancelled') {
-        template = 'AppointmentCancellation';
-      } else if (data.appointmentDetails.status === 'booked' && data.reminders > 0) {
-        template = 'BookingReminder';
-      }
-
-      // Send templated email
-      const input: SendTemplatedEmailCommandInput = {
-        Source: process.env.SENDER_EMAIL,
-        Destination: { ToAddresses: [data.customerDetails.email] },
-        Template: template,
-        TemplateData: `{
-      "name": "${data.customerDetails.firstName} ${data.customerDetails.lastName}",
-      "date": "${formateLocalLongDate(data.sk)}",
-      "time": "${formatLocalTimeString(data.sk, 0)}",
-      "administrator": "${data.administratorDetails.firstName} ${data.administratorDetails.lastName}" }`,
+    bookings.map(async (booking: Booking) => {
+      const c: Customer = {
+        name: `${booking.customerDetails.firstName} ${booking.customerDetails.lastName}`,
+        date: `${formateLocalLongDate(booking.sk)}`,
+        time: `${formatLocalTimeString(booking.sk, 0)}`,
       };
-      console.log(`🔔 Send Email:  ${JSON.stringify(input)}`);
+      customers.push(c);
 
-      const command = new SendTemplatedEmailCommand(input);
-      const response = await client.send(command);
-
-      console.log(`🔔 Appointment notification sent: {result: ${JSON.stringify(response)}}}`);
+      // Send individual customer reminders
+      await sendEmail(
+        [booking.customerDetails.email],
+        'BookingReminder',
+        `{
+          "name": "${booking.customerDetails.firstName} ${booking.customerDetails.lastName}",
+          "date": "${formateLocalLongDate(booking.sk)}",
+          "time": "${formatLocalTimeString(booking.sk, 0)}",
+          "administrator": "${booking.administratorDetails.firstName} ${booking.administratorDetails.lastName}"
+        }`
+      );
     })
   );
 
-  console.log(`✅ Send ${event.length} notifications`);
+  // Send administrator daily digest
+  await sendEmail([email], 'AdminDailyDigest', `${JSON.stringify({ customers: customers })}`);
 };
+
+// Processes the map of Bookings by email synchronously
+const processMapSync = async (bookingsByEmail: Map<string, Booking[]>) => {
+  for (const [email, bookings] of bookingsByEmail) {
+    await processAsyncTask(email, bookings);
+  }
+};
+
+// Create a Map of Bookings with the administrator email as the key
+// To iterate through each
+//    map?.forEach((values) => {
+//      values.map((v) => {
+//        console.log(v?.sk);
+//      });
+//    });
+function groupByEmail(items: Booking[]) {
+  const map = new Map<string, [Booking]>();
+
+  if (items) {
+    items.forEach((item) => {
+      const key = item.administratorDetails.email ?? '';
+      const value = map.get(key);
+      if (value) {
+        value.push(item);
+      } else {
+        map.set(key, [item]);
+      }
+    });
+  }
+
+  return map;
+}
+
+function getTemplateName(data: Booking, admin: boolean): string {
+  let templateName: string = '';
+
+  if (!admin && data.appointmentDetails.status === 'booked') {
+    templateName = 'AppointmentConfirmation';
+  } else if (!admin && data.appointmentDetails.status === 'cancelled') {
+    templateName = 'AppointmentCancellation';
+  } else if (admin && data.appointmentDetails.status === 'booked') {
+    templateName = 'AdminAppointmentBooked';
+  } else if (admin && data.appointmentDetails.status === 'cancelled') {
+    templateName = 'AdminAppointmentCancelled';
+  }
+
+  return templateName;
+}
+
+async function sendEmail(recipients: string[], template: string, templateData: string) {
+  try {
+    const client = new SESClient({});
+
+    const input: SendTemplatedEmailCommandInput = {
+      Source: process.env.SENDER_EMAIL,
+      Destination: { ToAddresses: recipients },
+      Template: template,
+      TemplateData: templateData,
+    };
+
+    const command = new SendTemplatedEmailCommand(input);
+    console.debug('Executing SES command', JSON.stringify(command));
+
+    const response = await client.send(command);
+
+    console.debug('🔔 SES result', JSON.stringify(response));
+  } catch (error) {
+    console.error(error);
+  }
+}
 
 // Returns the local time part (including offset) of an ISO8601 datetime string
 //  Input: 2023-04-06T14:00:00Z, 0

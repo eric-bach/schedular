@@ -31,7 +31,7 @@ switch (stage) {
   case 'backend': {
     const auth = new AuthStack(app, `${APP_NAME}-auth-${envName}`, baseProps);
 
-    const dataMessaging = new DataMessagingStack(app, `${APP_NAME}-data-messaging-${envName}`, baseProps);
+    const dataMessaging = new DataMessagingStack(app, `${APP_NAME}-data-messaging-${envName}`, { ...baseProps, params: { userPoolId: auth.userPoolId } });
 
     new ApiStack(app, `${APP_NAME}-api-${envName}`, {
       ...baseProps,

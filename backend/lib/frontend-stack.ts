@@ -6,6 +6,7 @@ import { BlockPublicAccess, Bucket, HttpMethods } from 'aws-cdk-lib/aws-s3';
 import {
   CloudFrontAllowedMethods,
   CloudFrontWebDistribution,
+  GeoRestriction,
   OriginAccessIdentity,
   PriceClass,
   SecurityPolicyProtocol,
@@ -83,6 +84,7 @@ export class FrontendStack extends Stack {
           ],
         },
       ],
+      geoRestriction: GeoRestriction.allowlist('CA'),
       errorConfigurations: [
         {
           errorCode: 403,
