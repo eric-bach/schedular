@@ -95,7 +95,7 @@ jobs:
           cat aws-exports.js
         working-directory: frontend/src
 
-      - name: Run Cypress
+      - name: Run Cypress locally
         uses: cypress-io/github-action@v5
         with:
           start: npm start
