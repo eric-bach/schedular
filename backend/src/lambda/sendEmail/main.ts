@@ -74,7 +74,7 @@ exports.handler = async (event: any) => {
     );
   }
 
-  console.log(`✅ Send ${values.length} notifications`);
+  console.log('✅ Sent email notifications');
 };
 
 // Sends daily digest and reminders asynchronously while iterating through the Map
