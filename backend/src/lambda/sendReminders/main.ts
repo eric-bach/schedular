@@ -3,6 +3,25 @@ import { EventBridgeClient, PutEventsCommand, PutEventsCommandInput, PutEventsCo
 import { CognitoIdentityProviderClient, ListUsersCommand, ListUsersCommandInput, ListUsersCommandOutput } from '@aws-sdk/client-cognito-identity-provider';
 import { unmarshall } from '@aws-sdk/util-dynamodb';
 
+type Booking = {
+  administratorDetails: {
+    id: string;
+    email: string | undefined;
+    firstName: string;
+    lastName: string;
+  };
+  appointmentDetails: {
+    status: string;
+  };
+  customerDetails: {
+    firstName: string;
+    lastName: string;
+    email: string;
+  };
+  pk: string;
+  sk: string;
+};
+
 exports.handler = async () => {
   console.debug(`🕧 Send Reminders invoked`);
 
@@ -34,10 +53,10 @@ exports.handler = async () => {
   console.log(`🕧 Found ${result.Items.length} bookings to send reminders for`);
 
   // Send to EventBridge
-  let details: any = [];
+  let details: Booking[] = [];
   await Promise.all(
     result.Items.map(async (r) => {
-      const value = unmarshall(r);
+      const value: Booking = unmarshall(r) as Booking;
 
       value.administratorDetails.email = (await getAdministratorEmail(value.administratorDetails.id.substring(5))) ?? undefined;
 
@@ -58,12 +77,9 @@ exports.handler = async () => {
 
   const eventResult: PutEventsCommandOutput | undefined = await publishEvent(new PutEventsCommand(params));
 
-  if (eventResult?.$metadata.httpStatusCode !== 200) {
-    console.error(`🛑 Could not send events to EventBridge`, eventResult);
-    return;
+  if (eventResult?.$metadata.httpStatusCode === 200) {
+    console.log(`✅ Sent ${result.Count} reminder events to EventBridge`);
   }
-
-  console.log(`✅ Sent ${result.Count} reminder events to EventBridge`);
 };
 
 async function publishEvent(command: PutEventsCommand): Promise<PutEventsCommandOutput | undefined> {
@@ -76,7 +92,7 @@ async function publishEvent(command: PutEventsCommand): Promise<PutEventsCommand
     result = await client.send(command);
     console.log('🔔 EventBridge result', JSON.stringify(result));
   } catch (error) {
-    console.error('🛑 Error sending EventBridge event\n', error);
+    console.error('🛑 EventBridge error', error);
   }
 
   return result;
@@ -92,7 +108,7 @@ async function dynamoDbCommand(command: any): Promise<any> {
     result = await client.send(command);
     console.log('🔔 DynamoDB result', JSON.stringify(result));
   } catch (error) {
-    console.error('🛑 Error with DynamoDB command', error);
+    console.error('🛑 DynamoDB error', error);
   }
 
   return result;
@@ -122,7 +138,7 @@ async function getAdministratorEmail(id: string): Promise<string | undefined> {
     console.log('🔔 Cognito result', JSON.stringify(result));
     email = result.Users[0].Attributes?.find((a) => a.Name === 'email')?.Value;
   } catch (error) {
-    console.error(error);
+    console.error('🛑 Cognito error', error);
   }
 
   return email;
