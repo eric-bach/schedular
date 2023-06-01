@@ -1,10 +1,5 @@
 import { SESClient, SendTemplatedEmailCommand, SendTemplatedEmailCommandInput } from '@aws-sdk/client-ses'; // ES Modules import
 
-type Customer = {
-  name: string;
-  date: string;
-  time: string;
-};
 type Booking = {
   administratorDetails: {
     email: string | undefined;
@@ -79,6 +74,11 @@ exports.handler = async (event: any) => {
 
 // Sends daily digest and reminders asynchronously while iterating through the Map
 const processAsyncTask = async (email: string, bookings: Booking[]) => {
+  type Customer = {
+    name: string;
+    time: string;
+  };
+
   const customers: Customer[] = [];
   let date: string = '';
   let administrator: string = 'there';
@@ -87,7 +87,6 @@ const processAsyncTask = async (email: string, bookings: Booking[]) => {
     bookings.map(async (booking: Booking) => {
       const c: Customer = {
         name: `${booking.customerDetails.firstName} ${booking.customerDetails.lastName}`,
-        date: `${formateLocalLongDate(booking.sk)}`,
         time: `${formatLocalTimeString(booking.sk, 0)}`,
       };
       customers.push(c);
