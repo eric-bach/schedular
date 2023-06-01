@@ -60,7 +60,10 @@ describe('Data Messaging Stack', () => {
   it('has email templates', () => {
     template.hasResourceProperties('AWS::SES::Template', Match.objectLike({ Template: { TemplateName: 'AppointmentConfirmation' } }));
     template.hasResourceProperties('AWS::SES::Template', Match.objectLike({ Template: { TemplateName: 'AppointmentCancellation' } }));
-    template.hasResourceProperties('AWS::SES::Template', Match.objectLike({ Template: { TemplateName: 'BookingReminder' } }));
+    template.hasResourceProperties('AWS::SES::Template', Match.objectLike({ Template: { TemplateName: 'AppointmentReminder' } }));
+    template.hasResourceProperties('AWS::SES::Template', Match.objectLike({ Template: { TemplateName: 'AdminAppointmentConfirmation' } }));
+    template.hasResourceProperties('AWS::SES::Template', Match.objectLike({ Template: { TemplateName: 'AdminAppointmentCancellation' } }));
+    template.hasResourceProperties('AWS::SES::Template', Match.objectLike({ Template: { TemplateName: 'AdminDailyDigest' } }));
   });
 
   it('has Lambda functions', () => {

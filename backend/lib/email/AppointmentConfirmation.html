@@ -11,14 +11,14 @@
       .container {
         max-width: 600px;
         margin: 0 auto;
-        background-color: #1976d2;
+        background-color: #ffffff;
         padding: 20px;
         border-radius: 5px;
-        color: #ffffff;
+        color: #777777;
       }
 
       h1 {
-        font-size: 28px;
+        font-size: 32px;
         line-height: 1.2;
         margin-top: 0;
         margin-bottom: 20px;
@@ -30,24 +30,28 @@
 
       .heading {
         margin-top: 40px;
-        font-size: 18px;
-        line-height: 0.8;
-      }
-
-      .appointment-details {
-        margin-bottom: 60px;
         font-size: 20px;
         line-height: 0.8;
       }
 
+      .appointment-details {
+        margin-bottom: 40px;
+        font-size: 18px;
+        line-height: 0.8;
+      }
+
       .administrator-details {
-        margin-bottom: 50px;
-        line-height: 0.9;
+        margin-bottom: 40px;
+        line-height: 0.8;
+      }
+
+      .manage-account {
+        margin-bottom: 40px;
       }
 
       .button {
         display: inline-block;
-        background-color: #4caf50;
+        background-color: #1976d2;
         color: #ffffff;
         text-align: center;
         padding: 10px 20px;
@@ -56,7 +60,7 @@
       }
 
       .button:hover {
-        background-color: #45a049;
+        background-color: #0059b2;
       }
 
       .italic {
@@ -64,32 +68,45 @@
       }
 
       .footer {
-        margin-top: 40px;
-        line-height: 0.6;
+        margin-top: 30px;
+        line-height: 0.7;
+      }
+
+      .signature {
+        margin-top: 20px;
+        font-size: 12px;
+        line-height: 0.7;
+        text-align: center;
+        color: #777777;
       }
     </style>
   </head>
   <body>
     <div class="container">
-      <h1>Thanks<br />for booking.</h1>
+      <h1>Thanks for booking</h1>
       <div class="heading">
-        <p>Your appointment has been confirmed.</p>
+        <p>Hey {{name}}, your appointment has been <span style="color: green"> confirmed</span>.</p>
       </div>
       <div class="appointment-details">
         <p>{{date}}</p>
         <p>{{time}}</p>
       </div>
       <div class="administrator-details">
-        <p>Massage with: {{administrator}}</p>
+        <p>Appointment with: {{administrator}}</p>
         <p>Address: TBD</p>
       </div>
-      <p class="italic" style="font-size: 14px">To view or manage your appointment, please visit our website.</p>
-      <a class="button" href="https://www.google.ca">Manage Appointments</a>
+      <div class="manage-account">
+        <p class="italic" style="font-size: 14px">To view or manage your appointments, please log in your account.</p>
+        <a class="button" href="https://www.google.ca">Manage Appointments</a>
+      </div>
+      <hr />
       <div class="footer">
-        <hr />
         <p style="font-size: 14px">Best regards,</p>
         <p style="font-size: 14px">TBD</p>
       </div>
+    </div>
+    <div class="signature">
+      <p>Built by: <a href="https://ericbach.dev" style="text-decoration: none">Eric Bach</a></p>
     </div>
   </body>
 </html>

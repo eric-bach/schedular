@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html lang="en">
   <head>
-    <title>Appointment Booked</title>
+    <title>You have a new booking</title>
     <style>
       body {
         background-color: #f6f6f6;
@@ -11,14 +11,14 @@
       .container {
         max-width: 600px;
         margin: 0 auto;
-        background-color: #1976d2;
+        background-color: #cccccc;
         padding: 20px;
         border-radius: 5px;
-        color: #ffffff;
+        color: #7e7e7e;
       }
 
       h1 {
-        font-size: 28px;
+        font-size: 32px;
         line-height: 1.2;
         margin-top: 0;
         margin-bottom: 20px;
@@ -30,24 +30,23 @@
 
       .heading {
         margin-top: 40px;
-        font-size: 18px;
-        line-height: 0.8;
-      }
-
-      .appointment-details {
-        margin-bottom: 60px;
         font-size: 20px;
         line-height: 0.8;
       }
 
       .customer-details {
-        margin-bottom: 50px;
-        line-height: 0.9;
+        margin-bottom: 40px;
+        font-size: 18px;
+        line-height: 0.8;
+      }
+
+      .manage-account {
+        margin-bottom: 40px;
       }
 
       .button {
         display: inline-block;
-        background-color: #4caf50;
+        background-color: #b52dee;
         color: #ffffff;
         text-align: center;
         padding: 10px 20px;
@@ -56,7 +55,7 @@
       }
 
       .button:hover {
-        background-color: #45a049;
+        background-color: #7a1ea1;
       }
 
       .italic {
@@ -64,31 +63,42 @@
       }
 
       .footer {
-        margin-top: 40px;
-        line-height: 0.6;
+        margin-top: 30px;
+        line-height: 0.7;
+      }
+
+      .signature {
+        margin-top: 20px;
+        font-size: 12px;
+        line-height: 0.7;
+        text-align: center;
+        color: #777777;
       }
     </style>
   </head>
   <body>
     <div class="container">
-      <h1>You have a<br />new booking.</h1>
+      <h1>You have a new booking</h1>
       <div class="heading">
-        <p>A user has booked an appointment with you.</p>
+        <p>Hey {{administrator}}, a client has booked an appointment with you.</p>
       </div>
-      <div class="appointment-details">
+      <div class="customer-details">
+        <p>{{name}}</p>
         <p>{{date}}</p>
         <p>{{time}}</p>
       </div>
-      <div class="customer-details">
-        <p>Customer: {{name}}</p>
+      <div class="manage-account">
+        <p class="italic" style="font-size: 14px">To view or manage your appointments, please log in your account.</p>
+        <a class="button" href="https://www.google.ca">Manage Appointments</a>
       </div>
-      <p class="italic" style="font-size: 14px">To view or manage your schedule, please visit our website.</p>
-      <a class="button" href="https://www.google.ca">Manage Appointments</a>
+      <hr />
       <div class="footer">
-        <hr />
         <p style="font-size: 14px">Best regards,</p>
         <p style="font-size: 14px">TBD</p>
       </div>
+    </div>
+    <div class="signature">
+      <p>Built by: <a href="https://ericbach.dev" style="text-decoration: none">Eric Bach</a></p>
     </div>
   </body>
 </html>

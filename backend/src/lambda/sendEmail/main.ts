@@ -1,10 +1,5 @@
 import { SESClient, SendTemplatedEmailCommand, SendTemplatedEmailCommandInput } from '@aws-sdk/client-ses'; // ES Modules import
 
-type Customer = {
-  name: string;
-  date: string;
-  time: string;
-};
 type Booking = {
   administratorDetails: {
     email: string | undefined;
@@ -50,11 +45,11 @@ exports.handler = async (event: any) => {
           [data.customerDetails.email],
           getTemplateName(data, false),
           `{
-          "name": "${data.customerDetails.firstName} ${data.customerDetails.lastName}",
-          "date": "${formateLocalLongDate(data.sk)}",
-          "time": "${formatLocalTimeString(data.sk, 0)}",
-          "administrator": "${data.administratorDetails.firstName} ${data.administratorDetails.lastName}"
-        }`
+            "name": "${data.customerDetails.firstName} ${data.customerDetails.lastName}",
+            "date": "${formateLocalLongDate(data.sk)}",
+            "time": "${formatLocalTimeString(data.sk, 0)}",
+            "administrator": "${data.administratorDetails.firstName} ${data.administratorDetails.lastName}"
+          }`
         );
 
         // Send Administrator email
@@ -63,27 +58,35 @@ exports.handler = async (event: any) => {
             [data.administratorDetails.email],
             getTemplateName(data, true),
             `{
-            "name": "${data.customerDetails.firstName} ${data.customerDetails.lastName}",
-            "date": "${formateLocalLongDate(data.sk)}",
-            "time": "${formatLocalTimeString(data.sk, 0)}"
-          }`
+              "name": "${data.customerDetails.firstName} ${data.customerDetails.lastName}",
+              "date": "${formateLocalLongDate(data.sk)}",
+              "time": "${formatLocalTimeString(data.sk, 0)}",
+              "administrator": "${data.administratorDetails.firstName} ${data.administratorDetails.lastName}"
+            }`
           );
         }
       })
     );
   }
 
-  console.log(`✅ Send ${values.length} notifications`);
+  console.log('✅ Sent email notifications');
 };
 
 // Sends daily digest and reminders asynchronously while iterating through the Map
 const processAsyncTask = async (email: string, bookings: Booking[]) => {
+  type Customer = {
+    name: string;
+    time: string;
+  };
+
   const customers: Customer[] = [];
+  let date: string = '';
+  let administrator: string = 'there';
+
   await Promise.all(
     bookings.map(async (booking: Booking) => {
       const c: Customer = {
         name: `${booking.customerDetails.firstName} ${booking.customerDetails.lastName}`,
-        date: `${formateLocalLongDate(booking.sk)}`,
         time: `${formatLocalTimeString(booking.sk, 0)}`,
       };
       customers.push(c);
@@ -91,7 +94,7 @@ const processAsyncTask = async (email: string, bookings: Booking[]) => {
       // Send individual customer reminders
       await sendEmail(
         [booking.customerDetails.email],
-        'BookingReminder',
+        'AppointmentReminder',
         `{
           "name": "${booking.customerDetails.firstName} ${booking.customerDetails.lastName}",
           "date": "${formateLocalLongDate(booking.sk)}",
@@ -99,11 +102,14 @@ const processAsyncTask = async (email: string, bookings: Booking[]) => {
           "administrator": "${booking.administratorDetails.firstName} ${booking.administratorDetails.lastName}"
         }`
       );
+
+      date = formateLocalLongDate(booking.sk);
+      administrator = `${booking.administratorDetails.firstName} ${booking.administratorDetails.lastName}`;
     })
   );
 
   // Send administrator daily digest
-  await sendEmail([email], 'AdminDailyDigest', `${JSON.stringify({ customers: customers })}`);
+  await sendEmail([email], 'AdminDailyDigest', `${JSON.stringify({ administrator: administrator, date: date, customers: customers })}`);
 };
 
 // Processes the map of Bookings by email synchronously
@@ -146,9 +152,9 @@ function getTemplateName(data: Booking, admin: boolean): string {
   } else if (!admin && data.appointmentDetails.status === 'cancelled') {
     templateName = 'AppointmentCancellation';
   } else if (admin && data.appointmentDetails.status === 'booked') {
-    templateName = 'AdminAppointmentBooked';
+    templateName = 'AdminAppointmentConfirmation';
   } else if (admin && data.appointmentDetails.status === 'cancelled') {
-    templateName = 'AdminAppointmentCancelled';
+    templateName = 'AdminAppointmentCancellation';
   }
 
   return templateName;
