@@ -91,7 +91,7 @@ const processAsyncTask = async (email: string, bookings: Booking[]) => {
       // Send individual customer reminders
       await sendEmail(
         [booking.customerDetails.email],
-        'BookingReminder',
+        'AppointmentReminder',
         `{
           "name": "${booking.customerDetails.firstName} ${booking.customerDetails.lastName}",
           "date": "${formateLocalLongDate(booking.sk)}",
@@ -146,9 +146,9 @@ function getTemplateName(data: Booking, admin: boolean): string {
   } else if (!admin && data.appointmentDetails.status === 'cancelled') {
     templateName = 'AppointmentCancellation';
   } else if (admin && data.appointmentDetails.status === 'booked') {
-    templateName = 'AdminAppointmentBooked';
+    templateName = 'AdminAppointmentConfirmation';
   } else if (admin && data.appointmentDetails.status === 'cancelled') {
-    templateName = 'AdminAppointmentCancelled';
+    templateName = 'AdminAppointmentCancellation';
   }
 
   return templateName;

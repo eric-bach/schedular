@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html lang="en">
   <head>
-    <title>Appointment Cancellation</title>
+    <title>You have a cancellation</title>
     <style>
       body {
         font-family: Arial, sans-serif;
@@ -19,10 +19,10 @@
       .container {
         max-width: 600px;
         margin: 0 auto;
-        background-color: #ffffff;
+        background-color: #cccccc;
         padding: 20px;
         border-radius: 5px;
-        color: #777777;
+        color: #7e7e7e;
       }
 
       h1 {
@@ -42,14 +42,9 @@
         line-height: 0.8;
       }
 
-      .appointment-details {
+      .customer-details {
         margin-bottom: 40px;
         font-size: 18px;
-        line-height: 0.8;
-      }
-
-      .administrator-details {
-        margin-bottom: 40px;
         line-height: 0.8;
       }
 
@@ -59,7 +54,7 @@
 
       .button {
         display: inline-block;
-        background-color: #1976d2;
+        background-color: #b52dee;
         color: #ffffff;
         text-align: center;
         padding: 10px 20px;
@@ -68,7 +63,7 @@
       }
 
       .button:hover {
-        background-color: #0059b2;
+        background-color: #7a1ea1;
       }
 
       .italic {
@@ -92,17 +87,14 @@
   <body>
     <img class="header-image" src="https://schedular.ericbach.dev/img/logo.jpg" alt="Header Image" />
     <div class="container">
-      <h1>It\'s understandable plans change</h1>
+      <h1>You have a cancellation</h1>
       <div class="heading">
-        <p>Hey {{name}}, your appointment has been <span style="color: red">cancelled</span>.</p>
+        <p>Hey {{administrator}}, a client has cancelled their appointment with you.</p>
       </div>
-      <div class="appointment-details">
+      <div class="customer-details">
+        <p>{{name}}</p>
         <p>{{date}}</p>
         <p>{{time}}</p>
-      </div>
-      <div class="administrator-details">
-        <p>Appointment with: {{administrator}}</p>
-        <p>Address: TBD</p>
       </div>
       <div class="manage-account">
         <p class="italic" style="font-size: 14px">To view or manage your appointments, please log in your account.</p>
