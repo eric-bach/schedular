@@ -87,11 +87,14 @@ jobs:
           SENDER_EMAIL: ${{secrets.SENDER_EMAIL}}
         working-directory: backend
 
+      - name: pwd
+        run: pwd
+
       - name: Upload artifacts
         uses: actions/upload-artifact@v3
         with:
           name: artifacts
-          path: /
+          path: ./
 
   integration-tests:
     name: Integration Tests
