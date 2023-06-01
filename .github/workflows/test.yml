@@ -48,12 +48,12 @@ jobs:
         working-directory: backend
 
   deploy-dev:
-    name: Integration Tests
+    name: Deploy Backend
     runs-on: ubuntu-latest
     permissions:
       actions: write
       id-token: write
-      contents: read
+      contents: write
 
     steps:
       - name: Checkout Code
