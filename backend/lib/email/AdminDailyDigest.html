@@ -83,7 +83,9 @@
         <p>Hi {{administrator}}, here is your upcoming schedule for {{date}}</p>
       </div>
       <div class="customer-details">
+        {{#each customers}}
         <p>{{time}} - {{name}}</p>
+        {{/each}}
       </div>
       <div class="manage-account">
         <p class="italic" style="font-size: 14px">To view or manage your appointments, please log in your account.</p>
