@@ -37,43 +37,72 @@ jobs:
         run: npm run cinstall-all-backend
         working-directory: backend
 
+      - name: Create backend/.env file
+        run: |
+          touch .env
+          echo SENDER_EMAIL=test@test.com >> .env
+        working-directory: backend
+
       - name: Run CDK Unit Tests
         run: npm run test
         working-directory: backend
 
-  # integration-tests:
-  #   name: Integration Tests
-  #   runs-on: ubuntu-latest
+  integration-tests:
+    name: Integration Tests
+    runs-on: ubuntu-latest
+    permissions:
+      actions: write
+      id-token: write
+      contents: read
 
-  #   steps:
-  #     - name: Checkout Code
-  #       uses: actions/checkout@v3
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v3
 
-  #     - name: Use Node.js
-  #       uses: actions/setup-node@v3
-  #       with:
-  #         node-version: 18.x
+      - name: Use Node.js
+        uses: actions/setup-node@v3
+        with:
+          node-version: 18.x
 
-  #   - name: Install CDK Dependencies
-  #   run: npm ci
-  #   working-directory: backend
+      - name: Configure AWS credentials
+        uses: aws-actions/configure-aws-credentials@v2
+        with:
+          role-to-assume: ${{ secrets.AWS_SERVICE_ROLE_DEV }}
+          aws-region: ${{ secrets.CDK_DEFAULT_REGION }}
 
-  # - name: Install Frontend Dependencies
-  #   run: npm run cinstall-all-frontend
-  #   working-directory: backend
+      - name: Install Dependencies
+        run: npm run cinstall-all
+        working-directory: backend
 
-  #     - name: Create frontend/src/aws-exports.js file
-  #       run: |
-  #         touch aws-exports.js
-  #         echo const awsmobile = { aws_project_region: \'${{ secrets.CDK_DEFAULT_REGION }}\', aws_cognito_region: \'${{ secrets.CDK_DEFAULT_REGION }}\', aws_user_pools_id: \'${{secrets.COGNITO_USERPOOL_ID_DEV}}\', aws_user_pools_web_client_id: \'${{ secrets.COGNITO_WEB_CLIENT_ID_DEV }}\', mandatorySignIn: true, aws_appsync_graphqlEndpoint: \'${{ secrets.GRAPHQL_ENDPOINT_DEV }}\', aws_appsync_region: \'${{ secrets.CDK_DEFAULT_REGION }}\', aws_appsync_authenticationType: \'AMAZON_COGNITO_USER_POOLS\' } >> aws-exports.js
-  #         echo export default awsmobile; >> aws-exports.js
-  #         cat aws-exports.js
-  #       working-directory: frontend/src
+      - name: Create backend/.env file
+        run: |
+          touch .env
+          echo SENDER_EMAIL=${{ secrets.SENDER_EMAIL }} >> .env
+          cat .env
+        working-directory: backend
 
-  # - name: Start frontend
-  #   run: npm run start
-  #   working-directory: frontend
+      - name: CDK Deploy Backend
+        run: npm run deploy-backend dev
+        env:
+          SENDER_EMAIL: ${{secrets.SENDER_EMAIL}}
+        working-directory: backend
 
-  # - name: Run Cypress Frontend Tests
-  #   run: npx cypress run --env username=${{ secrets.CYPRESS_USERNAME }},password=${{ secrets.CYPRESS_PASSWORD }}
-  #   working-directory: frontend
+      - name: Create frontend/src/aws-exports.js file
+        run: |
+          touch aws-exports.js
+          echo const awsmobile = { aws_project_region: \'${{ secrets.CDK_DEFAULT_REGION }}\', aws_cognito_region: \'${{ secrets.CDK_DEFAULT_REGION }}\', aws_user_pools_id: \'${{secrets.COGNITO_USERPOOL_ID_DEV}}\', aws_user_pools_web_client_id: \'${{ secrets.COGNITO_WEB_CLIENT_ID_DEV }}\', mandatorySignIn: true, aws_appsync_graphqlEndpoint: \'${{ secrets.GRAPHQL_ENDPOINT_DEV }}\', aws_appsync_region: \'${{ secrets.CDK_DEFAULT_REGION }}\', aws_appsync_authenticationType: \'AMAZON_COGNITO_USER_POOLS\' } >> aws-exports.js
+          echo export default awsmobile >> aws-exports.js
+          cat aws-exports.js
+        working-directory: frontend/src
+
+      - name: Run Cypress
+        uses: cypress-io/github-action@v5
+        with:
+          start: npm start
+          wait-on: http://localhost:3000
+          wait-on-timeout: 180
+          working-directory: frontend
+        #env:
+        #  url: ${{ secrets.CYRPESS_URL }}
+        #  CYPRESS_USERNAME: ${{ secrets.CYRPESS_USERNAME }}
+        #  CYPRESS_PASSWORD: ${{ secrets.CYRPESS_PASSWORD }}

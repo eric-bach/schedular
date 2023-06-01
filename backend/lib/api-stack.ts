@@ -39,7 +39,6 @@ export class ApiStack extends Stack {
       memorySize: 512,
       timeout: Duration.seconds(10),
       environment: {
-        REGION: this.region,
         USER_POOL_ID: userPool.userPoolId,
       },
     });

@@ -106,7 +106,7 @@ export class DataMessagingStack extends Stack {
     // Send Reminders Lambda
     const sendRemindersFunction = new NodejsFunction(this, 'SendRemindersFunction', {
       functionName: `${props.appName}-${props.envName}-SendReminders`,
-      runtime: Runtime.NODEJS_16_X,
+      runtime: Runtime.NODEJS_18_X,
       handler: 'handler',
       entry: 'src/lambda/sendReminders/main.ts',
       environment: {
@@ -194,6 +194,7 @@ export class DataMessagingStack extends Stack {
     });
 
     const pipe = new CfnPipe(this, 'EventBridgePipe', {
+      name: `${props.appName}-${props.envName}-pipe`,
       roleArn: pipeRole.roleArn,
       //@ts-ignore
       source: dataTable.tableStreamArn,

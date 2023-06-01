@@ -186,3 +186,20 @@ To run the unit tests
    ```
    $ npm run test
    ```
+
+## Integration Tests
+
+To run the integration tests
+
+1. Start frontend
+
+   ```
+   $ cd frontend
+   $ npm run start
+   ```
+
+2. Run cypress
+
+   ```
+   $ npx cypress run --env url=URL,username=USERNAME,password=PASSWORD
+   ```

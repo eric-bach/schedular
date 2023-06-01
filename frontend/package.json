@@ -10,14 +10,15 @@
     "@mui/icons-material": "^5.11.11",
     "@mui/material": "^5.11.12",
     "@mui/x-date-pickers": "^6.0.1",
+    "@testing-library/cypress": "^9.0.0",
     "@testing-library/jest-dom": "^5.16.5",
     "@testing-library/react": "^13.4.0",
     "@testing-library/user-event": "^13.5.0",
     "@types/jest": "^27.5.2",
-    "@types/node": "^16.18.14",
     "@types/react": "^18.0.28",
     "@types/react-dom": "^18.0.11",
     "aws-amplify": "^5.0.18",
+    "cypress": "^12.13.0",
     "dayjs": "^1.11.7",
     "formik": "^2.2.9",
     "react": "^18.2.0",
@@ -34,7 +35,9 @@
     "start": "react-scripts start",
     "build": "react-scripts build",
     "test": "react-scripts test",
-    "eject": "react-scripts eject"
+    "eject": "react-scripts eject",
+    "cypress:run": "cypress run --e2e --browser chrome",
+    "cypress:open": "cypress open --e2e --browser chrome"
   },
   "eslintConfig": {
     "extends": [
@@ -55,6 +58,8 @@
     ]
   },
   "devDependencies": {
-    "@types/uuid": "^9.0.1"
+    "@types/node": "^20.2.5",
+    "@types/uuid": "^9.0.1",
+    "cypress-log-to-output": "^1.1.2"
   }
 }
