@@ -50,11 +50,11 @@ exports.handler = async (event: any) => {
           [data.customerDetails.email],
           getTemplateName(data, false),
           `{
-          "name": "${data.customerDetails.firstName} ${data.customerDetails.lastName}",
-          "date": "${formateLocalLongDate(data.sk)}",
-          "time": "${formatLocalTimeString(data.sk, 0)}",
-          "administrator": "${data.administratorDetails.firstName} ${data.administratorDetails.lastName}"
-        }`
+            "name": "${data.customerDetails.firstName} ${data.customerDetails.lastName}",
+            "date": "${formateLocalLongDate(data.sk)}",
+            "time": "${formatLocalTimeString(data.sk, 0)}",
+            "administrator": "${data.administratorDetails.firstName} ${data.administratorDetails.lastName}"
+          }`
         );
 
         // Send Administrator email
@@ -63,10 +63,11 @@ exports.handler = async (event: any) => {
             [data.administratorDetails.email],
             getTemplateName(data, true),
             `{
-            "name": "${data.customerDetails.firstName} ${data.customerDetails.lastName}",
-            "date": "${formateLocalLongDate(data.sk)}",
-            "time": "${formatLocalTimeString(data.sk, 0)}"
-          }`
+              "name": "${data.customerDetails.firstName} ${data.customerDetails.lastName}",
+              "date": "${formateLocalLongDate(data.sk)}",
+              "time": "${formatLocalTimeString(data.sk, 0)}",
+              "administrator": "${data.administratorDetails.firstName} ${data.administratorDetails.lastName}"
+            }`
           );
         }
       })
