@@ -80,6 +80,8 @@ exports.handler = async (event: any) => {
 // Sends daily digest and reminders asynchronously while iterating through the Map
 const processAsyncTask = async (email: string, bookings: Booking[]) => {
   const customers: Customer[] = [];
+  let administrator: string = 'there';
+
   await Promise.all(
     bookings.map(async (booking: Booking) => {
       const c: Customer = {
@@ -100,11 +102,13 @@ const processAsyncTask = async (email: string, bookings: Booking[]) => {
           "administrator": "${booking.administratorDetails.firstName} ${booking.administratorDetails.lastName}"
         }`
       );
+
+      administrator = `${booking.administratorDetails.firstName} ${booking.administratorDetails.lastName}`;
     })
   );
 
   // Send administrator daily digest
-  await sendEmail([email], 'AdminDailyDigest', `${JSON.stringify({ customers: customers })}`);
+  await sendEmail([email], 'AdminDailyDigest', `${JSON.stringify({ administrator: administrator, customers: customers })}`);
 };
 
 // Processes the map of Bookings by email synchronously
