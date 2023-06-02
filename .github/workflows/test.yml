@@ -27,7 +27,7 @@ jobs:
         with:
           node-version: 18.x
 
-      - name: Install Backend
+      - name: Install Backend and Sources
         uses: ./.github/actions/backend
 
       - name: Configure AWS credentials
@@ -57,7 +57,7 @@ jobs:
         with:
           node-version: 18.x
 
-      - name: Install Backend
+      - name: Install Backend and Sources
         uses: ./.github/actions/backend
 
       - name: Configure AWS credentials
