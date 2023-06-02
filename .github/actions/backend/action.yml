@@ -4,6 +4,10 @@ description: 'Installs required dependencies for backend'
 
 runs:
   using: composite
+  permissions:
+    id-token: write
+    contents: read
+
   steps:
     - name: CDK Dependencies
       id: cdk-cache
