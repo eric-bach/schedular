@@ -19,7 +19,7 @@ runs:
       shell: bash
 
     - name: Install Backend Sources
-      run: npm run cinstall-all-backend
+      run: npm run cinstall-backend
       working-directory: backend
       shell: bash
 
@@ -27,5 +27,6 @@ runs:
       run: |
         touch .env
         echo SENDER_EMAIL=test@test.com >> .env
+        echo CERTIFICATE_ARN=${{ secrets.CERTIFICATE_ARN_PROD }} >> .env
       working-directory: backend
       shell: bash
