@@ -2,11 +2,6 @@ name: Backend Install
 
 description: 'Installs required dependencies for backend'
 
-inputs:
-  certificateArnProd:
-    description: 'AWS Certificate ARN'
-    required: true
-
 runs:
   using: composite
 
