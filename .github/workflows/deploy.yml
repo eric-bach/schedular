@@ -90,9 +90,9 @@ jobs:
           role-to-assume: ${{ secrets.AWS_SERVICE_ROLE_PROD }}
           aws-region: us-east-1
 
-      # - name: Build Frontend
-      #   run: npm run build-all-frontend
-      #   working-directory: backend
+      - name: Build Frontend
+        run: npm run build-frontend
+        working-directory: backend
 
       - name: CDK Deploy Frontend
         run: npm run deploy-frontend prod
