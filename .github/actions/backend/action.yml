@@ -27,7 +27,9 @@ runs:
     - name: Create backend/.env file
       run: |
         touch .env
-        echo SENDER_EMAIL=test@test.com >> .env
-        echo CERTIFICATE_ARN=${{ secrets.CERTIFICATE_ARN_PROD }} >> .env
+        echo "SENDER_EMAIL=test@test.com" >> .env
+        echo "CERTIFICATE_ARN=$CERTIFICATE_ARN_PROD" >> .env
+      env:
+        CERTIFICATE_ARN_PROD: ${{ secrets.CERTIFICATE_ARN_PROD }}
       working-directory: backend
       shell: bash
