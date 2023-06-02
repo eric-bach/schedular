@@ -4,6 +4,7 @@ description: 'Installs required dependencies for frontend'
 
 runs:
   using: composite
+
   steps:
     - name: CDK Dependencies
       id: cdk-cache
