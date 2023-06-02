@@ -14,7 +14,7 @@ runs:
 
     - name: Install Backend
       if: steps.cdk-cache.outputs.cache-hit != 'true'
-      run: npm run ci
+      run: npm ci
       working-directory: backend
       shell: bash
 
