@@ -15,6 +15,7 @@ runs:
     - name: Install dependencies for CDK
       if: steps.cdk-cache.outputs.cache-hit != 'true'
       run: npm run cinstall-all-backend
+      working-directory: backend
       shell: bash
 
     - name: Create backend/.env file
