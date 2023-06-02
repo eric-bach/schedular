@@ -12,7 +12,7 @@ runs:
         path: backend/node_modules
         key: backend-${{ hashFiles('backend/package-lock.json') }}
 
-    - name: Install dependencies for CDK
+    - name: Install Backend
       if: steps.cdk-cache.outputs.cache-hit != 'true'
       run: npm run cinstall-all-backend
       working-directory: backend
