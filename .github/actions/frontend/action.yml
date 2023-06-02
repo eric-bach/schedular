@@ -29,6 +29,7 @@ runs:
       if: steps.frontend-cache.outputs.cache-hit != 'true'
       run: npm run cinstall-frontend
       working-directory: backend
+      shell: bash
 
     - name: Create frontend/src/aws-exports.js file
       run: |
@@ -37,3 +38,4 @@ runs:
         echo export default awsmobile >> aws-exports.js
         cat aws-exports.js
       working-directory: frontend/src
+      shell: bash
