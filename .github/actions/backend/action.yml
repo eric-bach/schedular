@@ -2,9 +2,6 @@ name: Backend Install
 
 description: 'Installs required dependencies for backend'
 
-env:
-  CERTIFICATE_ARN_PROD: ${{ secrets.CERTIFICATE_ARN_PROD }}
-
 runs:
   using: composite
 
@@ -24,13 +21,5 @@ runs:
 
     - name: Install Backend Sources
       run: npm run cinstall-backend
-      working-directory: backend
-      shell: bash
-
-    - name: Create backend/.env file
-      run: |
-        touch .env
-        echo "SENDER_EMAIL=test@test.com" >> .env
-        echo "CERTIFICATE_ARN=${{ env.CERTIFICATE_ARN_PROD }}" >> .env
       working-directory: backend
       shell: bash

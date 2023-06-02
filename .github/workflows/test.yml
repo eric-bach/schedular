@@ -30,6 +30,12 @@ jobs:
       - name: Install Backend and Sources
         uses: ./.github/actions/backend
 
+      - name: Create backend/.env file
+        run: |
+          touch .env
+          echo SENDER_EMAIL=test@test.com >> .env
+        working-directory: backend
+
       - name: Configure AWS credentials
         uses: aws-actions/configure-aws-credentials@v2
         with:
@@ -59,6 +65,12 @@ jobs:
 
       - name: Install Backend and Sources
         uses: ./.github/actions/backend
+
+      - name: Create backend/.env file
+        run: |
+          touch .env
+          echo SENDER_EMAIL=test@test.com >> .env
+        working-directory: backend
 
       - name: Configure AWS credentials
         uses: aws-actions/configure-aws-credentials@v2
