@@ -30,17 +30,6 @@ jobs:
       - name: CDK & Serverless Install
         uses: ./.github/actions/backend
 
-      - name: Cache & Restore Root Dependencies
-        id: root-cache
-        uses: actions/cache@v3
-        with:
-          path: node_modules
-          key: root-${{ hashFiles('package-lock.json') }}
-
-      - name: Root Install
-        if: steps.root-cache.outputs.cache-hit != 'true'
-        run: npm install --prefer-offline
-
       - name: Configure AWS credentials
         uses: aws-actions/configure-aws-credentials@v2
         with:
