@@ -22,3 +22,4 @@ runs:
         touch .env
         echo SENDER_EMAIL=test@test.com >> .env
       working-directory: backend
+      shell: bash
