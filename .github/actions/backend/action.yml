@@ -19,7 +19,6 @@ runs:
       shell: bash
 
     - name: Install Backend Sources
-      if: steps.cdk-cache.outputs.cache-hit != 'true'
       run: npm run cinstall-all-backend
       working-directory: backend
       shell: bash
