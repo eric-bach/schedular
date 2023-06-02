@@ -27,21 +27,25 @@ jobs:
         with:
           node-version: 18.x
 
+      - name: CDK & Serverless Install
+        uses: ./.github/actions/backend
+
+      - name: Cache & Restore Root Dependencies
+        id: root-cache
+        uses: actions/cache@v3
+        with:
+          path: node_modules
+          key: root-${{ hashFiles('package-lock.json') }}
+
+      - name: Root Install
+        if: steps.root-cache.outputs.cache-hit != 'true'
+        run: npm install --prefer-offline
+
       - name: Configure AWS credentials
         uses: aws-actions/configure-aws-credentials@v2
         with:
           role-to-assume: ${{ secrets.AWS_SERVICE_ROLE_DEV }}
           aws-region: ${{ secrets.CDK_DEFAULT_REGION }}
-
-      - name: Install NPM Dependencies
-        run: npm run cinstall-all-backend
-        working-directory: backend
-
-      - name: Create backend/.env file
-        run: |
-          touch .env
-          echo SENDER_EMAIL=test@test.com >> .env
-        working-directory: backend
 
       - name: Run CDK Unit Tests
         run: npm run test

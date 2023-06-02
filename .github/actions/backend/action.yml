@@ -1,0 +1,24 @@
+name: Backend Install
+
+description: 'Installs required dependencies for backend'
+
+runs:
+  using: composite
+  steps:
+    - name: CDK Dependencies
+      id: cdk-cache
+      uses: actions/cache@v3
+      with:
+        path: backend/node_modules
+        key: backend-${{ hashFiles('backend/package-lock.json') }}
+
+    - name: Install dependencies for CDK
+      if: steps.cdk-cache.outputs.cache-hit != 'true'
+      run: npm run cinstall-all-backend
+      shell: bash
+
+    - name: Create backend/.env file
+      run: |
+        touch .env
+        echo SENDER_EMAIL=test@test.com >> .env
+      working-directory: backend
