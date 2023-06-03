@@ -10,7 +10,7 @@ export function request(ctx) {
     query: {
       expression: 'customerId = :customerId AND sk >= :datetime',
       expressionValues: {
-        ':customerId': util.dynamodb.toDynamoDB(`user#${ctx.args.customerId}`),
+        ':customerId': util.dynamodb.toDynamoDB(ctx.args.customerId),
         ':datetime': util.dynamodb.toDynamoDB(ctx.args.datetime),
       },
     },

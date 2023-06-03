@@ -13,10 +13,11 @@ type Booking = {
   appointmentDetails: {
     status: string;
   };
+  customerId: string;
   customerDetails: {
     firstName: string;
     lastName: string;
-    email: string;
+    email: string | undefined;
   };
   pk: string;
   sk: string;
@@ -58,7 +59,12 @@ exports.handler = async () => {
     result.Items.map(async (r) => {
       const value: Booking = unmarshall(r) as Booking;
 
-      value.administratorDetails.email = (await getAdministratorEmail(value.administratorDetails.id.substring(5))) ?? undefined;
+      value.customerDetails = {
+        firstName: (await getUserAttribute(value.customerId, 'given_name')) ?? 'User',
+        lastName: (await getUserAttribute(value.customerId, 'family_name')) ?? '',
+        email: await getUserAttribute(value.customerId, 'email'),
+      };
+      value.administratorDetails.email = (await getUserAttribute(value.administratorDetails.id, 'email')) ?? undefined;
 
       details.push(value);
     })
@@ -114,32 +120,33 @@ async function dynamoDbCommand(command: any): Promise<any> {
   return result;
 }
 
-async function getAdministratorEmail(id: string): Promise<string | undefined> {
-  let email: string | undefined;
+async function getUserAttribute(id: string, attribute: string): Promise<string | undefined> {
+  let attrValue: string | undefined;
 
   try {
     const client = new CognitoIdentityProviderClient({});
     const params: ListUsersCommandInput = {
       UserPoolId: process.env.USER_POOL_ID,
       Filter: `username="${id}"`,
-      AttributesToGet: ['email'],
+      AttributesToGet: [`${attribute}`],
     };
 
-    const command: ListUsersCommand = new ListUsersCommand(params);
-    console.debug('Executing Cognito command', JSON.stringify(command));
+    console.debug('Searching Cognito for user', params);
 
+    const command: ListUsersCommand = new ListUsersCommand(params);
     const result: ListUsersCommandOutput = await client.send(command);
 
     if (result?.$metadata.httpStatusCode !== 200 || !result.Users || result.Users?.length < 0) {
-      console.error(`🛑 Could not find administrator ${id}`, result);
-      return email;
+      console.error('🛑 Could not find user', result);
+      return '';
     }
 
-    console.log('🔔 Cognito result', JSON.stringify(result));
-    email = result.Users[0].Attributes?.find((a) => a.Name === 'email')?.Value;
+    console.log('Result', JSON.stringify(result));
+    attrValue = result.Users[0].Attributes?.find((a) => a.Name === `${attribute}`)?.Value;
   } catch (error) {
-    console.error('🛑 Cognito error', error);
+    console.error(error);
   }
 
-  return email;
+  console.log(`✅ Found user ${attribute}`, attrValue);
+  return attrValue;
 }

@@ -31,7 +31,7 @@ export function request(ctx) {
             firstName: administratorDetails.firstName,
             lastName: administratorDetails.lastName,
           }),
-          customerId: util.dynamodb.toDynamoDB(`user#${customer.id}`),
+          customerId: util.dynamodb.toDynamoDB(customer.id),
           createdAt: util.dynamodb.toDynamoDB(util.time.nowISO8601()),
           updatedAt: util.dynamodb.toDynamoDB(util.time.nowISO8601()),
         },
@@ -52,7 +52,7 @@ export function request(ctx) {
             ':booked': util.dynamodb.toDynamoDB('booked'),
             ':bookingId': util.dynamodb.toDynamoDB(bookingId),
             ':customerDetails': util.dynamodb.toDynamoDB({
-              id: `user#${customer.id}`,
+              id: customer.id,
               firstName: customer.firstName,
               lastName: customer.lastName,
               email: customer.email,

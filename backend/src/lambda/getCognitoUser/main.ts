@@ -36,11 +36,11 @@ exports.handler = async (event: DynamoDBRecord[]) => {
       let rec = unmarshall(e.dynamodb?.NewImage) as Booking;
 
       rec.customerDetails = {
-        firstName: (await getUserAttribute(rec.customerId.substring(5), 'given_name')) ?? 'User',
-        lastName: (await getUserAttribute(rec.customerId.substring(5), 'family_name')) ?? '',
-        email: await getUserAttribute(rec.customerId.substring(5), 'email'),
+        firstName: (await getUserAttribute(rec.customerId, 'given_name')) ?? 'User',
+        lastName: (await getUserAttribute(rec.customerId, 'family_name')) ?? '',
+        email: await getUserAttribute(rec.customerId, 'email'),
       };
-      rec.administratorDetails.email = await getUserAttribute(rec.administratorDetails.id.substring(5), 'email');
+      rec.administratorDetails.email = await getUserAttribute(rec.administratorDetails.id, 'email');
 
       records.push(rec as Booking);
     })
@@ -60,6 +60,8 @@ async function getUserAttribute(id: string, attribute: string): Promise<string |
       Filter: `username="${id}"`,
       AttributesToGet: [`${attribute}`],
     };
+
+    console.debug('Searching Cognito for user', params);
 
     const command: ListUsersCommand = new ListUsersCommand(params);
     const result: ListUsersCommandOutput = await client.send(command);
