@@ -35,7 +35,11 @@ exports.handler = async (event: DynamoDBRecord[]) => {
     event.map(async (e: any) => {
       let rec = unmarshall(e.dynamodb?.NewImage) as Booking;
 
-      rec.customerDetails.email = await getUserAttribute(rec.customerId.substring(5), 'email');
+      rec.customerDetails = {
+        firstName: (await getUserAttribute(rec.customerId.substring(5), 'given_name')) ?? 'User',
+        lastName: (await getUserAttribute(rec.customerId.substring(5), 'family_name')) ?? '',
+        email: await getUserAttribute(rec.customerId.substring(5), 'email'),
+      };
       rec.administratorDetails.email = await getUserAttribute(rec.administratorDetails.id.substring(5), 'email');
 
       records.push(rec as Booking);
