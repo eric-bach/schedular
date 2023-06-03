@@ -136,10 +136,15 @@ export class DataMessagingStack extends Stack {
         DATA_TABLE_NAME: dataTable.tableName,
         EVENT_BUS_NAME: eventBus.eventBusName,
         USER_POOL_ID: userPool.userPoolId,
-        REGION: this.region,
+        LOG_LEVEL: 'INFO',
       },
       timeout: Duration.seconds(20),
       memorySize: 512,
+      bundling: {
+        externalModules: ['@aws-lambda-powertools/logger', '@middy/core'],
+      },
+      layers: [packagesLayer, powertoolsLayer],
+      logRetention: RetentionDays.ONE_YEAR,
     });
     // Add permission to publish events
     sendRemindersFunction.addToRolePolicy(

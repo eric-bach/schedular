@@ -71,7 +71,7 @@ const lambdahandler = async (event: any) => {
     );
   }
 
-  logger.info('✅ Sucessfully sent email notifications');
+  console.log('✅ Sucessfully sent email notifications');
 };
 
 // Sends daily digest and reminders asynchronously while iterating through the Map
@@ -179,11 +179,11 @@ async function sendEmail(email: string | undefined, template: string, templateDa
     };
 
     const command = new SendTemplatedEmailCommand(input);
-    logger.debug('Executing SES command', JSON.stringify(command));
+    logger.debug(`Executing SES command ${JSON.stringify(command)}`);
 
     const response = await client.send(command);
 
-    logger.debug('SES result', JSON.stringify(response));
+    logger.debug(`SES result ${JSON.stringify(response)}`);
   } catch (error) {
     logger.error('SES error', { error_details: error });
   }

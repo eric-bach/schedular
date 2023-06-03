@@ -1,3 +1,6 @@
+import middy from '@middy/core';
+import { Logger, injectLambdaContext } from '@aws-lambda-powertools/logger';
+import { CustomErrorFormatter } from '../../helpers/CustomerLogFormatter';
 import { DynamoDBClient, QueryCommand, QueryCommandInput, QueryCommandOutput } from '@aws-sdk/client-dynamodb';
 import { EventBridgeClient, PutEventsCommand, PutEventsCommandInput, PutEventsCommandOutput } from '@aws-sdk/client-eventbridge';
 import { CognitoIdentityProviderClient, ListUsersCommand, ListUsersCommandInput, ListUsersCommandOutput } from '@aws-sdk/client-cognito-identity-provider';
@@ -23,9 +26,9 @@ type Booking = {
   sk: string;
 };
 
-exports.handler = async () => {
-  console.debug(`🕧 Send Reminders invoked`);
+const logger = new Logger({ logFormatter: new CustomErrorFormatter() });
 
+const lambdahandler = async () => {
   var tomorrow = new Date();
   tomorrow.setDate(tomorrow.getDate() + 1);
 
@@ -48,10 +51,10 @@ exports.handler = async () => {
   let result: QueryCommandOutput | undefined = await dynamoDbCommand(new QueryCommand(input));
 
   if (result?.$metadata.httpStatusCode !== 200 || !result.Items || (result?.Count ?? 0) < 1) {
-    console.log('✅ No upcoming bookings. Exiting.');
+    logger.warn('No upcoming bookings. Exiting.');
     return;
   }
-  console.log(`🕧 Found ${result.Items.length} bookings to send reminders for`);
+  console.debug(`Found ${result.Items.length} bookings to send reminders for`);
 
   // Send to EventBridge
   let details: Booking[] = [];
@@ -84,7 +87,7 @@ exports.handler = async () => {
   const eventResult: PutEventsCommandOutput | undefined = await publishEvent(new PutEventsCommand(params));
 
   if (eventResult?.$metadata.httpStatusCode === 200) {
-    console.log(`✅ Sent ${result.Count} reminder events to EventBridge`);
+    logger.info(`Sent ${result.Count} reminder events to EventBridge`);
   }
 };
 
@@ -93,12 +96,12 @@ async function publishEvent(command: PutEventsCommand): Promise<PutEventsCommand
 
   try {
     const client = new EventBridgeClient({});
-    console.debug('Executing EventBridge command', JSON.stringify(command));
+    logger.debug('Executing EventBridge command', JSON.stringify(command));
 
     result = await client.send(command);
-    console.log('🔔 EventBridge result', JSON.stringify(result));
+    logger.debug('EventBridge result', JSON.stringify(result));
   } catch (error) {
-    console.error('🛑 EventBridge error', error);
+    logger.error('EventBridge error', { error_detais: error });
   }
 
   return result;
@@ -109,12 +112,12 @@ async function dynamoDbCommand(command: any): Promise<any> {
 
   try {
     const client = new DynamoDBClient({});
-    console.debug('Executing DynamoDB command', JSON.stringify(command));
+    logger.debug('Executing DynamoDB command', JSON.stringify(command));
 
     result = await client.send(command);
-    console.log('🔔 DynamoDB result', JSON.stringify(result));
+    logger.debug('DynamoDB result', JSON.stringify(result));
   } catch (error) {
-    console.error('🛑 DynamoDB error', error);
+    logger.error('DynamoDB error', { error_details: error });
   }
 
   return result;
@@ -131,13 +134,13 @@ async function getUserAttribute(id: string, attribute: string): Promise<string |
       AttributesToGet: [`${attribute}`],
     };
 
-    console.debug('Searching Cognito for user', params);
+    logger.debug(`Searching Cognito for user ${params}`);
 
     const command: ListUsersCommand = new ListUsersCommand(params);
     const result: ListUsersCommandOutput = await client.send(command);
 
     if (result?.$metadata.httpStatusCode !== 200 || !result.Users || result.Users?.length < 0) {
-      console.error('🛑 Could not find user', result);
+      logger.error('Cognito error', { error_details: result });
       return '';
     }
 
@@ -147,6 +150,8 @@ async function getUserAttribute(id: string, attribute: string): Promise<string |
     console.error(error);
   }
 
-  console.log(`✅ Found user ${attribute}`, attrValue);
+  logger.info(`✅ Found user ${attribute} ${attrValue}`);
   return attrValue;
 }
+
+export const handler = middy(lambdahandler).use(injectLambdaContext(logger, { logEvent: true }));
