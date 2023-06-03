@@ -78,7 +78,7 @@ function generateRandomSeedData() {
         category: 'massage',
         duration,
         // TODO Set the user id from Cognito
-        administratorDetails: { id: `user#${userId}`, firstName: 'Jane', lastName: 'Doe' },
+        administratorDetails: { id: userId, firstName: 'Jane', lastName: 'Doe' },
       });
     }
   }

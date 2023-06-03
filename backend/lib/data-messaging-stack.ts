@@ -144,11 +144,11 @@ export class DataMessagingStack extends Stack {
     );
 
     // Enrichment Lambda
-    const getAdministratorFunction = new NodejsFunction(this, 'GetAdministratorFunction', {
-      functionName: `${props.appName}-${props.envName}-GetAdministrator`,
+    const getCognitoUserFunction = new NodejsFunction(this, 'GetCognitoUserFunction', {
+      functionName: `${props.appName}-${props.envName}-GetCognitoUser`,
       runtime: Runtime.NODEJS_18_X,
       handler: 'handler',
-      entry: 'src/lambda/getAdministrators/main.ts',
+      entry: 'src/lambda/getCognitoUser/main.ts',
       environment: {
         USER_POOL_ID: userPool.userPoolId,
       },
@@ -156,7 +156,7 @@ export class DataMessagingStack extends Stack {
       memorySize: 512,
     });
     // Add permission to query Cognito
-    getAdministratorFunction.addToRolePolicy(
+    getCognitoUserFunction.addToRolePolicy(
       new PolicyStatement({
         effect: Effect.ALLOW,
         actions: ['cognito-idp:ListUsers'],
@@ -211,14 +211,14 @@ export class DataMessagingStack extends Stack {
           ],
         },
       },
-      enrichment: getAdministratorFunction.functionArn,
+      enrichment: getCognitoUserFunction.functionArn,
       target: sendEmailFunction.functionArn,
     });
 
     // Grant permissions for Pipes
     dataTable.grantStreamRead(pipeRole);
     sendEmailFunction.grantInvoke(pipeRole);
-    getAdministratorFunction.grantInvoke(pipeRole);
+    getCognitoUserFunction.grantInvoke(pipeRole);
 
     // EventBridge rule to send email reminders
     const cronRule = new Rule(this, 'SendRemindersSchedule', {

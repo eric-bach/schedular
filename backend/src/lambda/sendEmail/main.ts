@@ -9,10 +9,11 @@ type Booking = {
   appointmentDetails: {
     status: string;
   };
+  customerId: string;
   customerDetails: {
     firstName: string;
     lastName: string;
-    email: string;
+    email: string | undefined;
   };
   pk: string;
   sk: string;
@@ -42,7 +43,7 @@ exports.handler = async (event: any) => {
       values.map(async (data: Booking) => {
         // Send customer email
         await sendEmail(
-          [data.customerDetails.email],
+          data.customerDetails.email,
           getTemplateName(data, false),
           `{
             "name": "${data.customerDetails.firstName} ${data.customerDetails.lastName}",
@@ -53,18 +54,16 @@ exports.handler = async (event: any) => {
         );
 
         // Send Administrator email
-        if (data.administratorDetails.email) {
-          await sendEmail(
-            [data.administratorDetails.email],
-            getTemplateName(data, true),
-            `{
+        await sendEmail(
+          data.administratorDetails.email,
+          getTemplateName(data, true),
+          `{
               "name": "${data.customerDetails.firstName} ${data.customerDetails.lastName}",
               "date": "${formateLocalLongDate(data.sk)}",
               "time": "${formatLocalTimeString(data.sk, 0)}",
               "administrator": "${data.administratorDetails.firstName} ${data.administratorDetails.lastName}"
             }`
-          );
-        }
+        );
       })
     );
   }
@@ -93,7 +92,7 @@ const processAsyncTask = async (email: string, bookings: Booking[]) => {
 
       // Send individual customer reminders
       await sendEmail(
-        [booking.customerDetails.email],
+        booking.customerDetails.email,
         'AppointmentReminder',
         `{
           "name": "${booking.customerDetails.firstName} ${booking.customerDetails.lastName}",
@@ -109,7 +108,7 @@ const processAsyncTask = async (email: string, bookings: Booking[]) => {
   );
 
   // Send administrator daily digest
-  await sendEmail([email], 'AdminDailyDigest', `${JSON.stringify({ administrator: administrator, date: date, customers: customers })}`);
+  await sendEmail(email, 'AdminDailyDigest', `${JSON.stringify({ administrator: administrator, date: date, customers: customers })}`);
 };
 
 // Processes the map of Bookings by email synchronously
@@ -160,13 +159,18 @@ function getTemplateName(data: Booking, admin: boolean): string {
   return templateName;
 }
 
-async function sendEmail(recipients: string[], template: string, templateData: string) {
+async function sendEmail(email: string | undefined, template: string, templateData: string) {
+  if (!email) {
+    console.error('⚠️ No email address provided. Skipping.');
+    return;
+  }
+
   try {
     const client = new SESClient({});
 
     const input: SendTemplatedEmailCommandInput = {
       Source: process.env.SENDER_EMAIL,
-      Destination: { ToAddresses: recipients },
+      Destination: { ToAddresses: [email] },
       Template: template,
       TemplateData: templateData,
     };

@@ -214,13 +214,6 @@ export const ON_CANCEL_BOOKING = `subscription OnCancelBooking {
       duration
     }
     customerId
-    customerDetails {
-      id
-      firstName
-      lastName
-      email
-      phone
-    }
   }  
 } 
 `;

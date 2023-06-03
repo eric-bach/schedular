@@ -107,7 +107,7 @@ mutation CreateBooking {
   createBooking(input: {
 		pk: "appt#4f81b5a0-f23b-4d7e-a97f-e31e12c2ddae",
 		sk: "2023-06-01T15:00:00.000Z"
-		customer: {
+    customer: {
       id: "dac04046-6c46-4f93-a61b-bef3292b723b",
       firstName: "Eric",
       lastName: "Test",

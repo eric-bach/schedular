@@ -148,13 +148,6 @@ export type CancelBookingResponse = {
       status: string;
       duration: number;
     };
-    customerDetails: {
-      id: string;
-      firstName: string;
-      lastName: string;
-      email: string;
-      phone: string;
-    };
   };
 };
 
@@ -175,13 +168,6 @@ export type OnCancelBookingResponse = {
     category: string;
     status: string;
     duration: number;
-  };
-  customerDetails: {
-    id: string;
-    firstName: string;
-    lastName: string;
-    email: string;
-    phone: string;
   };
 };
 

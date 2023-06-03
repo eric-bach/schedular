@@ -34,7 +34,7 @@ describe('getUserBookings', () => {
     expect(result.query.expression).toEqual('customerId = :customerId AND sk >= :datetime');
 
     const expressionValues = unmarshall(result.query.expressionValues);
-    expect(expressionValues[':customerId']).toEqual(`user#${context.arguments.customerId}`);
+    expect(expressionValues[':customerId']).toEqual(context.arguments.customerId);
     expect(expressionValues[':datetime']).toEqual(context.arguments.datetime);
 
     // Type is filtered to 'booking'
