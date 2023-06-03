@@ -1,0 +1,13 @@
+{
+  "name": "logger-npm-dependencies-layer",
+  "version": "1.0.0",
+  "description": "Layer to bundle npm dependencies for Lambdas.",
+  "license": "ISC",
+  "scripts": {
+    "build": "tsc",
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "dependencies": {
+    "@middy/core": "^4.2.8"
+  }
+}
