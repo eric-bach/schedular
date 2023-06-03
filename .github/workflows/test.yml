@@ -27,21 +27,20 @@ jobs:
         with:
           node-version: 18.x
 
-      - name: Configure AWS credentials
-        uses: aws-actions/configure-aws-credentials@v2
-        with:
-          role-to-assume: ${{ secrets.AWS_SERVICE_ROLE_DEV }}
-          aws-region: ${{ secrets.CDK_DEFAULT_REGION }}
-
-      - name: Install NPM Dependencies
-        run: npm run cinstall-all-backend
-        working-directory: backend
+      - name: Install Backend and Sources
+        uses: ./.github/actions/backend
 
       - name: Create backend/.env file
         run: |
           touch .env
           echo SENDER_EMAIL=test@test.com >> .env
         working-directory: backend
+
+      - name: Configure AWS credentials
+        uses: aws-actions/configure-aws-credentials@v2
+        with:
+          role-to-assume: ${{ secrets.AWS_SERVICE_ROLE_DEV }}
+          aws-region: ${{ secrets.CDK_DEFAULT_REGION }}
 
       - name: Run CDK Unit Tests
         run: npm run test
@@ -64,22 +63,20 @@ jobs:
         with:
           node-version: 18.x
 
+      - name: Install Backend and Sources
+        uses: ./.github/actions/backend
+
+      - name: Create backend/.env file
+        run: |
+          touch .env
+          echo SENDER_EMAIL=test@test.com >> .env
+        working-directory: backend
+
       - name: Configure AWS credentials
         uses: aws-actions/configure-aws-credentials@v2
         with:
           role-to-assume: ${{ secrets.AWS_SERVICE_ROLE_DEV }}
           aws-region: ${{ secrets.CDK_DEFAULT_REGION }}
-
-      - name: Install Dependencies
-        run: npm run cinstall-all
-        working-directory: backend
-
-      - name: Create backend/.env file
-        run: |
-          touch .env
-          echo SENDER_EMAIL=${{ secrets.SENDER_EMAIL }} >> .env
-          cat .env
-        working-directory: backend
 
       - name: CDK Deploy Backend
         run: npm run deploy-backend dev

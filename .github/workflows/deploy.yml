@@ -25,23 +25,21 @@ jobs:
         with:
           node-version: 18.x
 
+      - name: Install Backend and Sources
+        uses: ./.github/actions/backend
+
+      - name: Create backend/.env file
+        run: |
+          touch .env
+          echo SENDER_EMAIL=${{ secrets.SENDER_EMAIL }} >> .env
+          echo CERTIFICATE_ARN=${{ secrets.CERTIFICATE_ARN_PROD }} >> .env
+        working-directory: backend
+
       - name: Configure AWS credentials
         uses: aws-actions/configure-aws-credentials@v2
         with:
           role-to-assume: ${{ secrets.AWS_SERVICE_ROLE_PROD }}
           aws-region: ${{ secrets.CDK_DEFAULT_REGION }}
-
-      - name: Install Backend Dependencies
-        run: npm run cinstall-all-backend
-        working-directory: backend
-
-      - name: Create backend/.env file
-        run: |
-          touch .env
-          echo CERTIFICATE_ARN=${{ secrets.CERTIFICATE_ARN_PROD }} >> .env
-          echo SENDER_EMAIL=${{ secrets.SENDER_EMAIL }} >> .env
-          cat .env
-        working-directory: backend
 
       - name: CDK Deploy Backend
         run: npm run deploy-backend prod
@@ -53,7 +51,6 @@ jobs:
   deploy-frontend:
     name: Deploy Frontend
     runs-on: ubuntu-latest
-    #needs: deploy-backend
     permissions:
       actions: write
       contents: read
@@ -68,19 +65,8 @@ jobs:
         with:
           node-version: 18.x
 
-      - name: Configure AWS credentials
-        uses: aws-actions/configure-aws-credentials@v2
-        with:
-          role-to-assume: ${{ secrets.AWS_SERVICE_ROLE_PROD }}
-          aws-region: us-east-1
-
-      - name: Install CDK Dependencies
-        run: npm ci
-        working-directory: backend
-
-      - name: Install Frontend Dependencies
-        run: npm run cinstall-all-frontend
-        working-directory: backend
+      - name: Install Frontend
+        uses: ./.github/actions/frontend
 
       - name: Create frontend/src/aws-exports.js file
         run: |
@@ -90,8 +76,14 @@ jobs:
           cat aws-exports.js
         working-directory: frontend/src
 
+      - name: Configure AWS credentials
+        uses: aws-actions/configure-aws-credentials@v2
+        with:
+          role-to-assume: ${{ secrets.AWS_SERVICE_ROLE_PROD }}
+          aws-region: us-east-1
+
       - name: Build Frontend
-        run: npm run build-all-frontend
+        run: npm run build-frontend
         working-directory: backend
 
       - name: CDK Deploy Frontend
