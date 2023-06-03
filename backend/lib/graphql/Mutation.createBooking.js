@@ -32,13 +32,6 @@ export function request(ctx) {
             lastName: administratorDetails.lastName,
           }),
           customerId: util.dynamodb.toDynamoDB(`user#${customer.id}`),
-          customerDetails: util.dynamodb.toDynamoDB({
-            id: `user#${customer.id}`,
-            firstName: customer.firstName,
-            lastName: customer.lastName,
-            email: customer.email,
-            phone: customer.phone,
-          }),
           createdAt: util.dynamodb.toDynamoDB(util.time.nowISO8601()),
           updatedAt: util.dynamodb.toDynamoDB(util.time.nowISO8601()),
         },

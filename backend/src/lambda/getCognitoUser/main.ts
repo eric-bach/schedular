@@ -12,10 +12,11 @@ type Booking = {
   appointmentDetails: {
     status: string;
   };
+  customerId: string;
   customerDetails: {
     firstName: string;
     lastName: string;
-    email: string;
+    email: string | undefined;
   };
   pk: string;
   sk: string;
@@ -32,10 +33,10 @@ exports.handler = async (event: DynamoDBRecord[]) => {
   const records: Booking[] = [];
   await Promise.all(
     event.map(async (e: any) => {
-      let rec = unmarshall(e.dynamodb?.NewImage);
+      let rec = unmarshall(e.dynamodb?.NewImage) as Booking;
 
-      const email = await getAdministratorEmail(rec.administratorDetails.id.substring(5));
-      rec.administratorDetails.email = email;
+      rec.customerDetails.email = await getUserAttribute(rec.customerId.substring(5), 'email');
+      rec.administratorDetails.email = await getUserAttribute(rec.administratorDetails.id.substring(5), 'email');
 
       records.push(rec as Booking);
     })
@@ -45,31 +46,31 @@ exports.handler = async (event: DynamoDBRecord[]) => {
   return records;
 };
 
-async function getAdministratorEmail(id: string): Promise<string | undefined> {
-  let email: string | undefined;
+async function getUserAttribute(id: string, attribute: string): Promise<string | undefined> {
+  let attrValue: string | undefined;
 
   try {
     const client = new CognitoIdentityProviderClient({});
     const params: ListUsersCommandInput = {
       UserPoolId: process.env.USER_POOL_ID,
       Filter: `username="${id}"`,
-      AttributesToGet: ['email'],
+      AttributesToGet: [`${attribute}`],
     };
 
     const command: ListUsersCommand = new ListUsersCommand(params);
     const result: ListUsersCommandOutput = await client.send(command);
 
     if (result?.$metadata.httpStatusCode !== 200 || !result.Users || result.Users?.length < 0) {
-      console.error('🛑 Could not find adminsitrator', result);
+      console.error('🛑 Could not find user', result);
       return '';
     }
 
     console.log('Result', JSON.stringify(result));
-    email = result.Users[0].Attributes?.find((a) => a.Name === 'email')?.Value;
+    attrValue = result.Users[0].Attributes?.find((a) => a.Name === `${attribute}`)?.Value;
   } catch (error) {
     console.error(error);
   }
 
-  console.log(`✅ Found administrator email`, email);
-  return email;
+  console.log(`✅ Found user ${attribute}`, attrValue);
+  return attrValue;
 }

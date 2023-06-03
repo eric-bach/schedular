@@ -92,7 +92,6 @@ type BookingResponse {
   administratorDetails: AdministratorDetailsViewModel!
   appointmentDetails: AppointmentDetailsViewModel!
   customerId: String
-  customerDetails: CustomerDetailsViewModel
   createdAt: AWSDateTime
   updatedAt: AWSDateTime
 }
