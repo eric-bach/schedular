@@ -1,19 +1,11 @@
 name: deploy
 
 on:
-  # pull_request:
-  #   types:
-  #     - closed
-  #   branches:
-  #     - main
   pull_request:
+    types:
+      - closed
     branches:
       - main
-    types:
-      - opened
-      - reopened
-      - ready_for_review
-      - synchronize
 
 jobs:
   deploy-backend:
