@@ -51,7 +51,7 @@ const lambdahandler = async () => {
   let result: QueryCommandOutput | undefined = await dynamoDbCommand(new QueryCommand(input));
 
   if (result?.$metadata.httpStatusCode !== 200 || !result.Items || (result?.Count ?? 0) < 1) {
-    logger.warn('No upcoming bookings. Exiting.');
+    console.warn('No upcoming bookings. Exiting.');
     return;
   }
   console.debug(`Found ${result.Items.length} bookings to send reminders for`);
@@ -87,7 +87,7 @@ const lambdahandler = async () => {
   const eventResult: PutEventsCommandOutput | undefined = await publishEvent(new PutEventsCommand(params));
 
   if (eventResult?.$metadata.httpStatusCode === 200) {
-    logger.info(`Sent ${result.Count} reminder events to EventBridge`);
+    console.info(`Sent ${result.Count} reminder events to EventBridge`);
   }
 };
 
@@ -96,12 +96,12 @@ async function publishEvent(command: PutEventsCommand): Promise<PutEventsCommand
 
   try {
     const client = new EventBridgeClient({});
-    logger.debug('Executing EventBridge command', JSON.stringify(command));
+    console.debug('Executing EventBridge command', JSON.stringify(command));
 
     result = await client.send(command);
-    logger.debug('EventBridge result', JSON.stringify(result));
+    console.debug('EventBridge result', JSON.stringify(result));
   } catch (error) {
-    logger.error('EventBridge error', { error_detais: error });
+    console.error('EventBridge error', { error_detais: error });
   }
 
   return result;
@@ -112,12 +112,12 @@ async function dynamoDbCommand(command: any): Promise<any> {
 
   try {
     const client = new DynamoDBClient({});
-    logger.debug('Executing DynamoDB command', JSON.stringify(command));
+    console.debug('Executing DynamoDB command', JSON.stringify(command));
 
     result = await client.send(command);
-    logger.debug('DynamoDB result', JSON.stringify(result));
+    console.debug('DynamoDB result', JSON.stringify(result));
   } catch (error) {
-    logger.error('DynamoDB error', { error_details: error });
+    console.error('DynamoDB error', { error_details: error });
   }
 
   return result;
@@ -134,13 +134,13 @@ async function getUserAttribute(id: string, attribute: string): Promise<string |
       AttributesToGet: [`${attribute}`],
     };
 
-    logger.debug(`Searching Cognito for user ${params}`);
+    console.debug(`Searching Cognito for user ${params}`);
 
     const command: ListUsersCommand = new ListUsersCommand(params);
     const result: ListUsersCommandOutput = await client.send(command);
 
     if (result?.$metadata.httpStatusCode !== 200 || !result.Users || result.Users?.length < 0) {
-      logger.error('Cognito error', { error_details: result });
+      console.error('Cognito error', { error_details: result });
       return '';
     }
 
@@ -150,7 +150,7 @@ async function getUserAttribute(id: string, attribute: string): Promise<string |
     console.error(error);
   }
 
-  logger.info(`✅ Found user ${attribute} ${attrValue}`);
+  console.info(`✅ Found user ${attribute} ${attrValue}`);
   return attrValue;
 }
 
