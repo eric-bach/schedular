@@ -20,16 +20,19 @@ exports.handler = async (events: DynamoDBRecord[]) => {
 
   // Normalize unique dates in event to minimize number of calls to DynamoDB
   const mappedDates: Map<string, number> = new Map<string, number>();
+  let type: string = '';
   events.map((event: any) => {
     type Booking = {
       sk: string;
+      type: string;
     };
 
     let isInsert = event.eventName === 'INSERT';
-    let booking = unmarshall(event.dynamodb?.NewImage) as Booking;
+    let booking = isInsert ? (unmarshall(event.dynamodb?.NewImage) as Booking) : (unmarshall(event.dynamodb?.OldImage) as Booking);
 
     // Add 1 if inserting, substract 1 if removing
     const change = isInsert ? 1 : -1;
+    type = booking.type;
 
     // Convert sk to local date
     const date = new Date(booking.sk);
@@ -47,18 +50,18 @@ exports.handler = async (events: DynamoDBRecord[]) => {
   console.debug('Mapped Dates', mappedDates);
 
   // Update keys in table with new counts
-  const updatedCount = await updateDynamoDBKeys(mappedDates);
+  const updatedCount = await updateDynamoDBKeys(mappedDates, type);
 
   console.log(`✅ Updated ${updatedCount} appointment counts`);
 };
 
-const updateDynamoDB = async (sk: string, count: number): Promise<number> => {
+const updateDynamoDB = async (sk: string, count: number, type: string): Promise<number> => {
   // Get count of appointments matching the date
   let input: QueryCommandInput = {
     TableName: process.env.KEYS_TABLE_NAME,
     KeyConditionExpression: 'pk = :key AND sk = :date',
     ExpressionAttributeValues: {
-      ':key': { S: 'key' },
+      ':key': { S: type },
       ':date': { S: sk },
     },
   };
@@ -77,9 +80,10 @@ const updateDynamoDB = async (sk: string, count: number): Promise<number> => {
   console.debug(`🔔 Date ${sk} has ${currentCount} existing appointments`);
 
   // Update number of appointments
+  const d = new Date(sk);
   let updateInput: PutItemCommandInput = {
     TableName: process.env.KEYS_TABLE_NAME,
-    Item: marshall({ pk: 'key', sk: sk, count: currentCount + count }),
+    Item: marshall({ pk: type, sk: sk, count: currentCount + count, day: d.getDate() }),
   };
   let updateResult: PutItemCommandOutput | undefined = await dynamoDbCommand(new PutItemCommand(updateInput));
 
@@ -92,10 +96,10 @@ const updateDynamoDB = async (sk: string, count: number): Promise<number> => {
 };
 
 // Processes the map of keys synchronously
-const updateDynamoDBKeys = async (mappedDates: Map<string, number>): Promise<number> => {
+const updateDynamoDBKeys = async (mappedDates: Map<string, number>, type: string): Promise<number> => {
   let appointmentsUpdated: number = 0;
   for (const [sk, count] of mappedDates) {
-    appointmentsUpdated += await updateDynamoDB(sk, count);
+    appointmentsUpdated += await updateDynamoDB(sk, count, type);
   }
 
   return appointmentsUpdated;

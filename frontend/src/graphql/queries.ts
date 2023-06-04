@@ -178,6 +178,17 @@ export const UPSERT_DELETE_APPOINTMENTS = `mutation UpsertDeleteAppointments($in
   }
 }`;
 
+export const GET_APPOINTMENT_COUNTS = `query GetAppointmentCounts($type: String!, $from: String!, $to: String!) {
+  getAppointmentCounts(type: $type, from: $from, to: $to)
+  {
+    items {
+      sk
+      count
+      day
+    }
+  }
+}`;
+
 export const LIST_USERS_IN_GROUP = `query ListUsersInGroup($groupName: String!, $limit: Int, $nextToken: String) {
   listUsersInGroup(groupName: $groupName, limit: $limit, nextToken: $nextToken) {
     users {

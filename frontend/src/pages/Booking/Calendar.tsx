@@ -4,15 +4,22 @@ import { Amplify } from 'aws-amplify';
 import { Loader, useAuthenticator } from '@aws-amplify/ui-react';
 import { API, graphqlOperation } from 'aws-amplify';
 import { GraphQLQuery } from '@aws-amplify/api';
-import { Alert, AlertTitle, Box, Button, Card, CardActions, CardContent, Stack, Typography } from '@mui/material';
+import { Alert, AlertTitle, Badge, Box, Button, Card, CardActions, CardContent, Stack, Typography } from '@mui/material';
 import Grid from '@mui/material/Unstable_Grid2';
 import { AdapterDayjs } from '@mui/x-date-pickers/AdapterDayjs';
-import { DateCalendar } from '@mui/x-date-pickers';
+import { DateCalendar, PickersDay, PickersDayProps } from '@mui/x-date-pickers';
+import { DayCalendarSkeleton } from '@mui/x-date-pickers/DayCalendarSkeleton';
 import { LocalizationProvider } from '@mui/x-date-pickers/LocalizationProvider';
 import dayjs, { Dayjs } from 'dayjs';
 
-import { GET_AVAILABLE_APPOINTMENTS, CREATE_BOOKING } from '../../graphql/queries';
-import { GetAvailableAppointmentsResponse, AvailableAppointmentItem, CreateBookingResponse, CreateBookingInput } from '../../types/Types';
+import { GET_AVAILABLE_APPOINTMENTS, CREATE_BOOKING, GET_APPOINTMENT_COUNTS } from '../../graphql/queries';
+import {
+  GetAvailableAppointmentsResponse,
+  AvailableAppointmentItem,
+  CreateBookingResponse,
+  CreateBookingInput,
+  GetAppointmentCountsResponse,
+} from '../../types/Types';
 import { formatLocalTimeSpanString, formatLocalTimeString, formatLongDateString } from '../../helpers/utils';
 
 import aws_exports from '../../aws-exports';
@@ -21,8 +28,23 @@ import '@aws-amplify/ui-react/styles.css';
 
 Amplify.configure(aws_exports);
 
+function ServerDay(props: PickersDayProps<Dayjs> & { highlightedDays?: number[] }) {
+  const { highlightedDays = [], day, outsideCurrentMonth, ...other } = props;
+
+  const isSelected = !props.outsideCurrentMonth && highlightedDays.indexOf(props.day.date()) > 0;
+
+  return (
+    <Badge key={props.day.toString()} overlap='circular' badgeContent={isSelected ? '🔵' : undefined}>
+      <PickersDay {...other} outsideCurrentMonth={outsideCurrentMonth} day={day} />
+    </Badge>
+  );
+}
+
 function Calendar() {
   const { user } = useAuthenticator((context) => [context.route]);
+
+  const requestAbortController = React.useRef<AbortController | null>(null);
+  const [highlightedDays, setHighlightedDays] = React.useState<number[]>([]);
 
   const [appointments, setAppointments] = React.useState<[AvailableAppointmentItem | undefined]>();
   const [selectedDate, setSelectedDate] = React.useState<Dayjs | null>(dayjs());
@@ -54,6 +76,10 @@ function Calendar() {
   useEffect(() => {
     getAppointments(selectedDate ?? dayjs());
   }, [selectedDate]);
+
+  useEffect(() => {
+    fetchHighlightedDays(selectedDate ?? dayjs());
+  }, []);
 
   async function dateSelected(date: Dayjs | null) {
     // Reset timeslot
@@ -111,6 +137,48 @@ function Calendar() {
     }
   }
 
+  const fetchHighlightedDays = async (date: Dayjs) => {
+    // Convert sk to local date
+    const fromD = new Date(date.toISOString());
+    const mstFromDate = fromD.toLocaleDateString('en-US', { timeZone: 'America/Denver' });
+    const [fromMonth, fromDay, fromYear] = mstFromDate.split('/');
+    const from = `${fromYear}-${fromMonth.padStart(2, '0')}-${fromDay.padStart(2, '0')}`;
+    // TODO Make in function
+    const toD = new Date(date.add(1, 'month').toISOString());
+    const mstToDate = toD.toLocaleDateString('en-US', { timeZone: 'America/Denver' });
+    const [toMonth, toDay, toYear] = mstToDate.split('/');
+    const to = `${toYear}-${toMonth.padStart(2, '0')}-${toDay.padStart(2, '0')}`;
+    console.debug(`Getting count for local date from ${from} to ${to}`);
+
+    const result = await API.graphql<GraphQLQuery<GetAppointmentCountsResponse>>(graphqlOperation(GET_APPOINTMENT_COUNTS, { type: 'appt', from, to }));
+    //console.debug('[CALENDAR] Get result', result.data.getAppointmentCounts.items);
+    const availableAppointments = result.data?.getAppointmentCounts.items;
+    console.log('FOUND ', availableAppointments);
+
+    availableAppointments?.map((x) => {
+      console.log(x);
+    });
+
+    const daysToHightlight = availableAppointments?.map((x) => x.day) ?? [];
+    console.log('DaysToHighlight', daysToHightlight);
+    setHighlightedDays(daysToHightlight);
+    setLoading(false);
+  };
+
+  const handleMonthChange = async (date: Dayjs) => {
+    if (requestAbortController.current) {
+      // make sure that you are aborting useless requests
+      // because it is possible to switch between months pretty quickly
+      requestAbortController.current.abort();
+    }
+
+    setLoading(true);
+    setHighlightedDays([]);
+    console.log('Fetching days');
+    await fetchHighlightedDays(date);
+    console.log('DONE Fetching days');
+  };
+
   function dismissError() {
     setError(false);
   }
@@ -148,7 +216,23 @@ function Calendar() {
         )}
         <Grid xs={12} lg={3}>
           <LocalizationProvider dateAdapter={AdapterDayjs}>
-            <DateCalendar value={selectedDate} minDate={dayjs()} maxDate={dayjs().add(1, 'month')} onChange={(newValue) => dateSelected(newValue)} />
+            <DateCalendar
+              value={selectedDate}
+              minDate={dayjs()}
+              maxDate={dayjs().add(1, 'month')}
+              loading={isLoading}
+              onChange={(newValue) => dateSelected(newValue)}
+              onMonthChange={handleMonthChange}
+              renderLoading={() => <DayCalendarSkeleton />}
+              slots={{
+                day: ServerDay,
+              }}
+              slotProps={{
+                day: {
+                  highlightedDays,
+                } as any,
+              }}
+            />
           </LocalizationProvider>
         </Grid>
         <Grid xs={8} lg={3}>

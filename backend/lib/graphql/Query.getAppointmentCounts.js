@@ -7,10 +7,11 @@ export function request(ctx) {
     version: '2017-02-28',
     operation: 'Query',
     query: {
-      expression: 'pk = :key AND sk = :date',
+      expression: 'pk = :key AND sk BETWEEN :fromDate AND :toDate',
       expressionValues: {
-        ':key': util.dynamodb.toDynamoDB('key'),
-        ':date': util.dynamodb.toDynamoDB(ctx.args.date),
+        ':key': util.dynamodb.toDynamoDB(ctx.args.type),
+        ':fromDate': util.dynamodb.toDynamoDB(ctx.args.from),
+        ':toDate': util.dynamodb.toDynamoDB(ctx.args.to),
       },
     },
     scanIndexForward: true,
@@ -23,9 +24,5 @@ export function response(ctx) {
   if (ctx.error) {
     util.error(ctx.error.message, ctx.error.type, ctx.result);
   }
-
-  if (ctx.result.items) {
-    return ctx.result.items.find((x) => x.sk === ctx.args.date).count;
-  }
-  return 0;
+  return ctx.result;
 }
