@@ -1,59 +1,118 @@
 import { DynamoDBRecord } from 'aws-lambda';
+import {
+  DynamoDBClient,
+  PutItemCommand,
+  PutItemCommandInput,
+  PutItemCommandOutput,
+  QueryCommand,
+  QueryCommandInput,
+  QueryCommandOutput,
+} from '@aws-sdk/client-dynamodb';
+import { marshall, unmarshall } from '@aws-sdk/util-dynamodb';
 
-type Booking = {
-  administratorDetails: {
-    email: string | undefined;
-    firstName: string;
-    lastName: string;
-  };
-  appointmentDetails: {
-    status: string;
-  };
-  customerId: string;
-  customerDetails: {
-    firstName: string;
-    lastName: string;
-    email: string | undefined;
-  };
-  pk: string;
-  sk: string;
-};
+exports.handler = async (events: DynamoDBRecord[]) => {
+  console.debug('🕧 Update Keys invoked: ', JSON.stringify(events));
 
-exports.handler = async (event: DynamoDBRecord[]) => {
-  console.debug('🕧 Update Keys invoked: ', JSON.stringify(event));
-
-  if (event.length < 1) {
+  if (events.length < 1) {
     console.debug('✅ No records to process. Exiting.');
     return;
   }
 
-  // TODO Update Keys Table
+  // Normalize unique dates in event to minimize number of calls to DynamoDB
+  const mappedDates: Map<string, number> = new Map<string, number>();
+  events.map((event: any) => {
+    type Booking = {
+      sk: string;
+    };
 
-  console.log('✅ Updated keys');
+    let isInsert = event.eventName === 'INSERT';
+    let booking = unmarshall(event.dynamodb?.NewImage) as Booking;
+
+    // Add 1 if inserting, substract 1 if removing
+    const change = isInsert ? 1 : -1;
+
+    // Convert sk to local date
+    const date = new Date(booking.sk);
+    const mstDate = date.toLocaleDateString('en-US', { timeZone: 'America/Denver' });
+    const [month, day, year] = mstDate.split('/');
+    const key = `${year}-${month.padStart(2, '0')}-${day.padStart(2, '0')}`;
+    console.debug(`Getting count for local date ${key}`);
+
+    if (mappedDates.has(key)) {
+      mappedDates.set(key, (mappedDates.get(key) ?? 0) + change);
+    } else {
+      mappedDates.set(key, 1);
+    }
+  });
+  console.debug('Mapped Dates', mappedDates);
+
+  // Update keys in table with new counts
+  const updatedCount = await updateDynamoDBKeys(mappedDates);
+
+  console.log(`✅ Updated ${updatedCount} appointment counts`);
 };
 
-// Returns the local time part (including offset) of an ISO8601 datetime string
-//  Input: 2023-04-06T14:00:00Z, 0
-//  Output: 8:00 AM
-function formatLocalTimeString(dateString: string, offsetMinutes: number) {
-  const date = new Date(new Date(dateString).getTime() + offsetMinutes * 60000);
-  return date.toLocaleTimeString('en-US', {
-    timeZone: 'America/Edmonton',
-    hour12: true,
-    hour: 'numeric',
-    minute: 'numeric',
-  });
-}
+const updateDynamoDB = async (sk: string, count: number): Promise<number> => {
+  // Get count of appointments matching the date
+  let input: QueryCommandInput = {
+    TableName: process.env.KEYS_TABLE_NAME,
+    KeyConditionExpression: 'pk = :key AND sk = :date',
+    ExpressionAttributeValues: {
+      ':key': { S: 'key' },
+      ':date': { S: sk },
+    },
+  };
+  let result: QueryCommandOutput | undefined = await dynamoDbCommand(new QueryCommand(input));
+  if (result?.$metadata.httpStatusCode !== 200) {
+    console.error('🛑 DynamoDB Query error', result);
+    return 0;
+  }
 
-// Returns the local long date string from an ISO8601 datetime string
-//  Input: 2023-04-06T14:00:00Z
-//  Output: Thursday, April 6, 2023
-function formateLocalLongDate(dateString: string) {
-  return new Date(dateString).toLocaleDateString('en-US', {
-    timeZone: 'America/Edmonton',
-    weekday: 'long',
-    year: 'numeric',
-    month: 'long',
-    day: 'numeric',
-  });
+  // Determine the number of appointments
+  let currentCount = 0;
+  if (result.Items && result.Items.length > 0) {
+    const values = unmarshall(result.Items[0]);
+    currentCount = values.count;
+  }
+  console.debug(`🔔 Date ${sk} has ${currentCount} existing appointments`);
+
+  // Update number of appointments
+  let updateInput: PutItemCommandInput = {
+    TableName: process.env.KEYS_TABLE_NAME,
+    Item: marshall({ pk: 'key', sk: sk, count: currentCount + count }),
+  };
+  let updateResult: PutItemCommandOutput | undefined = await dynamoDbCommand(new PutItemCommand(updateInput));
+
+  if (updateResult?.$metadata.httpStatusCode !== 200) {
+    console.error('🛑 DynamoDB error', result);
+    return 0;
+  }
+
+  return currentCount + count;
+};
+
+// Processes the map of keys synchronously
+const updateDynamoDBKeys = async (mappedDates: Map<string, number>): Promise<number> => {
+  let appointmentsUpdated: number = 0;
+  for (const [sk, count] of mappedDates) {
+    appointmentsUpdated += await updateDynamoDB(sk, count);
+  }
+
+  return appointmentsUpdated;
+};
+
+async function dynamoDbCommand(command: any): Promise<any> {
+  let result: any;
+
+  try {
+    const client = new DynamoDBClient({});
+    console.debug('Executing DynamoDB command', JSON.stringify(command));
+
+    result = await client.send(command);
+    console.log('🔔 DynamoDB result', JSON.stringify(result));
+  } catch (error) {
+    console.error('🛑 DynamoDB error', error);
+  }
+
+  return result;
 }

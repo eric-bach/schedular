@@ -73,7 +73,7 @@ export class DataMessagingStack extends Stack {
       },
       sortKey: {
         name: 'sk',
-        type: AttributeType.NUMBER,
+        type: AttributeType.STRING,
       },
       removalPolicy: props.envName === 'prod' ? RemovalPolicy.RETAIN : RemovalPolicy.DESTROY,
     });
@@ -96,6 +96,9 @@ export class DataMessagingStack extends Stack {
       runtime: Runtime.NODEJS_18_X,
       handler: 'handler',
       entry: 'src/lambda/updateKeys/main.ts',
+      environment: {
+        KEYS_TABLE_NAME: keysTable.tableName,
+      },
       timeout: Duration.seconds(10),
       memorySize: 256,
     });
