@@ -16,6 +16,7 @@ dotenv.config();
 
 export class DataMessagingStack extends Stack {
   public dataTableArn: string;
+  public keysTableArn: string;
 
   constructor(scope: Construct, id: string, props: SchedularDataStackProps) {
     super(scope, id, props);
@@ -396,5 +397,6 @@ export class DataMessagingStack extends Stack {
      ***/
 
     this.dataTableArn = dataTable.tableArn;
+    this.keysTableArn = keysTable.tableArn;
   }
 }

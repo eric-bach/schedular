@@ -205,6 +205,8 @@ type Query {
   getUserBookings(customerId: String!, datetime: String!, lastEvaluatedKey: LastEvaluatedKey): GetBookingsResponse
     @aws_auth(cognito_groups: ["Clients", "Admins"])
 
+  getAppointmentCounts(date: String!): Int @aws_auth(cognito_groups: ["Admins", "Clients"])
+
   listUsersInGroup(groupName: String!, limit: Int, nextToken: String): ListUsersResponse @aws_auth(cognito_groups: ["Admins"])
 }
 

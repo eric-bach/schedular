@@ -38,6 +38,7 @@ switch (stage) {
       params: {
         userPoolId: auth.userPoolId,
         dataTableArn: dataMessaging.dataTableArn,
+        keysTableArn: dataMessaging.keysTableArn,
       },
     });
 

@@ -28,7 +28,8 @@ export class ApiStack extends Stack {
     super(scope, id, props);
 
     const userPool = UserPool.fromUserPoolId(this, 'userPool', props.params.userPoolId);
-    const dataTable = Table.fromTableArn(this, 'table', props.params.dataTableArn);
+    const dataTable = Table.fromTableArn(this, 'DataTable', props.params.dataTableArn);
+    const keysTable = Table.fromTableArn(this, 'KeysTable', props.params.keysTableArn);
 
     // Resolver for Cognito user service
     const userServiceFunction = new NodejsFunction(this, 'UserServiceFunction', {
@@ -105,6 +106,12 @@ export class ApiStack extends Stack {
         },
       }),
     });
+    const keysTableDataSource = new DynamoDbDataSource(this, 'KeysTableDataSource', {
+      api: api,
+      table: keysTable,
+      description: 'DynamoDB Data Source to Keys Table',
+      name: 'keysTableDataSource',
+    });
 
     // AppSync JS Resolvers
     const getAvailableAppointmentsFunction = new AppsyncFunction(this, 'getAvailableAppointmentsFunction', {
@@ -175,6 +182,13 @@ export class ApiStack extends Stack {
       api: api,
       dataSource: dynamoDbDataSource,
       code: Code.fromAsset(path.join(__dirname, '/graphql/Mutation.deleteAppointments.js')),
+      runtime: FunctionRuntime.JS_1_0_0,
+    });
+    const getAppointmentsCountFunction = new AppsyncFunction(this, 'getAppointmentCounts', {
+      name: 'getAppointmentCounts',
+      api: api,
+      dataSource: keysTableDataSource,
+      code: Code.fromAsset(path.join(__dirname, '/graphql/Query.getAppointmentCounts.js')),
       runtime: FunctionRuntime.JS_1_0_0,
     });
     userServiceLambdaDataSource.createResolver(`${props.appName}-${props.envName}-listUsersInGroupResolver`, {
@@ -262,6 +276,14 @@ export class ApiStack extends Stack {
       fieldName: 'upsertDeleteAppointments',
       runtime: FunctionRuntime.JS_1_0_0,
       pipelineConfig: [upsertAppointmentsFunction, deleteAppointmentsFunction],
+      code: passthrough,
+    });
+    const getAppointmentCountsResolver = new Resolver(this, 'getAppointmentCountsResolver', {
+      api: api,
+      typeName: 'Query',
+      fieldName: 'getAppointmentCounts',
+      runtime: FunctionRuntime.JS_1_0_0,
+      pipelineConfig: [getAppointmentsCountFunction],
       code: passthrough,
     });
 
