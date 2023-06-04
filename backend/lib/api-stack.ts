@@ -29,7 +29,6 @@ export class ApiStack extends Stack {
 
     const userPool = UserPool.fromUserPoolId(this, 'userPool', props.params.userPoolId);
     const dataTable = Table.fromTableArn(this, 'DataTable', props.params.dataTableArn);
-    const keysTable = Table.fromTableArn(this, 'KeysTable', props.params.keysTableArn);
 
     // Resolver for Cognito user service
     const userServiceFunction = new NodejsFunction(this, 'UserServiceFunction', {
@@ -106,12 +105,6 @@ export class ApiStack extends Stack {
         },
       }),
     });
-    const keysTableDataSource = new DynamoDbDataSource(this, 'KeysTableDataSource', {
-      api: api,
-      table: keysTable,
-      description: 'DynamoDB Data Source to Keys Table',
-      name: 'keysTableDataSource',
-    });
 
     // AppSync JS Resolvers
     const getAvailableAppointmentsFunction = new AppsyncFunction(this, 'getAvailableAppointmentsFunction', {
@@ -184,11 +177,11 @@ export class ApiStack extends Stack {
       code: Code.fromAsset(path.join(__dirname, '/graphql/Mutation.deleteAppointments.js')),
       runtime: FunctionRuntime.JS_1_0_0,
     });
-    const getAppointmentsCountFunction = new AppsyncFunction(this, 'getAppointmentCounts', {
-      name: 'getAppointmentCounts',
+    const getTotals = new AppsyncFunction(this, 'getTotals', {
+      name: 'getTotals',
       api: api,
-      dataSource: keysTableDataSource,
-      code: Code.fromAsset(path.join(__dirname, '/graphql/Query.getAppointmentCounts.js')),
+      dataSource: dynamoDbDataSource,
+      code: Code.fromAsset(path.join(__dirname, '/graphql/Query.getTotals.js')),
       runtime: FunctionRuntime.JS_1_0_0,
     });
     userServiceLambdaDataSource.createResolver(`${props.appName}-${props.envName}-listUsersInGroupResolver`, {
@@ -278,12 +271,12 @@ export class ApiStack extends Stack {
       pipelineConfig: [upsertAppointmentsFunction, deleteAppointmentsFunction],
       code: passthrough,
     });
-    const getAppointmentCountsResolver = new Resolver(this, 'getAppointmentCountsResolver', {
+    const getTotalsResolver = new Resolver(this, 'getTotalsResolver', {
       api: api,
       typeName: 'Query',
-      fieldName: 'getAppointmentCounts',
+      fieldName: 'getTotals',
       runtime: FunctionRuntime.JS_1_0_0,
-      pipelineConfig: [getAppointmentsCountFunction],
+      pipelineConfig: [getTotals],
       code: passthrough,
     });
 

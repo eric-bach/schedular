@@ -181,15 +181,10 @@ type GetBookingResponse {
   updatedAt: AWSDateTime
 }
 
-# GetAppointmentCounts
-type AppointmentCount {
-  pk: String!
-  sk: AWSDate!
-  count: Int!
-  day: Int!
-}
-type GetAppointmentCountsResponse {
-  items: [AppointmentCount]
+# GetTotals
+type GetTotalViewModel {
+  date: String!;
+  count: Int!;
 }
 
 # GetUsers
@@ -216,9 +211,9 @@ type Query {
   getUserBookings(customerId: String!, datetime: String!, lastEvaluatedKey: LastEvaluatedKey): GetBookingsResponse
     @aws_auth(cognito_groups: ["Clients", "Admins"])
 
-  getAppointmentCounts(type: String!, from: String!, to: String!): GetAppointmentCountsResponse @aws_auth(cognito_groups: ["Admins", "Clients"])
+  getTotals(type: String!, from: String!, to: String!): [GetTotalViewModel] @aws_auth(cognito_groups: ["Admins", "Clients"])
 
-  listUsersInGroup(groupName: String!, limit: Int, nextToken: String): ListUsersResponse @aws_auth(cognito_groups: ["Admins"])
+  listUsersInGroup(groupName: String!, limit: Int, nextToken: String): [GetAppointmentResponse] @aws_auth(cognito_groups: ["Admins"])
 }
 
 type Mutation {

@@ -12,14 +12,8 @@ import { DayCalendarSkeleton } from '@mui/x-date-pickers/DayCalendarSkeleton';
 import { LocalizationProvider } from '@mui/x-date-pickers/LocalizationProvider';
 import dayjs, { Dayjs } from 'dayjs';
 
-import { GET_AVAILABLE_APPOINTMENTS, CREATE_BOOKING, GET_APPOINTMENT_COUNTS } from '../../graphql/queries';
-import {
-  GetAvailableAppointmentsResponse,
-  AvailableAppointmentItem,
-  CreateBookingResponse,
-  CreateBookingInput,
-  GetAppointmentCountsResponse,
-} from '../../types/Types';
+import { GET_AVAILABLE_APPOINTMENTS, CREATE_BOOKING, GET_TOTALS } from '../../graphql/queries';
+import { GetAvailableAppointmentsResponse, AvailableAppointmentItem, CreateBookingResponse, CreateBookingInput, GetTotalsResponse } from '../../types/Types';
 import { formatLocalTimeSpanString, formatLocalTimeString, formatLongDateString } from '../../helpers/utils';
 
 import aws_exports from '../../aws-exports';
@@ -150,18 +144,17 @@ function Calendar() {
     const to = `${toYear}-${toMonth.padStart(2, '0')}-${toDay.padStart(2, '0')}`;
     console.debug(`Getting count for local date from ${from} to ${to}`);
 
-    const result = await API.graphql<GraphQLQuery<GetAppointmentCountsResponse>>(graphqlOperation(GET_APPOINTMENT_COUNTS, { type: 'appt', from, to }));
-    //console.debug('[CALENDAR] Get result', result.data.getAppointmentCounts.items);
-    const availableAppointments = result.data?.getAppointmentCounts.items;
-    console.log('FOUND ', availableAppointments);
+    const result = await API.graphql<GraphQLQuery<GetTotalsResponse>>(graphqlOperation(GET_TOTALS, { type: 'appt', from, to }));
+    const datesWithAppointments = result.data?.getTotals;
+    console.log('FOUND DATES WITH APPOINTMENTS', datesWithAppointments);
 
-    availableAppointments?.map((x) => {
-      console.log(x);
+    let daysToHighlight: number[] = [];
+    datesWithAppointments?.forEach((x) => {
+      console.log(new Date(x.date).getDate());
+      daysToHighlight.push(new Date(x.date).getDate() + 1);
     });
-
-    const daysToHightlight = availableAppointments?.map((x) => x.day) ?? [];
-    console.log('DaysToHighlight', daysToHightlight);
-    setHighlightedDays(daysToHightlight);
+    console.log('DaysToHighlight', daysToHighlight);
+    setHighlightedDays(daysToHighlight);
     setLoading(false);
   };
 

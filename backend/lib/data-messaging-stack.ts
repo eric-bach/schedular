@@ -16,7 +16,6 @@ dotenv.config();
 
 export class DataMessagingStack extends Stack {
   public dataTableArn: string;
-  public keysTableArn: string;
 
   constructor(scope: Construct, id: string, props: SchedularDataStackProps) {
     super(scope, id, props);
@@ -65,20 +64,6 @@ export class DataMessagingStack extends Stack {
       },
     });
 
-    const keysTable = new Table(this, 'KeysTable', {
-      tableName: `${props.appName}-Keys`,
-      billingMode: BillingMode.PAY_PER_REQUEST,
-      partitionKey: {
-        name: 'pk',
-        type: AttributeType.STRING,
-      },
-      sortKey: {
-        name: 'sk',
-        type: AttributeType.STRING,
-      },
-      removalPolicy: props.envName === 'prod' ? RemovalPolicy.RETAIN : RemovalPolicy.DESTROY,
-    });
-
     /***
      *** EventBridge
      ***/
@@ -90,27 +75,6 @@ export class DataMessagingStack extends Stack {
     /***
      *** Lambda Functions
      ***/
-
-    // Update Keys
-    const updateKeysFunction = new NodejsFunction(this, 'UpdateKeysFunction', {
-      functionName: `${props.appName}-${props.envName}-UpdateKeys`,
-      runtime: Runtime.NODEJS_18_X,
-      handler: 'handler',
-      entry: 'src/lambda/updateKeys/main.ts',
-      environment: {
-        KEYS_TABLE_NAME: keysTable.tableName,
-      },
-      timeout: Duration.seconds(10),
-      memorySize: 256,
-    });
-    // Add permission to DynamoDB
-    updateKeysFunction.addToRolePolicy(
-      new PolicyStatement({
-        effect: Effect.ALLOW,
-        actions: ['dynamodb:Query', 'dynamodb:PutItem'],
-        resources: [keysTable.tableArn],
-      })
-    );
 
     // Send Email
     const sendEmailFunction = new NodejsFunction(this, 'SendEmailFunction', {
@@ -250,51 +214,9 @@ export class DataMessagingStack extends Stack {
       target: sendEmailFunction.functionArn,
     });
 
-    const keysUpsertedPipe = new CfnPipe(this, 'KeysUpsertedPipe', {
-      name: `${props.appName}-${props.envName}-keys-upserted-pipe`,
-      roleArn: pipeRole.roleArn,
-      //@ts-ignore
-      source: dataTable.tableStreamArn,
-      sourceParameters: {
-        dynamoDbStreamParameters: {
-          startingPosition: StartingPosition.LATEST,
-          batchSize: 1,
-        },
-        filterCriteria: {
-          filters: [
-            {
-              pattern: '{ "eventName": ["INSERT"], "dynamodb": { "NewImage": { "type": { "S": ["appt"] } } } }',
-            },
-          ],
-        },
-      },
-      target: updateKeysFunction.functionArn,
-    });
-    const keysDeletedPipe = new CfnPipe(this, 'KeysDeletePipe', {
-      name: `${props.appName}-${props.envName}-keys-deleted-pipe`,
-      roleArn: pipeRole.roleArn,
-      //@ts-ignore
-      source: dataTable.tableStreamArn,
-      sourceParameters: {
-        dynamoDbStreamParameters: {
-          startingPosition: StartingPosition.LATEST,
-          batchSize: 1,
-        },
-        filterCriteria: {
-          filters: [
-            {
-              pattern: '{ "eventName": ["REMOVE"], "dynamodb": { "OldImage": { "type": { "S": ["appt"] } } } }',
-            },
-          ],
-        },
-      },
-      target: updateKeysFunction.functionArn,
-    });
-
     // Grant permissions for Pipes
     dataTable.grantStreamRead(pipeRole);
     sendEmailFunction.grantInvoke(pipeRole);
-    updateKeysFunction.grantInvoke(pipeRole);
     getCognitoUserFunction.grantInvoke(pipeRole);
 
     // EventBridge rule to send email reminders
@@ -377,11 +299,6 @@ export class DataMessagingStack extends Stack {
       exportName: `${props.appName}-${props.envName}-dataTableArn`,
     });
 
-    new CfnOutput(this, 'KeysTableArn', {
-      value: keysTable.tableArn,
-      exportName: `${props.appName}-${props.envName}-keysTableArn`,
-    });
-
     new CfnOutput(this, 'DataTableName', { value: dataTable.tableName });
 
     new CfnOutput(this, 'EventBusArn', { value: eventBus.eventBusArn, exportName: `${props.appName}-${props.envName}-eventBusArn` });
@@ -397,6 +314,5 @@ export class DataMessagingStack extends Stack {
      ***/
 
     this.dataTableArn = dataTable.tableArn;
-    this.keysTableArn = keysTable.tableArn;
   }
 }
