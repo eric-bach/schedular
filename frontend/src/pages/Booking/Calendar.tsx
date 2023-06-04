@@ -14,7 +14,7 @@ import dayjs, { Dayjs } from 'dayjs';
 
 import { GET_AVAILABLE_APPOINTMENTS, CREATE_BOOKING, GET_TOTALS } from '../../graphql/queries';
 import { GetAvailableAppointmentsResponse, AvailableAppointmentItem, CreateBookingResponse, CreateBookingInput, GetTotalsResponse } from '../../types/Types';
-import { formatLocalTimeSpanString, formatLocalTimeString, formatLongDateString } from '../../helpers/utils';
+import { formatLocalTimeSpanString, formatLocalTimeString, formatLongDateString, formatLocalDateString } from '../../helpers/utils';
 
 import aws_exports from '../../aws-exports';
 
@@ -37,10 +37,8 @@ function ServerDay(props: PickersDayProps<Dayjs> & { highlightedDays?: number[] 
 function Calendar() {
   const { user } = useAuthenticator((context) => [context.route]);
 
-  const requestAbortController = React.useRef<AbortController | null>(null);
-  const [highlightedDays, setHighlightedDays] = React.useState<number[]>([]);
-
   const [appointments, setAppointments] = React.useState<[AvailableAppointmentItem | undefined]>();
+  const [highlightedDays, setHighlightedDays] = React.useState<number[]>([]);
   const [selectedDate, setSelectedDate] = React.useState<Dayjs | null>(dayjs());
   const [selectedAppointment, setSelectedAppointment] = React.useState<AvailableAppointmentItem>();
   const [isLoading, setLoading] = React.useState<boolean>(false);
@@ -132,44 +130,29 @@ function Calendar() {
   }
 
   const fetchHighlightedDays = async (date: Dayjs) => {
-    // Convert sk to local date
-    const fromD = new Date(date.toISOString());
-    const mstFromDate = fromD.toLocaleDateString('en-US', { timeZone: 'America/Denver' });
-    const [fromMonth, fromDay, fromYear] = mstFromDate.split('/');
-    const from = `${fromYear}-${fromMonth.padStart(2, '0')}-${fromDay.padStart(2, '0')}`;
-    // TODO Make in function
-    const toD = new Date(date.add(1, 'month').toISOString());
-    const mstToDate = toD.toLocaleDateString('en-US', { timeZone: 'America/Denver' });
-    const [toMonth, toDay, toYear] = mstToDate.split('/');
-    const to = `${toYear}-${toMonth.padStart(2, '0')}-${toDay.padStart(2, '0')}`;
-    console.debug(`Getting count for local date from ${from} to ${to}`);
+    // Convert sk to local date range for entire month
+    const from = formatLocalDateString(date);
+    const to = formatLocalDateString(date.add(1, 'month'));
 
     const result = await API.graphql<GraphQLQuery<GetTotalsResponse>>(graphqlOperation(GET_TOTALS, { type: 'appt', from, to }));
     const datesWithAppointments = result.data?.getTotals;
-    console.log('FOUND DATES WITH APPOINTMENTS', datesWithAppointments);
+    //console.debug('[CALENDAR] Found dates with appointments', datesWithAppointments);
 
     let daysToHighlight: number[] = [];
     datesWithAppointments?.forEach((x) => {
-      console.log(new Date(x.date).getDate());
       daysToHighlight.push(new Date(x.date).getDate() + 1);
     });
-    console.log('DaysToHighlight', daysToHighlight);
+    console.debug('[CALENDAR] Days with appointments', daysToHighlight);
+
     setHighlightedDays(daysToHighlight);
     setLoading(false);
   };
 
   const handleMonthChange = async (date: Dayjs) => {
-    if (requestAbortController.current) {
-      // make sure that you are aborting useless requests
-      // because it is possible to switch between months pretty quickly
-      requestAbortController.current.abort();
-    }
-
     setLoading(true);
     setHighlightedDays([]);
-    console.log('Fetching days');
+
     await fetchHighlightedDays(date);
-    console.log('DONE Fetching days');
   };
 
   function dismissError() {
@@ -213,7 +196,6 @@ function Calendar() {
               value={selectedDate}
               minDate={dayjs()}
               maxDate={dayjs().add(1, 'month')}
-              loading={isLoading}
               onChange={(newValue) => dateSelected(newValue)}
               onMonthChange={handleMonthChange}
               renderLoading={() => <DayCalendarSkeleton />}

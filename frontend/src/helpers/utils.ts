@@ -21,10 +21,15 @@ export function formatLocalTimeString(dateString: string, offsetMinutes: number)
 }
 
 // Returns the local date string in format YYYY-MM-DD from an ISO8601 datetime string
-//  Input: 2023-04-06T00:00:00Z
-//  Output: 2023-04-05
-export function formatLocalDateString(date: Dayjs | null) {
-  return dayjs(getLocalDateTime(date)).format('YYYY-MM-DD');
+// Input: 2023-06-04T00:00:00Z
+// Output: 2023-06-03
+export function formatLocalDateString(date: Dayjs) {
+  const dateString = new Date(date.toISOString());
+  const localDate = dateString.toLocaleDateString('en-US', { timeZone: 'America/Denver' });
+  const [fromMonth, fromDay, fromYear] = localDate.split('/');
+  const localDateString = `${fromYear}-${fromMonth.padStart(2, '0')}-${fromDay.padStart(2, '0')}`;
+
+  return localDateString;
 }
 
 // Returns the date string in format YYYY-MM-DD from an ISO8601 datetime string
