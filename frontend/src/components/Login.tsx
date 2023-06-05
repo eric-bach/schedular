@@ -66,7 +66,7 @@ export function Login() {
   }, [route, navigate, from]);
 
   return (
-    <View className='auth-wrapper' padding='5rem'>
+    <View className='auth-wrapper' paddingTop='4rem'>
       <ThemeProvider theme={theme}>
         <Authenticator signUpAttributes={['family_name', 'phone_number']} formFields={formFields}></Authenticator>
       </ThemeProvider>

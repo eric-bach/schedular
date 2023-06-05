@@ -15,9 +15,9 @@ import Tooltip from '@mui/material/Tooltip';
 import MenuItem from '@mui/material/MenuItem';
 import SpaIcon from '@mui/icons-material/Spa';
 
-const pages = ['Book Appointment'];
-const settings = ['My Profile', 'My Bookings', 'Logout'];
-const adminPages = ['Manage Customers', 'Manage Bookings', 'Manage Schedule'];
+const pages: string[] = [];
+const settings: string[] = ['My Profile', 'My Bookings', 'Logout'];
+const adminPages: string[] = ['Manage Customers', 'Manage Bookings', 'Manage Schedule'];
 
 export function Header() {
   const { authStatus, user, signOut } = useAuthenticator((context) => [context.route, context.signOut]);
@@ -42,10 +42,6 @@ export function Header() {
 
   const handleCloseNavMenu = (e: any) => {
     setAnchorElNav(null);
-
-    if (e.target.textContent === 'Book Appointment') {
-      navigate('/calendar');
-    }
   };
 
   const handleCloseUserMenu = (e: any) => {
@@ -126,7 +122,7 @@ export function Header() {
                   display: { xs: 'block', md: 'none' },
                 }}
               >
-                {pages.map((page) => (
+                {pages?.map((page) => (
                   <MenuItem key={page} onClick={(e) => handleCloseNavMenu(e)}>
                     <Typography textAlign='center'>{page}</Typography>
                   </MenuItem>
