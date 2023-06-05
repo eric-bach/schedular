@@ -82,6 +82,7 @@ jobs:
         run: npm run deploy-backend dev
         env:
           SENDER_EMAIL: ${{secrets.SENDER_EMAIL}}
+          ADMINISTRATOR: ${{secrets.ADMINISTRATOR_EMAIL}}
         working-directory: backend
 
   integration-tests:

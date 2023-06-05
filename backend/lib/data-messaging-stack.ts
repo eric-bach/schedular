@@ -250,7 +250,8 @@ export class DataMessagingStack extends Stack {
       topicName: `${props.appName}-${props.envName}-Errors`,
       displayName: 'Application Errors Topic',
     });
-    eventHandlerTopic.addSubscription(new EmailSubscription(process.env.ADMINISTRATOR_EMAIL!));
+    // @ts-ignore
+    eventHandlerTopic.addSubscription(new EmailSubscription(process.env.ADMINISTRATOR_EMAIL));
 
     /***
      *** AWS CloudWatch - Alarms

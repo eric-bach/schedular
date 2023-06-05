@@ -126,6 +126,7 @@ The Schedular application consists of the CDK backend and React frontend, each o
    ```
    CDK_DEFAULT_REGION - AWS default region for all resources to be created
    SENDER_EMAIL - Email address where notifications are sent from
+   ADMINISTRATOR_EMAIL - Email address to notify on application errors
    ```
 
    Dev environment
