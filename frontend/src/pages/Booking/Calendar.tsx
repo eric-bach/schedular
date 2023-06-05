@@ -28,13 +28,27 @@ import '@aws-amplify/ui-react/styles.css';
 
 Amplify.configure(aws_exports);
 
-function ServerDay(props: PickersDayProps<Dayjs> & { highlightedDays?: number[] }) {
+type HighlightedDay = {
+  day: number;
+  count: number;
+};
+
+function ServerDay(props: PickersDayProps<Dayjs> & { highlightedDays?: HighlightedDay[] }) {
   const { highlightedDays = [], day, outsideCurrentMonth, ...other } = props;
 
-  const isSelected = !props.outsideCurrentMonth && highlightedDays.indexOf(props.day.date()) > 0;
+  const isSelected = !props.outsideCurrentMonth && highlightedDays.findIndex((x) => x.day === props.day.date()) > 0;
+  const value = highlightedDays.filter((x) => x.day === props.day.date());
+
+  // Display purple badge if low availability
+  let badge = undefined;
+  if (isSelected && value[0].count <= 1) {
+    badge = '🟣';
+  } else if (isSelected) {
+    badge = '🔵';
+  }
 
   return (
-    <Badge key={props.day.toString()} overlap='circular' badgeContent={isSelected ? '🔵' : undefined}>
+    <Badge key={props.day.toString()} overlap='circular' badgeContent={badge}>
       <PickersDay {...other} outsideCurrentMonth={outsideCurrentMonth} day={day} />
     </Badge>
   );
@@ -44,7 +58,7 @@ function Calendar() {
   const { user } = useAuthenticator((context) => [context.route]);
 
   const [appointments, setAppointments] = React.useState<[AvailableAppointmentItem | undefined]>();
-  const [highlightedDays, setHighlightedDays] = React.useState<number[]>([]);
+  const [highlightedDays, setHighlightedDays] = React.useState<HighlightedDay[]>([]);
   const [selectedDate, setSelectedDate] = React.useState<Dayjs | null>(dayjs());
   const [selectedAppointment, setSelectedAppointment] = React.useState<AvailableAppointmentItem>();
   const [isLoading, setLoading] = React.useState<boolean>(false);
@@ -142,13 +156,13 @@ function Calendar() {
 
     const result = await API.graphql<GraphQLQuery<GetAppointmentsCountsResponse>>(graphqlOperation(GET_APPOINTMENTS_COUNTS, { type: 'appt', from, to }));
     const datesWithAppointments = result.data?.getAppointmentCounts;
-    console.debug('[CALENDAR] Found dates with appointments', datesWithAppointments);
+    // console.debug('[CALENDAR] Found dates with appointments', datesWithAppointments);
 
-    let daysToHighlight: number[] = [];
+    let daysToHighlight: HighlightedDay[] = [];
     datesWithAppointments?.forEach((x) => {
-      daysToHighlight.push(new Date(x.date).getDate() + 1);
+      daysToHighlight.push({ day: new Date(x.date).getDate() + 1, count: x.count });
     });
-    //console.debug('[CALENDAR] Days with appointments', daysToHighlight);
+    // console.debug('[CALENDAR] Days with appointments', daysToHighlight);
 
     setHighlightedDays(daysToHighlight);
     setLoading(false);
