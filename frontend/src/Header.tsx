@@ -17,7 +17,7 @@ import SpaIcon from '@mui/icons-material/Spa';
 
 const pages: string[] = [];
 const settings: string[] = ['My Profile', 'My Bookings', 'Logout'];
-const adminPages: string[] = ['Manage Customers', 'Manage Bookings', 'Manage Schedule'];
+const adminPages: string[] = ['My Customers', 'View Bookings', 'Manage Schedule'];
 
 export function Header() {
   const { authStatus, user, signOut } = useAuthenticator((context) => [context.route, context.signOut]);
@@ -60,9 +60,9 @@ export function Header() {
   const handleCloseAdminMenu = (e: any) => {
     setAnchorElAdmin(null);
 
-    if (e.target.textContent === 'Manage Customers') {
+    if (e.target.textContent === 'My Customers') {
       navigate('/admin/customers');
-    } else if (e.target.textContent === 'Manage Bookings') {
+    } else if (e.target.textContent === 'View Bookings') {
       navigate('/admin/bookings');
     } else if (e.target.textContent === 'Manage Schedule') {
       navigate('/admin/schedule');
