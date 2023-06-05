@@ -246,29 +246,29 @@ export class DataMessagingStack extends Stack {
      *** AWS SNS - Topics
      ***/
 
-    // const eventHandlerTopic = new Topic(this, 'ApplicationErrorsTopic', {
-    //   topicName: `${props.appName}-${props.envName}-ApplicationErrors-Topic`,
-    //   displayName: 'Application Errors Topic',
-    // });
-    // eventHandlerTopic.addSubscription(new EmailSubscription(process.env.ADMINISTRATOR_EMAIL!));
+    const eventHandlerTopic = new Topic(this, 'ApplicationErrorsTopic', {
+      topicName: `${props.appName}-${props.envName}-ApplicationErrors-Topic`,
+      displayName: 'Application Errors Topic',
+    });
+    eventHandlerTopic.addSubscription(new EmailSubscription(process.env.ADMINISTRATOR_EMAIL!));
 
-    // /***
-    //  *** AWS CloudWatch - Alarms
-    //  ***/
+    /***
+     *** AWS CloudWatch - Alarms
+     ***/
 
-    // const eventHandlerAlarm = new Alarm(this, 'SendRemindersErrorAlarm', {
-    //   alarmName: `${props.appName}-${props.envName}-SendReminders-Error`,
-    //   alarmDescription: 'Could not send reminders',
-    //   metric: new Metric({
-    //     namespace: 'AWS/Lambda',
-    //     metricName: 'Errors',
-    //   }),
-    //   datapointsToAlarm: 1,
-    //   evaluationPeriods: 1,
-    //   threshold: 1,
-    //   comparisonOperator: ComparisonOperator.GREATER_THAN_OR_EQUAL_TO_THRESHOLD,
-    // });
-    // eventHandlerAlarm.addAlarmAction(new SnsAction(eventHandlerTopic));
+    const eventHandlerAlarm = new Alarm(this, 'SendRemindersErrorAlarm', {
+      alarmName: `${props.appName}-${props.envName}-SendReminders-Error`,
+      alarmDescription: 'Could not send reminders',
+      metric: new Metric({
+        namespace: 'AWS/Lambda',
+        metricName: 'Errors',
+      }),
+      datapointsToAlarm: 1,
+      evaluationPeriods: 1,
+      threshold: 1,
+      comparisonOperator: ComparisonOperator.GREATER_THAN_OR_EQUAL_TO_THRESHOLD,
+    });
+    eventHandlerAlarm.addAlarmAction(new SnsAction(eventHandlerTopic));
 
     /***
      *** SES
