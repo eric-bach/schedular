@@ -42,6 +42,7 @@ export class AuthStack extends Stack {
         // @ts-ignore
         fromEmail: process.env.SENDER_EMAIL,
         fromName: 'Massage App',
+        sesRegion: this.region,
       }),
       userVerification: {
         emailSubject: 'Massage App - Verify your new account',
