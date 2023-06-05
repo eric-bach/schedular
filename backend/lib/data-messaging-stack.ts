@@ -251,7 +251,7 @@ export class DataMessagingStack extends Stack {
       displayName: 'Application Errors Topic',
     });
     // @ts-ignore
-    // eventHandlerTopic.addSubscription(new EmailSubscription(process.env.ADMINISTRATOR_EMAIL));
+    eventHandlerTopic.addSubscription(new EmailSubscription(process.env.ADMINISTRATOR_EMAIL));
 
     /***
      *** AWS CloudWatch - Alarms
@@ -269,7 +269,7 @@ export class DataMessagingStack extends Stack {
       threshold: 1,
       comparisonOperator: ComparisonOperator.GREATER_THAN_OR_EQUAL_TO_THRESHOLD,
     });
-    // eventHandlerAlarm.addAlarmAction(new SnsAction(eventHandlerTopic));
+    eventHandlerAlarm.addAlarmAction(new SnsAction(eventHandlerTopic));
 
     /***
      *** SES
