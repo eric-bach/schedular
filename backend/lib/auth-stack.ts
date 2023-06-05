@@ -1,12 +1,15 @@
 import { Stack, Duration, RemovalPolicy, CfnOutput } from 'aws-cdk-lib';
 import { Construct } from 'constructs';
-import { UserPool, CfnUserPoolGroup, UserPoolClient, AccountRecovery, UserPoolDomain } from 'aws-cdk-lib/aws-cognito';
+import { UserPool, CfnUserPoolGroup, UserPoolClient, AccountRecovery, UserPoolDomain, VerificationEmailStyle, UserPoolEmail } from 'aws-cdk-lib/aws-cognito';
 
 import { SchedularBaseStackProps } from './types/SchedularStackProps';
 import { Policy, PolicyStatement } from 'aws-cdk-lib/aws-iam';
 import { NodejsFunction } from 'aws-cdk-lib/aws-lambda-nodejs';
 import { Runtime } from 'aws-cdk-lib/aws-lambda';
 import * as path from 'path';
+
+const dotenv = require('dotenv');
+dotenv.config();
 
 export class AuthStack extends Stack {
   public userPoolId: string;
@@ -34,6 +37,16 @@ export class AuthStack extends Stack {
       accountRecovery: AccountRecovery.EMAIL_ONLY,
       autoVerify: {
         email: true,
+      },
+      email: UserPoolEmail.withSES({
+        // @ts-ignore
+        fromEmail: process.env.SENDER_EMAIL,
+        fromName: 'Massage App',
+      }),
+      userVerification: {
+        emailSubject: 'Massage App - Verify your new account',
+        emailBody: 'Thanks for signing up! Please enter the verification code {####} to confirm your account.',
+        emailStyle: VerificationEmailStyle.CODE,
       },
       signInAliases: {
         username: false,
