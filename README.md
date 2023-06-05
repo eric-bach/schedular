@@ -47,6 +47,7 @@ This quick start guide describes how to get the application running. An `AWS acc
 
 4.  Copy the `./backend/.env.example` file to `./backend/.env` and fill in the parameter values (if the app has not been deployed to AWS yet, the ARN will be empty for now):
 
+    - `ADMINISTRATOR_EMAIL` - Email address to notify on application errors
     - `SENDER_EMAIL` - Email address for where notifications are sent from
     - `CERTIFICATE_ARN` - ARN to ACM Certificate for CloudFront Distribution (used for Production only)
 

@@ -3,13 +3,17 @@ import { Construct } from 'constructs';
 import { Table, BillingMode, AttributeType, StreamViewType } from 'aws-cdk-lib/aws-dynamodb';
 import { SchedularDataStackProps } from './types/SchedularStackProps';
 import { NodejsFunction } from 'aws-cdk-lib/aws-lambda-nodejs';
-import { Runtime, StartingPosition } from 'aws-cdk-lib/aws-lambda';
+import { Alias, Runtime, StartingPosition } from 'aws-cdk-lib/aws-lambda';
 import { Effect, ManagedPolicy, PolicyStatement, Role, ServicePrincipal } from 'aws-cdk-lib/aws-iam';
 import { CfnPipe } from 'aws-cdk-lib/aws-pipes';
 import { EventBus, Rule, Schedule } from 'aws-cdk-lib/aws-events';
 import { CfnTemplate, EmailIdentity } from 'aws-cdk-lib/aws-ses';
 import { LambdaFunction } from 'aws-cdk-lib/aws-events-targets';
 import { UserPool } from 'aws-cdk-lib/aws-cognito';
+import { Alarm, ComparisonOperator, Metric, Unit } from 'aws-cdk-lib/aws-cloudwatch';
+import { EmailSubscription } from 'aws-cdk-lib/aws-sns-subscriptions';
+import { Topic } from 'aws-cdk-lib/aws-sns';
+import { SnsAction } from 'aws-cdk-lib/aws-cloudwatch-actions';
 
 const dotenv = require('dotenv');
 dotenv.config();
@@ -225,6 +229,34 @@ export class DataMessagingStack extends Stack {
       enabled: true,
     });
     cronRule.addTarget(new LambdaFunction(sendRemindersFunction));
+
+    /***
+     *** AWS SNS - Topics
+     ***/
+
+    const eventHandlerTopic = new Topic(this, 'ApplicationErrorsTopic', {
+      topicName: `${props.appName}-${props.envName}-ApplicationErrors-Topic`,
+      displayName: 'Application Errors Topic',
+    });
+    eventHandlerTopic.addSubscription(new EmailSubscription(process.env.ADMINISTRATOR_EMAIL!));
+
+    /***
+     *** AWS CloudWatch - Alarms
+     ***/
+
+    const eventHandlerAlarm = new Alarm(this, 'SendRemindersErrorAlarm', {
+      alarmName: `${props.appName}-${props.envName}-SendReminders-Error`,
+      alarmDescription: 'Could not send reminders',
+      metric: new Metric({
+        namespace: 'AWS/Lambda',
+        metricName: 'Errors',
+      }),
+      datapointsToAlarm: 1,
+      evaluationPeriods: 1,
+      threshold: 1,
+      comparisonOperator: ComparisonOperator.GREATER_THAN_OR_EQUAL_TO_THRESHOLD,
+    });
+    eventHandlerAlarm.addAlarmAction(new SnsAction(eventHandlerTopic));
 
     /***
      *** SES
