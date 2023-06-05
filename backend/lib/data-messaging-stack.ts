@@ -246,11 +246,11 @@ export class DataMessagingStack extends Stack {
      *** AWS SNS - Topics
      ***/
 
-    // const eventHandlerTopic = new Topic(this, 'ApplicationErrorsTopic', {
-    //   topicName: `${props.appName}-${props.envName}-Errors`,
-    //   displayName: 'Application Errors Topic',
-    // });
-    // // @ts-ignore
+    const eventHandlerTopic = new Topic(this, 'ApplicationErrorsTopic', {
+      topicName: `${props.appName}-${props.envName}-Errors`,
+      displayName: 'Application Errors Topic',
+    });
+    // @ts-ignore
     // eventHandlerTopic.addSubscription(new EmailSubscription(process.env.ADMINISTRATOR_EMAIL));
 
     /***
