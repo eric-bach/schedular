@@ -47,7 +47,7 @@ jobs:
         working-directory: backend
 
   deploy-dev:
-    name: Integration Tests
+    name: Deploy Dev
     runs-on: ubuntu-latest
     permissions:
       actions: write
