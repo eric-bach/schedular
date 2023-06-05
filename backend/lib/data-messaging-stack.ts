@@ -14,6 +14,7 @@ import { Alarm, ComparisonOperator, Metric, Unit } from 'aws-cdk-lib/aws-cloudwa
 import { EmailSubscription } from 'aws-cdk-lib/aws-sns-subscriptions';
 import { Topic } from 'aws-cdk-lib/aws-sns';
 import { SnsAction } from 'aws-cdk-lib/aws-cloudwatch-actions';
+import { BackupPlan, BackupResource, BackupSelection } from 'aws-cdk-lib/aws-backup';
 
 const dotenv = require('dotenv');
 dotenv.config();
@@ -67,6 +68,17 @@ export class DataMessagingStack extends Stack {
         type: AttributeType.STRING,
       },
     });
+
+    // DynamoDB backups
+    if (props.envName === 'prod') {
+      const backupPlan = BackupPlan.dailyMonthly1YearRetention(this, `${props.appName}-${props.envName}-TableBackup`);
+      const backupSelection = new BackupSelection(this, 'BackupSelection', {
+        backupPlan: backupPlan,
+        resources: [BackupResource.fromDynamoDbTable(dataTable)],
+        allowRestores: true,
+        backupSelectionName: dataTable.tableName,
+      });
+    }
 
     /***
      *** EventBridge
