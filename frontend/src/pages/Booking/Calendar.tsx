@@ -154,7 +154,7 @@ function Calendar() {
     const from = formatLocalDateString(date);
     const to = formatLocalDateString(date.add(1, 'month'));
 
-    const result = await API.graphql<GraphQLQuery<GetAppointmentsCountsResponse>>(graphqlOperation(GET_APPOINTMENTS_COUNTS, { type: 'appt', from, to }));
+    const result = await API.graphql<GraphQLQuery<GetAppointmentsCountsResponse>>(graphqlOperation(GET_APPOINTMENTS_COUNTS, { from, to, status: 'available' }));
     const datesWithAppointments = result.data?.getAppointmentCounts;
     // console.debug('[CALENDAR] Found dates with appointments', datesWithAppointments);
 

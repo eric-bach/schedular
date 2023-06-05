@@ -13,7 +13,7 @@ export function request(ctx) {
         '#type': 'type',
       },
       expressionValues: {
-        ':type': util.dynamodb.toDynamoDB(ctx.args.type),
+        ':type': util.dynamodb.toDynamoDB('appt'),
         ':fromDate': util.dynamodb.toDynamoDB(ctx.args.from),
         ':toDate': util.dynamodb.toDynamoDB(ctx.args.to),
       },
@@ -24,7 +24,7 @@ export function request(ctx) {
         '#status': 'status',
       },
       expressionValues: {
-        ':s': util.dynamodb.toDynamoDB('available'),
+        ':s': util.dynamodb.toDynamoDB(ctx.args.status),
       },
     },
     scanIndexForward: true,
