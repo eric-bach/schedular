@@ -19,6 +19,9 @@ describe('Data Messaging Stack', () => {
     },
   };
 
+  process.env.SENDER_EMAIL = 'test@test.com';
+  process.env.ADMINISTRATOR_EMAIL = 'test@test.com';
+
   const fromUserPoolId = jest.spyOn(UserPool, 'fromUserPoolId');
   fromUserPoolId.mockReturnValue({ userPoolArn: 'arn:aws:Cognito:us-east-1::test' } as UserPool);
 
