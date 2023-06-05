@@ -247,7 +247,7 @@ export class DataMessagingStack extends Stack {
      ***/
 
     const eventHandlerTopic = new Topic(this, 'ApplicationErrorsTopic', {
-      topicName: `${props.appName}-${props.envName}-ApplicationErrors-Topic`,
+      topicName: `${props.appName}-${props.envName}-Errors`,
       displayName: 'Application Errors Topic',
     });
     eventHandlerTopic.addSubscription(new EmailSubscription(process.env.ADMINISTRATOR_EMAIL!));
@@ -257,7 +257,7 @@ export class DataMessagingStack extends Stack {
      ***/
 
     const eventHandlerAlarm = new Alarm(this, 'SendRemindersErrorAlarm', {
-      alarmName: `${props.appName}-${props.envName}-SendReminders-Error`,
+      alarmName: `SendRemindersError`,
       alarmDescription: 'Could not send reminders',
       metric: new Metric({
         namespace: 'AWS/Lambda',
