@@ -219,6 +219,14 @@ mutation UpsertDeleteAppointments {
   }
 }
 
+query GetAppointmentCounts {
+  getAppointmentCounts(type: 'appt', from: '2023-06-01', to: '2023-07-01')
+  {
+    date
+    count
+  }
+}
+
 query ListUsersInGroup {
   listUsersInGroup(groupName: "Clients", limit: 1) {
     users {

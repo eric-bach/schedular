@@ -8,12 +8,21 @@ import { Alert, AlertTitle, Box, Button, Card, CardActions, CardContent, Stack, 
 import Grid from '@mui/material/Unstable_Grid2';
 import { AdapterDayjs } from '@mui/x-date-pickers/AdapterDayjs';
 import { DateCalendar } from '@mui/x-date-pickers';
+import { DayCalendarSkeleton } from '@mui/x-date-pickers/DayCalendarSkeleton';
 import { LocalizationProvider } from '@mui/x-date-pickers/LocalizationProvider';
 import dayjs, { Dayjs } from 'dayjs';
 
-import { GET_AVAILABLE_APPOINTMENTS, CREATE_BOOKING } from '../../graphql/queries';
-import { GetAvailableAppointmentsResponse, AvailableAppointmentItem, CreateBookingResponse, CreateBookingInput } from '../../types/Types';
-import { formatLocalTimeSpanString, formatLocalTimeString, formatLongDateString } from '../../helpers/utils';
+import ServerDay, { HighlightedDay } from '../../components/ServerDay';
+import { GET_AVAILABLE_APPOINTMENTS, CREATE_BOOKING, GET_APPOINTMENTS_COUNTS } from '../../graphql/queries';
+import {
+  GetAvailableAppointmentsResponse,
+  AvailableAppointmentItem,
+  CreateBookingResponse,
+  CreateBookingInput,
+  GetAppointmentsCountsResponse,
+} from '../../types/Types';
+
+import { formatLocalTimeSpanString, formatLocalTimeString, formatLongDateString, formatLocalDateString } from '../../helpers/utils';
 
 import aws_exports from '../../aws-exports';
 
@@ -25,6 +34,7 @@ function Calendar() {
   const { user } = useAuthenticator((context) => [context.route]);
 
   const [appointments, setAppointments] = React.useState<[AvailableAppointmentItem | undefined]>();
+  const [highlightedDays, setHighlightedDays] = React.useState<HighlightedDay[]>([]);
   const [selectedDate, setSelectedDate] = React.useState<Dayjs | null>(dayjs());
   const [selectedAppointment, setSelectedAppointment] = React.useState<AvailableAppointmentItem>();
   const [isLoading, setLoading] = React.useState<boolean>(false);
@@ -54,6 +64,11 @@ function Calendar() {
   useEffect(() => {
     getAppointments(selectedDate ?? dayjs());
   }, [selectedDate]);
+
+  useEffect(() => {
+    fetchHighlightedDays(selectedDate ?? dayjs());
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   async function dateSelected(date: Dayjs | null) {
     // Reset timeslot
@@ -111,6 +126,32 @@ function Calendar() {
     }
   }
 
+  const fetchHighlightedDays = async (date: Dayjs) => {
+    // Convert sk to local date range for entire month
+    const from = formatLocalDateString(date);
+    const to = formatLocalDateString(date.add(1, 'month'));
+
+    const result = await API.graphql<GraphQLQuery<GetAppointmentsCountsResponse>>(graphqlOperation(GET_APPOINTMENTS_COUNTS, { from, to, status: 'available' }));
+    const datesWithAppointments = result.data?.getAppointmentCounts;
+    // console.debug('[CALENDAR] Found dates with appointments', datesWithAppointments);
+
+    let daysToHighlight: HighlightedDay[] = [];
+    datesWithAppointments?.forEach((x) => {
+      daysToHighlight.push({ day: new Date(x.date).getDate() + 1, count: x.count });
+    });
+    //console.debug('[CALENDAR] Days with appointments', daysToHighlight);
+
+    setHighlightedDays(daysToHighlight);
+    setLoading(false);
+  };
+
+  const handleMonthChange = async (date: Dayjs) => {
+    setLoading(true);
+    setHighlightedDays([]);
+
+    await fetchHighlightedDays(date);
+  };
+
   function dismissError() {
     setError(false);
   }
@@ -148,7 +189,22 @@ function Calendar() {
         )}
         <Grid xs={12} lg={3}>
           <LocalizationProvider dateAdapter={AdapterDayjs}>
-            <DateCalendar value={selectedDate} minDate={dayjs()} maxDate={dayjs().add(1, 'month')} onChange={(newValue) => dateSelected(newValue)} />
+            <DateCalendar
+              value={selectedDate}
+              minDate={dayjs()}
+              maxDate={dayjs().add(1, 'month')}
+              onChange={(newValue) => dateSelected(newValue)}
+              onMonthChange={handleMonthChange}
+              renderLoading={() => <DayCalendarSkeleton />}
+              slots={{
+                day: ServerDay,
+              }}
+              slotProps={{
+                day: {
+                  highlightedDays,
+                } as any,
+              }}
+            />
           </LocalizationProvider>
         </Grid>
         <Grid xs={8} lg={3}>

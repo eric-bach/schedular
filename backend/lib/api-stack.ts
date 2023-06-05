@@ -177,6 +177,13 @@ export class ApiStack extends Stack {
       code: Code.fromAsset(path.join(__dirname, '/graphql/Mutation.deleteAppointments.js')),
       runtime: FunctionRuntime.JS_1_0_0,
     });
+    const getAppointmentCountsFunction = new AppsyncFunction(this, 'getAppointmentCountsFunction', {
+      name: 'getAppointmentCountsFunction',
+      api: api,
+      dataSource: dynamoDbDataSource,
+      code: Code.fromAsset(path.join(__dirname, '/graphql/Query.getAppointmentCounts.js')),
+      runtime: FunctionRuntime.JS_1_0_0,
+    });
     userServiceLambdaDataSource.createResolver(`${props.appName}-${props.envName}-listUsersInGroupResolver`, {
       typeName: 'Query',
       fieldName: 'listUsersInGroup',
@@ -262,6 +269,14 @@ export class ApiStack extends Stack {
       fieldName: 'upsertDeleteAppointments',
       runtime: FunctionRuntime.JS_1_0_0,
       pipelineConfig: [upsertAppointmentsFunction, deleteAppointmentsFunction],
+      code: passthrough,
+    });
+    const getAppointmentCountsResolver = new Resolver(this, 'getAppointmentCounts', {
+      api: api,
+      typeName: 'Query',
+      fieldName: 'getAppointmentCounts',
+      runtime: FunctionRuntime.JS_1_0_0,
+      pipelineConfig: [getAppointmentCountsFunction],
       code: passthrough,
     });
 

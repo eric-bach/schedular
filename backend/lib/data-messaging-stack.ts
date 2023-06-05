@@ -40,7 +40,6 @@ export class DataMessagingStack extends Stack {
       removalPolicy: props.envName === 'prod' ? RemovalPolicy.RETAIN : RemovalPolicy.DESTROY,
       stream: StreamViewType.NEW_IMAGE,
     });
-
     // Indexes
     dataTable.addGlobalSecondaryIndex({
       indexName: 'customerId-gsi',
@@ -193,8 +192,8 @@ export class DataMessagingStack extends Stack {
       assumedBy: new ServicePrincipal('pipes.amazonaws.com'),
     });
 
-    const pipe = new CfnPipe(this, 'EventBridgePipe', {
-      name: `${props.appName}-${props.envName}-pipe`,
+    const messagingPipe = new CfnPipe(this, 'MessagingPipe', {
+      name: `${props.appName}-${props.envName}-messaging-pipe`,
       roleArn: pipeRole.roleArn,
       //@ts-ignore
       source: dataTable.tableStreamArn,

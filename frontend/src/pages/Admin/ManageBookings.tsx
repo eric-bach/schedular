@@ -6,19 +6,22 @@ import { Container, Chip, Divider, List, ListItem, ListItemText, Typography } fr
 import Grid from '@mui/material/Unstable_Grid2';
 import { AdapterDayjs } from '@mui/x-date-pickers/AdapterDayjs';
 import { DateCalendar } from '@mui/x-date-pickers';
+import { DayCalendarSkeleton } from '@mui/x-date-pickers/DayCalendarSkeleton';
 import { LocalizationProvider } from '@mui/x-date-pickers/LocalizationProvider';
 import dayjs, { Dayjs } from 'dayjs';
 
-import { GET_APPOINTMENTS } from '../../graphql/queries';
-import { GetAppointmentsResponse, AppointmentItem } from '../../types/Types';
-import { formatLongDateString, formatLocalTimeString } from '../../helpers/utils';
+import ServerDay, { HighlightedDay } from '../../components/ServerDay';
+import { GET_APPOINTMENTS, GET_APPOINTMENTS_COUNTS } from '../../graphql/queries';
+import { GetAppointmentsResponse, AppointmentItem, GetAppointmentsCountsResponse } from '../../types/Types';
+import { formatLongDateString, formatLocalTimeString, formatLocalDateString } from '../../helpers/utils';
 
 function ManageBookings() {
   const { authStatus } = useAuthenticator((context) => [context.route]);
 
   const [isLoading, setLoading] = React.useState<boolean>(false);
   const [appointments, setAppointments] = React.useState<AppointmentItem[]>([]);
-  const [date, setDate] = React.useState<Dayjs | null>(dayjs());
+  const [highlightedDays, setHighlightedDays] = React.useState<HighlightedDay[]>([]);
+  const [selectedDate, setSelectedDate] = React.useState<Dayjs | null>(dayjs());
 
   const getAppointments = async (d: Dayjs) => {
     let from = dayjs(d).set('hour', 0).set('minute', 0).set('second', 0).set('millisecond', 0).toISOString();
@@ -36,7 +39,7 @@ function ManageBookings() {
   };
 
   async function dateSelected(d: Dayjs | null) {
-    setDate(d);
+    setSelectedDate(d);
     await getAppointments(d ?? dayjs());
 
     //console.debug('[MANGE BOOKINGS] Found appointments', appointments);
@@ -45,7 +48,7 @@ function ManageBookings() {
   useEffect(() => {
     if (authStatus === 'authenticated') {
       const d = dayjs();
-      setDate(d);
+      setSelectedDate(d);
 
       getAppointments(d).then((resp) => {
         //console.debug('[MANGE BOOKINGS] Loaded initial appointments', resp);
@@ -56,12 +59,59 @@ function ManageBookings() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
+  useEffect(() => {
+    fetchHighlightedDays(selectedDate ?? dayjs());
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
+  const fetchHighlightedDays = async (date: Dayjs) => {
+    // Convert sk to local date range for entire month
+    const from = formatLocalDateString(date);
+    const to = formatLocalDateString(date.add(1, 'month'));
+
+    const result = await API.graphql<GraphQLQuery<GetAppointmentsCountsResponse>>(graphqlOperation(GET_APPOINTMENTS_COUNTS, { from, to, status: 'booked' }));
+    // console.debug('[MANAGE BOOKINGS] Get Appointment Counts', result);
+    const datesWithAppointments = result.data?.getAppointmentCounts;
+    // console.debug('[MANAGE BOOKINGS] Found dates with appointments', datesWithAppointments);
+
+    let daysToHighlight: HighlightedDay[] = [];
+    datesWithAppointments?.forEach((x) => {
+      daysToHighlight.push({ day: new Date(x.date).getDate() + 1, count: x.count });
+    });
+    //console.debug('[MANAGE BOOKINGS] Days with appointments', daysToHighlight);
+
+    setHighlightedDays(daysToHighlight);
+    setLoading(false);
+  };
+
+  const handleMonthChange = async (date: Dayjs) => {
+    setLoading(true);
+    setHighlightedDays([]);
+
+    await fetchHighlightedDays(date);
+  };
+
   return (
     <Container maxWidth='lg' sx={{ mt: 5 }}>
       <Grid container justifyContent='center' columns={12}>
         <Grid xs={12} lg={4}>
           <LocalizationProvider dateAdapter={AdapterDayjs}>
-            <DateCalendar value={date} minDate={dayjs()} maxDate={dayjs().add(1, 'month')} onChange={(newValue) => dateSelected(newValue)} />
+            <DateCalendar
+              value={selectedDate}
+              minDate={dayjs()}
+              maxDate={dayjs().add(3, 'month')}
+              onChange={(newValue) => dateSelected(newValue)}
+              onMonthChange={handleMonthChange}
+              renderLoading={() => <DayCalendarSkeleton />}
+              slots={{
+                day: ServerDay,
+              }}
+              slotProps={{
+                day: {
+                  highlightedDays,
+                } as any,
+              }}
+            />
           </LocalizationProvider>
         </Grid>
 
@@ -70,7 +120,7 @@ function ManageBookings() {
           {!isLoading && (
             <React.Fragment>
               <Typography variant='h5' fontWeight='bold' align='left' color='textPrimary' gutterBottom sx={{ mt: 1 }}>
-                Schedule for {formatLongDateString(dayjs(date))}
+                Schedule for {formatLongDateString(dayjs(selectedDate))}
               </Typography>
               <List sx={{ bgcolor: 'background.paper' }}>
                 {(!appointments || appointments.length < 1) && <Typography>No Appointments Today 😄</Typography>}
