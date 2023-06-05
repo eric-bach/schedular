@@ -4,14 +4,15 @@ import { Amplify } from 'aws-amplify';
 import { Loader, useAuthenticator } from '@aws-amplify/ui-react';
 import { API, graphqlOperation } from 'aws-amplify';
 import { GraphQLQuery } from '@aws-amplify/api';
-import { Alert, AlertTitle, Badge, Box, Button, Card, CardActions, CardContent, Stack, Typography } from '@mui/material';
+import { Alert, AlertTitle, Box, Button, Card, CardActions, CardContent, Stack, Typography } from '@mui/material';
 import Grid from '@mui/material/Unstable_Grid2';
 import { AdapterDayjs } from '@mui/x-date-pickers/AdapterDayjs';
-import { DateCalendar, PickersDay, PickersDayProps } from '@mui/x-date-pickers';
+import { DateCalendar } from '@mui/x-date-pickers';
 import { DayCalendarSkeleton } from '@mui/x-date-pickers/DayCalendarSkeleton';
 import { LocalizationProvider } from '@mui/x-date-pickers/LocalizationProvider';
 import dayjs, { Dayjs } from 'dayjs';
 
+import ServerDay, { HighlightedDay } from '../../components/ServerDay';
 import { GET_AVAILABLE_APPOINTMENTS, CREATE_BOOKING, GET_APPOINTMENTS_COUNTS } from '../../graphql/queries';
 import {
   GetAvailableAppointmentsResponse,
@@ -20,6 +21,7 @@ import {
   CreateBookingInput,
   GetAppointmentsCountsResponse,
 } from '../../types/Types';
+
 import { formatLocalTimeSpanString, formatLocalTimeString, formatLongDateString, formatLocalDateString } from '../../helpers/utils';
 
 import aws_exports from '../../aws-exports';
@@ -27,32 +29,6 @@ import aws_exports from '../../aws-exports';
 import '@aws-amplify/ui-react/styles.css';
 
 Amplify.configure(aws_exports);
-
-type HighlightedDay = {
-  day: number;
-  count: number;
-};
-
-function ServerDay(props: PickersDayProps<Dayjs> & { highlightedDays?: HighlightedDay[] }) {
-  const { highlightedDays = [], day, outsideCurrentMonth, ...other } = props;
-
-  const isSelected = !props.outsideCurrentMonth && highlightedDays.findIndex((x) => x.day === props.day.date()) > 0;
-  const value = highlightedDays.filter((x) => x.day === props.day.date());
-
-  // Display purple badge if low availability
-  let badge = undefined;
-  if (isSelected && value[0].count <= 1) {
-    badge = '🟣';
-  } else if (isSelected) {
-    badge = '🔵';
-  }
-
-  return (
-    <Badge key={props.day.toString()} overlap='circular' badgeContent={badge}>
-      <PickersDay {...other} outsideCurrentMonth={outsideCurrentMonth} day={day} />
-    </Badge>
-  );
-}
 
 function Calendar() {
   const { user } = useAuthenticator((context) => [context.route]);
@@ -91,6 +67,7 @@ function Calendar() {
 
   useEffect(() => {
     fetchHighlightedDays(selectedDate ?? dayjs());
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   async function dateSelected(date: Dayjs | null) {
@@ -162,7 +139,7 @@ function Calendar() {
     datesWithAppointments?.forEach((x) => {
       daysToHighlight.push({ day: new Date(x.date).getDate() + 1, count: x.count });
     });
-    // console.debug('[CALENDAR] Days with appointments', daysToHighlight);
+    //console.debug('[CALENDAR] Days with appointments', daysToHighlight);
 
     setHighlightedDays(daysToHighlight);
     setLoading(false);

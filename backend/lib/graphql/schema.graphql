@@ -213,7 +213,7 @@ type Query {
 
   getAppointmentCounts(from: String!, to: String!, status: String!): [GetCountsResponse] @aws_auth(cognito_groups: ["Admins", "Clients"])
 
-  listUsersInGroup(groupName: String!, limit: Int, nextToken: String): [GetAppointmentResponse] @aws_auth(cognito_groups: ["Admins"])
+  listUsersInGroup(groupName: String!, limit: Int, nextToken: String): ListUsersResponse @aws_auth(cognito_groups: ["Admins"])
 }
 
 type Mutation {
