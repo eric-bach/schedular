@@ -190,13 +190,12 @@ export type UpsertDeleteAppointmentsResponse = {
   deleted: [Base];
 };
 
-// GetTotals
-export type GetTotal = {
-  date: string;
-  count: number;
-};
-export type GetTotalsResponse = {
-  getTotals: GetTotal[];
+// GetAppointmentsCount
+export type GetAppointmentsCountsResponse = {
+  getAppointmentCounts: {
+    date: string;
+    count: number;
+  }[];
 };
 
 // ListUsersInGroup

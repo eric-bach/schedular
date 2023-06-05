@@ -181,8 +181,8 @@ type GetBookingResponse {
   updatedAt: AWSDateTime
 }
 
-# GetTotals
-type GetTotalViewModel {
+# GetAppointmentCounts
+type GetCountsResponse {
   date: String!;
   count: Int!;
 }
@@ -211,7 +211,7 @@ type Query {
   getUserBookings(customerId: String!, datetime: String!, lastEvaluatedKey: LastEvaluatedKey): GetBookingsResponse
     @aws_auth(cognito_groups: ["Clients", "Admins"])
 
-  getTotals(type: String!, from: String!, to: String!): [GetTotalViewModel] @aws_auth(cognito_groups: ["Admins", "Clients"])
+  getAppointmentCounts(type: String!, from: String!, to: String!): [GetCountsResponse] @aws_auth(cognito_groups: ["Admins", "Clients"])
 
   listUsersInGroup(groupName: String!, limit: Int, nextToken: String): [GetAppointmentResponse] @aws_auth(cognito_groups: ["Admins"])
 }

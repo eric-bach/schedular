@@ -178,8 +178,8 @@ export const UPSERT_DELETE_APPOINTMENTS = `mutation UpsertDeleteAppointments($in
   }
 }`;
 
-export const GET_TOTALS = `query GetTotals($type: String!, $from: String!, $to: String!) {
-  getTotals(type: $type, from: $from, to: $to)
+export const GET_APPOINTMENTS_COUNTS = `query GetAppointmentCounts($type: String!, $from: String!, $to: String!) {
+  getAppointmentCounts(type: $type, from: $from, to: $to)
   {
     date
     count

@@ -12,8 +12,14 @@ import { DayCalendarSkeleton } from '@mui/x-date-pickers/DayCalendarSkeleton';
 import { LocalizationProvider } from '@mui/x-date-pickers/LocalizationProvider';
 import dayjs, { Dayjs } from 'dayjs';
 
-import { GET_AVAILABLE_APPOINTMENTS, CREATE_BOOKING, GET_TOTALS } from '../../graphql/queries';
-import { GetAvailableAppointmentsResponse, AvailableAppointmentItem, CreateBookingResponse, CreateBookingInput, GetTotalsResponse } from '../../types/Types';
+import { GET_AVAILABLE_APPOINTMENTS, CREATE_BOOKING, GET_APPOINTMENTS_COUNTS } from '../../graphql/queries';
+import {
+  GetAvailableAppointmentsResponse,
+  AvailableAppointmentItem,
+  CreateBookingResponse,
+  CreateBookingInput,
+  GetAppointmentsCountsResponse,
+} from '../../types/Types';
 import { formatLocalTimeSpanString, formatLocalTimeString, formatLongDateString, formatLocalDateString } from '../../helpers/utils';
 
 import aws_exports from '../../aws-exports';
@@ -134,15 +140,15 @@ function Calendar() {
     const from = formatLocalDateString(date);
     const to = formatLocalDateString(date.add(1, 'month'));
 
-    const result = await API.graphql<GraphQLQuery<GetTotalsResponse>>(graphqlOperation(GET_TOTALS, { type: 'appt', from, to }));
-    const datesWithAppointments = result.data?.getTotals;
-    //console.debug('[CALENDAR] Found dates with appointments', datesWithAppointments);
+    const result = await API.graphql<GraphQLQuery<GetAppointmentsCountsResponse>>(graphqlOperation(GET_APPOINTMENTS_COUNTS, { type: 'appt', from, to }));
+    const datesWithAppointments = result.data?.getAppointmentCounts;
+    console.debug('[CALENDAR] Found dates with appointments', datesWithAppointments);
 
     let daysToHighlight: number[] = [];
     datesWithAppointments?.forEach((x) => {
       daysToHighlight.push(new Date(x.date).getDate() + 1);
     });
-    console.debug('[CALENDAR] Days with appointments', daysToHighlight);
+    //console.debug('[CALENDAR] Days with appointments', daysToHighlight);
 
     setHighlightedDays(daysToHighlight);
     setLoading(false);
