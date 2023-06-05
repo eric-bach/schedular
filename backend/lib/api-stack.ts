@@ -28,7 +28,7 @@ export class ApiStack extends Stack {
     super(scope, id, props);
 
     const userPool = UserPool.fromUserPoolId(this, 'userPool', props.params.userPoolId);
-    const dataTable = Table.fromTableArn(this, 'DataTable', props.params.dataTableArn);
+    const dataTable = Table.fromTableArn(this, 'table', props.params.dataTableArn);
 
     // Resolver for Cognito user service
     const userServiceFunction = new NodejsFunction(this, 'UserServiceFunction', {

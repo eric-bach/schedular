@@ -43,7 +43,7 @@ describe('Data Messaging Stack', () => {
     template.hasResourceProperties(
       'AWS::Pipes::Pipe',
       Match.objectLike({
-        Name: `${props.appName}-${props.envName}-pipe`,
+        Name: `${props.appName}-${props.envName}-messaging-pipe`,
         SourceParameters: {
           FilterCriteria: {
             Filters: [

@@ -38,7 +38,7 @@ export class DataMessagingStack extends Stack {
         type: AttributeType.STRING,
       },
       removalPolicy: props.envName === 'prod' ? RemovalPolicy.RETAIN : RemovalPolicy.DESTROY,
-      stream: StreamViewType.NEW_AND_OLD_IMAGES,
+      stream: StreamViewType.NEW_IMAGE,
     });
     // Indexes
     dataTable.addGlobalSecondaryIndex({
