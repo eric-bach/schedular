@@ -90,6 +90,10 @@ export class DataMessagingStack extends Stack {
       eventBusName: `${props.appName}-${props.envName}-bus`,
     });
 
+    /***
+     *** Lambda Powertools
+     ***/
+
     const powertoolsLayer = LayerVersion.fromLayerVersionArn(
       this,
       'powertools-layer',
@@ -118,7 +122,8 @@ export class DataMessagingStack extends Stack {
       environment: {
         //@ts-ignore
         SENDER_EMAIL: process.env.SENDER_EMAIL,
-        LOG_LEVEL: 'INFO',
+        POWERTOOLS_SERVICE_NAME: 'SendEmail',
+        POWERTOOLS_DEV: 'true',
       },
       timeout: Duration.seconds(10),
       memorySize: 512,
@@ -127,7 +132,13 @@ export class DataMessagingStack extends Stack {
         managedPolicies: [ManagedPolicy.fromAwsManagedPolicyName('service-role/AWSLambdaBasicExecutionRole')],
       }),
       bundling: {
-        externalModules: ['@aws-lambda-powertools/logger', '@middy/core'],
+        externalModules: [
+          '@aws-lambda-powertools/commons',
+          '@aws-lambda-powertools/logger',
+          '@aws-lambda-powertools/metrics',
+          '@aws-lambda-powertools/tracer',
+          '@middy/core',
+        ],
       },
       layers: [packagesLayer, powertoolsLayer],
       logRetention: RetentionDays.ONE_YEAR,
@@ -151,7 +162,8 @@ export class DataMessagingStack extends Stack {
         DATA_TABLE_NAME: dataTable.tableName,
         EVENT_BUS_NAME: eventBus.eventBusName,
         USER_POOL_ID: userPool.userPoolId,
-        LOG_LEVEL: 'INFO',
+        POWERTOOLS_SERVICE_NAME: 'SendReminders',
+        POWERTOOLS_DEV: 'true',
       },
       timeout: Duration.seconds(20),
       memorySize: 512,

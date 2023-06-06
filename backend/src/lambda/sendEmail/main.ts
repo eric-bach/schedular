@@ -28,7 +28,7 @@ const lambdahandler = async (event: any) => {
   // Will either be from EventBridge (event.detail.entries) or from Pipes (event)
   // If it comes from EventBridge it is reminder notifications, from Pipes it is confirmation or cancellation appointments
   if (event.detail?.entries?.length < 1 && event.length < 1) {
-    console.warn('No records to process. Exiting.');
+    logger.warn('No records to process. Exiting.');
     return;
   }
 
@@ -36,11 +36,11 @@ const lambdahandler = async (event: any) => {
   const values: Booking[] = event.detail?.entries ?? event;
 
   if (isReminders) {
-    console.info('Sending daily digest and reminders');
+    logger.info('Sending daily digest and reminders');
 
     await processMapSync(groupByEmail(values));
   } else {
-    console.info('Sending individual notifications');
+    logger.info('Sending individual notifications');
 
     await Promise.all(
       values.map(async (data: Booking) => {
@@ -164,7 +164,7 @@ function getTemplateName(data: Booking, admin: boolean): string {
 
 async function sendEmail(email: string | undefined, template: string, templateData: string) {
   if (!email) {
-    console.warn('No email address provided. Skipping.');
+    logger.warn('No email address provided. Skipping.');
     return;
   }
 
@@ -179,13 +179,13 @@ async function sendEmail(email: string | undefined, template: string, templateDa
     };
 
     const command = new SendTemplatedEmailCommand(input);
-    console.debug(`Executing SES command ${JSON.stringify(command)}`);
+    logger.debug(`Executing SES command ${JSON.stringify(command)}`);
 
     const response = await client.send(command);
 
-    console.debug(`SES result ${JSON.stringify(response)}`);
+    logger.debug(`SES result ${JSON.stringify(response)}`);
   } catch (error) {
-    console.error('SES error', { error_details: error });
+    logger.error('SES error', { error_details: error });
   }
 }
 
