@@ -10,6 +10,11 @@ import { EventBus, Rule, Schedule } from 'aws-cdk-lib/aws-events';
 import { CfnTemplate, EmailIdentity } from 'aws-cdk-lib/aws-ses';
 import { LambdaFunction } from 'aws-cdk-lib/aws-events-targets';
 import { UserPool } from 'aws-cdk-lib/aws-cognito';
+import { Alarm, ComparisonOperator, Metric } from 'aws-cdk-lib/aws-cloudwatch';
+import { EmailSubscription } from 'aws-cdk-lib/aws-sns-subscriptions';
+import { Topic } from 'aws-cdk-lib/aws-sns';
+import { SnsAction } from 'aws-cdk-lib/aws-cloudwatch-actions';
+import { BackupPlan, BackupResource, BackupSelection } from 'aws-cdk-lib/aws-backup';
 
 const dotenv = require('dotenv');
 dotenv.config();
@@ -63,6 +68,17 @@ export class DataMessagingStack extends Stack {
         type: AttributeType.STRING,
       },
     });
+
+    // DynamoDB backups
+    if (props.envName === 'prod') {
+      const backupPlan = BackupPlan.dailyMonthly1YearRetention(this, `${props.appName}-${props.envName}-TableBackup`);
+      const backupSelection = new BackupSelection(this, 'BackupSelection', {
+        backupPlan: backupPlan,
+        resources: [BackupResource.fromDynamoDbTable(dataTable)],
+        allowRestores: true,
+        backupSelectionName: dataTable.tableName,
+      });
+    }
 
     /***
      *** EventBridge
@@ -225,6 +241,35 @@ export class DataMessagingStack extends Stack {
       enabled: true,
     });
     cronRule.addTarget(new LambdaFunction(sendRemindersFunction));
+
+    /***
+     *** AWS SNS - Topics
+     ***/
+
+    const eventHandlerTopic = new Topic(this, 'ApplicationErrorsTopic', {
+      topicName: `${props.appName}-${props.envName}-Errors`,
+      displayName: 'Application Errors Topic',
+    });
+    // @ts-ignore
+    eventHandlerTopic.addSubscription(new EmailSubscription(process.env.ADMINISTRATOR_EMAIL));
+
+    /***
+     *** AWS CloudWatch - Alarms
+     ***/
+
+    const eventHandlerAlarm = new Alarm(this, 'SendRemindersErrorAlarm', {
+      alarmName: `SendRemindersError`,
+      alarmDescription: 'Could not send reminders',
+      metric: new Metric({
+        namespace: 'AWS/Lambda',
+        metricName: 'Errors',
+      }),
+      datapointsToAlarm: 1,
+      evaluationPeriods: 1,
+      threshold: 1,
+      comparisonOperator: ComparisonOperator.GREATER_THAN_OR_EQUAL_TO_THRESHOLD,
+    });
+    eventHandlerAlarm.addAlarmAction(new SnsAction(eventHandlerTopic));
 
     /***
      *** SES

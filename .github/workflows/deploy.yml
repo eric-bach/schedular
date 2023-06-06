@@ -46,6 +46,7 @@ jobs:
         env:
           CERTIFICATE_ARN: ${{secrets.CERTIFICATE_ARN_PROD}}
           SENDER_EMAIL: ${{secrets.SENDER_EMAIL}}
+          ADMINISTRATOR_EMAIL: ${{secrets.ADMINISTRATOR_EMAIL}}
         working-directory: backend
 
   deploy-frontend:

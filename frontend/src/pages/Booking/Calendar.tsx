@@ -139,7 +139,7 @@ function Calendar() {
     datesWithAppointments?.forEach((x) => {
       daysToHighlight.push({ day: new Date(x.date).getDate() + 1, count: x.count });
     });
-    //console.debug('[CALENDAR] Days with appointments', daysToHighlight);
+    console.debug('[CALENDAR] Days with appointments', daysToHighlight);
 
     setHighlightedDays(daysToHighlight);
     setLoading(false);
