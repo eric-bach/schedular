@@ -31,6 +31,7 @@ export function request(ctx) {
             firstName: administratorDetails.firstName,
             lastName: administratorDetails.lastName,
           }),
+          status: util.dynamodb.toDynamoDB('booked'),
           customerId: util.dynamodb.toDynamoDB(customer.id),
           createdAt: util.dynamodb.toDynamoDB(util.time.nowISO8601()),
           updatedAt: util.dynamodb.toDynamoDB(util.time.nowISO8601()),
