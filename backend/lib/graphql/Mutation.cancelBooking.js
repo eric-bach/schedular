@@ -16,8 +16,12 @@ export function request(ctx) {
           sk: util.dynamodb.toDynamoDB(appointmentDetails.sk),
         },
         update: {
-          expression: `SET appointmentDetails = :appointmentDetails, updatedAt = :updatedAt`,
+          expression: `SET appointmentDetails = :appointmentDetails, #status = :status, updatedAt = :updatedAt`,
+          expressionNames: {
+            '#status': 'status',
+          },
           expressionValues: {
+            ':status': util.dynamodb.toDynamoDB('cancelled'),
             ':updatedAt': util.dynamodb.toDynamoDB(util.time.nowISO8601()),
             ':appointmentDetails': util.dynamodb.toDynamoDB({
               pk: appointmentDetails.pk,
