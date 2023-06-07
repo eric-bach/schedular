@@ -51,7 +51,7 @@ describe('cancelBooking', () => {
     const updateBookingKey = unmarshall(updateBooking.key);
     expect(updateBookingKey.pk).toEqual(context.arguments.input.bookingId);
     expect(updateBookingKey.sk).toEqual(context.arguments.input.appointmentDetails.sk);
-    expect(updateBooking.update.expression).toEqual('SET appointmentDetails = :appointmentDetails, updatedAt = :updatedAt');
+    expect(updateBooking.update.expression).toEqual('SET appointmentDetails = :appointmentDetails, #status = :status, updatedAt = :updatedAt');
 
     // Assert update appointment
     const updateAppointment = transactItems[1];
