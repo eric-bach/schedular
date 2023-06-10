@@ -3,18 +3,20 @@ import { Construct } from 'constructs';
 import { Table, BillingMode, AttributeType, StreamViewType } from 'aws-cdk-lib/aws-dynamodb';
 import { SchedularDataStackProps } from './types/SchedularStackProps';
 import { NodejsFunction } from 'aws-cdk-lib/aws-lambda-nodejs';
-import { Runtime, StartingPosition } from 'aws-cdk-lib/aws-lambda';
+import { Code, LayerVersion, Runtime, StartingPosition } from 'aws-cdk-lib/aws-lambda';
 import { Effect, ManagedPolicy, PolicyStatement, Role, ServicePrincipal } from 'aws-cdk-lib/aws-iam';
 import { CfnPipe } from 'aws-cdk-lib/aws-pipes';
 import { EventBus, Rule, Schedule } from 'aws-cdk-lib/aws-events';
 import { CfnTemplate, EmailIdentity } from 'aws-cdk-lib/aws-ses';
 import { LambdaFunction } from 'aws-cdk-lib/aws-events-targets';
 import { UserPool } from 'aws-cdk-lib/aws-cognito';
+import { RetentionDays } from 'aws-cdk-lib/aws-logs';
 import { Alarm, ComparisonOperator, Metric } from 'aws-cdk-lib/aws-cloudwatch';
 import { EmailSubscription } from 'aws-cdk-lib/aws-sns-subscriptions';
 import { Topic } from 'aws-cdk-lib/aws-sns';
 import { SnsAction } from 'aws-cdk-lib/aws-cloudwatch-actions';
 import { BackupPlan, BackupResource, BackupSelection } from 'aws-cdk-lib/aws-backup';
+import * as path from 'path';
 
 const dotenv = require('dotenv');
 dotenv.config();
@@ -89,6 +91,25 @@ export class DataMessagingStack extends Stack {
     });
 
     /***
+     *** Lambda Powertools
+     ***/
+
+    const powertoolsLayer = LayerVersion.fromLayerVersionArn(
+      this,
+      'powertools-layer',
+      `arn:aws:lambda:${Stack.of(this).region}:094274105915:layer:AWSLambdaPowertoolsTypeScript:11`
+    );
+
+    const packageCodePath = path.resolve(__dirname, path.join('..', 'src', 'layers', 'packages'));
+    const packagesLayer = new LayerVersion(this, 'logger-packages-layer', {
+      compatibleRuntimes: [Runtime.NODEJS_18_X],
+      code: Code.fromAsset(packageCodePath),
+      description: 'npm packages layer',
+      layerVersionName: 'logger-packages-layer',
+      removalPolicy: RemovalPolicy.RETAIN,
+    });
+
+    /***
      *** Lambda Functions
      ***/
 
@@ -101,13 +122,26 @@ export class DataMessagingStack extends Stack {
       environment: {
         //@ts-ignore
         SENDER_EMAIL: process.env.SENDER_EMAIL,
+        POWERTOOLS_SERVICE_NAME: 'SendEmail',
+        POWERTOOLS_DEV: 'true',
       },
       timeout: Duration.seconds(10),
-      memorySize: 256,
+      memorySize: 512,
       role: new Role(this, 'SendEmailServiceRole', {
         assumedBy: new ServicePrincipal('lambda.amazonaws.com'),
         managedPolicies: [ManagedPolicy.fromAwsManagedPolicyName('service-role/AWSLambdaBasicExecutionRole')],
       }),
+      bundling: {
+        externalModules: [
+          '@aws-lambda-powertools/commons',
+          '@aws-lambda-powertools/logger',
+          '@aws-lambda-powertools/metrics',
+          '@aws-lambda-powertools/tracer',
+          '@middy/core',
+        ],
+      },
+      layers: [packagesLayer, powertoolsLayer],
+      logRetention: RetentionDays.ONE_YEAR,
     });
     // Add permission send email
     sendEmailFunction.addToRolePolicy(
@@ -128,10 +162,16 @@ export class DataMessagingStack extends Stack {
         DATA_TABLE_NAME: dataTable.tableName,
         EVENT_BUS_NAME: eventBus.eventBusName,
         USER_POOL_ID: userPool.userPoolId,
-        REGION: this.region,
+        POWERTOOLS_SERVICE_NAME: 'SendReminders',
+        POWERTOOLS_DEV: 'true',
       },
       timeout: Duration.seconds(20),
       memorySize: 512,
+      bundling: {
+        externalModules: ['@aws-lambda-powertools/logger', '@middy/core'],
+      },
+      layers: [packagesLayer, powertoolsLayer],
+      logRetention: RetentionDays.ONE_YEAR,
     });
     // Add permission to publish events
     sendRemindersFunction.addToRolePolicy(

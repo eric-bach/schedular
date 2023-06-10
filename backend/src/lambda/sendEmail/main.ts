@@ -1,4 +1,7 @@
+import middy from '@middy/core';
 import { SESClient, SendTemplatedEmailCommand, SendTemplatedEmailCommandInput } from '@aws-sdk/client-ses'; // ES Modules import
+import { Logger, injectLambdaContext } from '@aws-lambda-powertools/logger';
+import { CustomErrorFormatter } from '../../helpers/CustomerLogFormatter';
 
 type Booking = {
   administratorDetails: {
@@ -19,13 +22,13 @@ type Booking = {
   sk: string;
 };
 
-exports.handler = async (event: any) => {
-  console.debug('🕧 Send Email invoked: ', JSON.stringify(event));
+const logger = new Logger({ logFormatter: new CustomErrorFormatter() });
 
+const lambdahandler = async (event: any) => {
   // Will either be from EventBridge (event.detail.entries) or from Pipes (event)
   // If it comes from EventBridge it is reminder notifications, from Pipes it is confirmation or cancellation appointments
   if (event.detail?.entries?.length < 1 && event.length < 1) {
-    console.debug('✅ No records to process. Exiting.');
+    logger.warn('No records to process. Exiting.');
     return;
   }
 
@@ -33,11 +36,11 @@ exports.handler = async (event: any) => {
   const values: Booking[] = event.detail?.entries ?? event;
 
   if (isReminders) {
-    console.debug('🔔 Sending daily digest and reminders');
+    logger.info('Sending daily digest and reminders');
 
     await processMapSync(groupByEmail(values));
   } else {
-    console.debug('🔔 Sending individual notifications');
+    logger.info('Sending individual notifications');
 
     await Promise.all(
       values.map(async (data: Booking) => {
@@ -68,7 +71,7 @@ exports.handler = async (event: any) => {
     );
   }
 
-  console.log('✅ Sent email notifications');
+  console.log('✅ Sucessfully sent email notifications');
 };
 
 // Sends daily digest and reminders asynchronously while iterating through the Map
@@ -161,7 +164,7 @@ function getTemplateName(data: Booking, admin: boolean): string {
 
 async function sendEmail(email: string | undefined, template: string, templateData: string) {
   if (!email) {
-    console.error('⚠️ No email address provided. Skipping.');
+    logger.warn('No email address provided. Skipping.');
     return;
   }
 
@@ -176,13 +179,13 @@ async function sendEmail(email: string | undefined, template: string, templateDa
     };
 
     const command = new SendTemplatedEmailCommand(input);
-    console.debug('Executing SES command', JSON.stringify(command));
+    logger.debug(`Executing SES command ${JSON.stringify(command)}`);
 
     const response = await client.send(command);
 
-    console.debug('🔔 SES result', JSON.stringify(response));
+    logger.debug(`SES result ${JSON.stringify(response)}`);
   } catch (error) {
-    console.error(error);
+    logger.error('SES error', { error_details: error });
   }
 }
 
@@ -211,3 +214,5 @@ function formateLocalLongDate(dateString: string) {
     day: 'numeric',
   });
 }
+
+export const handler = middy(lambdahandler).use(injectLambdaContext(logger, { logEvent: true }));
