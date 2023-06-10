@@ -10,7 +10,7 @@ export type HighlightedDay = {
 export default function ServerDay(props: PickersDayProps<Dayjs> & { highlightedDays?: HighlightedDay[] }) {
   const { highlightedDays = [], day, outsideCurrentMonth, ...other } = props;
 
-  const isSelected = !props.outsideCurrentMonth && highlightedDays.findIndex((x) => x.day === props.day.date()) > 0;
+  const isSelected = !props.outsideCurrentMonth && highlightedDays.findIndex((x) => x.day === props.day.date()) >= 0;
   const value = highlightedDays.filter((x) => x.day === props.day.date());
 
   // Display purple badge if low availability
