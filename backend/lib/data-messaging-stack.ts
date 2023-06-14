@@ -10,7 +10,7 @@ import { EventBus, Rule, Schedule } from 'aws-cdk-lib/aws-events';
 import { CfnTemplate, EmailIdentity } from 'aws-cdk-lib/aws-ses';
 import { LambdaFunction } from 'aws-cdk-lib/aws-events-targets';
 import { UserPool } from 'aws-cdk-lib/aws-cognito';
-import { Alarm, ComparisonOperator, Metric } from 'aws-cdk-lib/aws-cloudwatch';
+import { Alarm, ComparisonOperator, Dashboard, GraphWidget, Metric } from 'aws-cdk-lib/aws-cloudwatch';
 import { EmailSubscription } from 'aws-cdk-lib/aws-sns-subscriptions';
 import { Topic } from 'aws-cdk-lib/aws-sns';
 import { SnsAction } from 'aws-cdk-lib/aws-cloudwatch-actions';
@@ -270,6 +270,260 @@ export class DataMessagingStack extends Stack {
       comparisonOperator: ComparisonOperator.GREATER_THAN_OR_EQUAL_TO_THRESHOLD,
     });
     eventHandlerAlarm.addAlarmAction(new SnsAction(eventHandlerTopic));
+
+    /***
+     *** AWS CloudWatch - Dashboard
+     ***/
+
+    // Create a CloudWatch dashboard
+    const dashboard = new Dashboard(this, 'DynamoDBDashboard', {
+      dashboardName: 'DynamoDBMetricsDashboard',
+    });
+
+    // Add DynamoDB metrics to the dashboard
+    dashboard.addWidgets(
+      new GraphWidget({
+        title: 'Capacity for table',
+        width: 12,
+        right: [
+          new Metric({
+            namespace: 'AWS/DynamoDB',
+            metricName: 'ProvisionedWriteCapacityUnits',
+            dimensionsMap: {
+              TableName: dataTable.tableName,
+            },
+            statistic: 'Maximum',
+            label: 'Maximum ProvisionedWriteCapacityUnits',
+            period: Duration.minutes(1),
+          }),
+          new Metric({
+            namespace: 'AWS/DynamoDB',
+            metricName: 'ConsumedWriteCapacityUnits',
+            dimensionsMap: {
+              TableName: dataTable.tableName,
+            },
+            statistic: 'Maximum',
+            label: 'Maximum ConsumedWriteCapacityUnits',
+            period: Duration.minutes(1),
+          }),
+        ],
+        left: [
+          new Metric({
+            namespace: 'AWS/DynamoDB',
+            metricName: 'ProvisionedReadCapacityUnits',
+            dimensionsMap: {
+              TableName: dataTable.tableName,
+            },
+            statistic: 'Maximum',
+            label: 'Maximum ProvisionedReadCapacityUnits',
+            period: Duration.minutes(1),
+          }),
+          new Metric({
+            namespace: 'AWS/DynamoDB',
+            metricName: 'ConsumedReadCapacityUnits',
+            dimensionsMap: {
+              TableName: dataTable.tableName,
+            },
+            statistic: 'Maximum',
+            label: 'Maximum ConsumedReadCapacityUnits',
+            period: Duration.minutes(1),
+          }),
+        ],
+      }),
+      new GraphWidget({
+        title: 'Capacity For customerId-gsi Index',
+        width: 12,
+        right: [
+          new Metric({
+            namespace: 'AWS/DynamoDB',
+            metricName: 'ProvisionedWriteCapacityUnits',
+            dimensionsMap: {
+              TableName: dataTable.tableName,
+              GlobalSecondaryIndexName: 'customerId-gsi',
+            },
+            statistic: 'Maximum',
+            label: 'Maximum GSI1 ProvisionedWriteCapacityUnits',
+            period: Duration.minutes(1),
+          }),
+          new Metric({
+            namespace: 'AWS/DynamoDB',
+            metricName: 'ConsumedWriteCapacityUnits',
+            dimensionsMap: {
+              TableName: dataTable.tableName,
+              GlobalSecondaryIndexName: 'customerId-gsi',
+            },
+            statistic: 'Maximum',
+            label: 'Maximum GSI1 ConsumedWriteCapacityUnits',
+            period: Duration.minutes(1),
+          }),
+        ],
+        left: [
+          new Metric({
+            namespace: 'AWS/DynamoDB',
+            metricName: 'ProvisionedReadCapacityUnits',
+            dimensionsMap: {
+              TableName: dataTable.tableName,
+              GlobalSecondaryIndexName: 'customerId-gsi',
+            },
+            statistic: 'Maximum',
+            label: 'Maximum GSI1 ProvisionedReadCapacityUnits',
+            period: Duration.minutes(1),
+          }),
+          new Metric({
+            namespace: 'AWS/DynamoDB',
+            metricName: 'ConsumedReadCapacityUnits',
+            dimensionsMap: {
+              TableName: dataTable.tableName,
+              GlobalSecondaryIndexName: 'customerId-gsi',
+            },
+            statistic: 'Maximum',
+            label: 'Maximum GSI1 ConsumedReadCapacityUnits',
+            period: Duration.minutes(1),
+          }),
+        ],
+      }),
+      new GraphWidget({
+        title: 'Capacity For type-gsi Index',
+        width: 12,
+        right: [
+          new Metric({
+            namespace: 'AWS/DynamoDB',
+            metricName: 'ProvisionedWriteCapacityUnits',
+            dimensionsMap: {
+              TableName: dataTable.tableName,
+              GlobalSecondaryIndexName: 'type-gsi',
+            },
+            statistic: 'Maximum',
+            label: 'Maximum GSI1 ProvisionedWriteCapacityUnits',
+            period: Duration.minutes(1),
+          }),
+          new Metric({
+            namespace: 'AWS/DynamoDB',
+            metricName: 'ConsumedWriteCapacityUnits',
+            dimensionsMap: {
+              TableName: dataTable.tableName,
+              GlobalSecondaryIndexName: 'type-gsi',
+            },
+            statistic: 'Maximum',
+            label: 'Maximum GSI1 ConsumedWriteCapacityUnits',
+            period: Duration.minutes(1),
+          }),
+        ],
+        left: [
+          new Metric({
+            namespace: 'AWS/DynamoDB',
+            metricName: 'ProvisionedReadCapacityUnits',
+            dimensionsMap: {
+              TableName: dataTable.tableName,
+              GlobalSecondaryIndexName: 'type-gsi',
+            },
+            statistic: 'Maximum',
+            label: 'Maximum GSI1 ProvisionedReadCapacityUnits',
+            period: Duration.minutes(1),
+          }),
+          new Metric({
+            namespace: 'AWS/DynamoDB',
+            metricName: 'ConsumedReadCapacityUnits',
+            dimensionsMap: {
+              TableName: dataTable.tableName,
+              GlobalSecondaryIndexName: 'type-gsi',
+            },
+            statistic: 'Maximum',
+            label: 'Maximum GSI1 ConsumedReadCapacityUnits',
+            period: Duration.minutes(1),
+          }),
+        ],
+      }),
+      new GraphWidget({
+        title: 'Latency for table operations',
+        width: 12,
+        left: [
+          new Metric({
+            namespace: 'AWS/DynamoDB',
+            metricName: 'SuccessfulRequestLatency',
+            dimensionsMap: {
+              TableName: dataTable.tableName,
+              Operation: 'GetItem',
+            },
+            statistic: 'p99',
+            label: 'p99 GetItem SuccessfulRequestLatency',
+            period: Duration.minutes(1),
+          }),
+          new Metric({
+            namespace: 'AWS/DynamoDB',
+            metricName: 'SuccessfulRequestLatency',
+            dimensionsMap: {
+              TableName: dataTable.tableName,
+              Operation: 'Query',
+            },
+            statistic: 'p99',
+            label: 'p99 Query SuccessfulRequestLatency',
+            period: Duration.minutes(1),
+          }),
+          new Metric({
+            namespace: 'AWS/DynamoDB',
+            metricName: 'SuccessfulRequestLatency',
+            dimensionsMap: {
+              TableName: dataTable.tableName,
+              Operation: 'UpdateItem',
+            },
+            statistic: 'p99',
+            label: 'p99 UpdateItem SuccessfulRequestLatency',
+            period: Duration.minutes(1),
+          }),
+          new Metric({
+            namespace: 'AWS/DynamoDB',
+            metricName: 'SuccessfulRequestLatency',
+            dimensionsMap: {
+              TableName: dataTable.tableName,
+              Operation: 'PutItem',
+            },
+            statistic: 'p99',
+            label: 'p99 PutItem SuccessfulRequestLatency',
+            period: Duration.minutes(1),
+          }),
+        ],
+      }),
+      new GraphWidget({
+        title: 'Read throttles for Indexes',
+        width: 12,
+        left: [
+          new Metric({
+            namespace: 'AWS/DynamoDB',
+            metricName: 'ReadThrottleEvents',
+            dimensionsMap: {
+              TableName: dataTable.tableName,
+              GlobalSecondaryIndexName: 'GSI1',
+            },
+            statistic: 'Maximum',
+            label: 'Sum GSI1 ReadThrottleEvents',
+            period: Duration.minutes(1),
+          }),
+          new Metric({
+            namespace: 'AWS/DynamoDB',
+            metricName: 'ReadThrottleEvents',
+            dimensionsMap: {
+              TableName: dataTable.tableName,
+              GlobalSecondaryIndexName: 'GSI2',
+            },
+            statistic: 'sum',
+            label: 'Sum GSI2 ReadThrottleEvents',
+            period: Duration.minutes(1),
+          }),
+          new Metric({
+            namespace: 'AWS/DynamoDB',
+            metricName: 'ReadThrottleEvents',
+            dimensionsMap: {
+              TableName: dataTable.tableName,
+              GlobalSecondaryIndexName: 'GSI3',
+            },
+            statistic: 'sum',
+            label: 'Sum GSI3 ReadThrottleEvents',
+            period: Duration.minutes(1),
+          }),
+        ],
+      })
+    );
 
     /***
      *** SES

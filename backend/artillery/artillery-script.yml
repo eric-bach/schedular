@@ -1,0 +1,39 @@
+config:
+  target: 'https://omzpczmavnbszl27rycodeiaam.appsync-api.us-east-1.amazonaws.com/graphql'
+  phases:
+    - name: Small Test
+      duration: 10
+      arrivalRate: 1
+      rampTo: 2
+  payload:
+    path: 'creds.csv'
+    fields:
+      - 'token'
+scenarios:
+  - name: Get available times
+    flow:
+      - post:
+          url: '/'
+          headers:
+            Authorization: '{{token}}'
+          json:
+            query: |
+              query GetAvailableAppointments($to: String!, $from: String!, $lastEvaluatedKey: LastEvaluatedKey) {
+                getAvailableAppointments(from: $from, to: $to, lastEvaluatedKey: $lastEvaluatedKey ) {
+                  items {
+                    pk
+                    sk
+                    status
+                    type
+                    category
+                    duration
+                  }
+                }
+              }
+            variables:
+              from: '2023-06-15T06:00:00.000Z'
+              to: '2023-06-16T06:00:00.000Z'
+            # capture:
+            #   json: '$.data.items.email'
+            #   as: 'userEmail'
+#https://www.artillery.io/blog/using-artillery-to-load-test-graphql-apis
