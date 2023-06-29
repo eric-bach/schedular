@@ -1,10 +1,10 @@
-import { util } from '@aws-appsync/utils';
+import { Context, DynamoDBQueryRequest, util } from '@aws-appsync/utils';
+import { AppointmentViewModel, GetCountsResponse, QueryGetAppointmentCountsArgs } from './types/appsync';
 
-export function request(ctx) {
+export function request(ctx: Context<QueryGetAppointmentCountsArgs>): DynamoDBQueryRequest {
   console.log('🔔 GetAppointmentCounts Request: ', ctx);
 
   return {
-    version: '2017-02-28',
     operation: 'Query',
     index: 'type-gsi',
     query: {
@@ -31,7 +31,7 @@ export function request(ctx) {
   };
 }
 
-export function response(ctx) {
+export function response(ctx: Context<QueryGetAppointmentCountsArgs>): GetCountsResponse[] {
   console.log('🔔 GetAppointmentCounts Response: ', ctx);
 
   if (ctx.error) {
@@ -39,14 +39,14 @@ export function response(ctx) {
   }
 
   // Group and count by local date
-  const dates = ctx.result.items.map((x) => x.sk) ?? [];
+  const dates: string[] = ctx.result.items.map((x: AppointmentViewModel) => x.sk) ?? [];
   const result = countItemsByDate(dates);
 
   return result;
 }
 
-function countItemsByDate(dates) {
-  let dateCountMap = {};
+function countItemsByDate(dates: string[]) {
+  let dateCountMap: { [key: string]: number } = {};
   dates.forEach((date) => {
     // Convert to local date
     const epoch = util.time.parseISO8601ToEpochMilliSeconds(date);

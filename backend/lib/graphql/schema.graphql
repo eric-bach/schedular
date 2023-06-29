@@ -183,8 +183,8 @@ type GetBookingResponse {
 
 # GetAppointmentCounts
 type GetCountsResponse {
-  date: String!;
-  count: Int!;
+  date: String!
+  count: Int!
 }
 
 # GetUsers
@@ -205,7 +205,8 @@ type Query {
   getAvailableAppointments(from: String!, to: String!, lastEvaluatedKey: LastEvaluatedKey): GetAppointmentsResponse
     @aws_auth(cognito_groups: ["Clients", "Admins"])
   getAppointment(pk: String!, sk: String!): GetAppointmentResponse @aws_auth(cognito_groups: ["Clients", "Admins"])
-  getAppointments(from: String!, to: String!, lastEvaluatedKey: LastEvaluatedKey): GetAppointmentsResponse @aws_auth(cognito_groups: ["Admins"])
+  getAppointments(from: String!, to: String!, lastEvaluatedKey: LastEvaluatedKey): GetAppointmentsResponse
+    @aws_auth(cognito_groups: ["Admins"])
   getBooking(pk: String!, sk: String!): GetBookingResponse @aws_auth(cognito_groups: ["Clients", "Admins"])
   getBookings(datetime: String!, lastEvaluatedKey: LastEvaluatedKey): GetBookingsResponse @aws_auth(cognito_groups: ["Admins"])
   getUserBookings(customerId: String!, datetime: String!, lastEvaluatedKey: LastEvaluatedKey): GetBookingsResponse

@@ -111,77 +111,77 @@ export class ApiStack extends Stack {
       name: 'getAvailableAppointmentsFunction',
       api: api,
       dataSource: dynamoDbDataSource,
-      code: Code.fromAsset(path.join(__dirname, '/graphql/Query.getAvailableAppointments.js')),
+      code: Code.fromAsset(path.join(__dirname, '/graphql/build/Query.getAvailableAppointments.js')),
       runtime: FunctionRuntime.JS_1_0_0,
     });
     const getAppointmentFunction = new AppsyncFunction(this, 'getAppointmentFunction', {
       name: 'getAppointmentFunction',
       api: api,
       dataSource: dynamoDbDataSource,
-      code: Code.fromAsset(path.join(__dirname, '/graphql/Query.getAppointment.js')),
+      code: Code.fromAsset(path.join(__dirname, '/graphql/build/Query.getAppointment.js')),
       runtime: FunctionRuntime.JS_1_0_0,
     });
     const getAppointmentsFunction = new AppsyncFunction(this, 'getAppointmentsFunction', {
       name: 'getAppointmentsFunction',
       api: api,
       dataSource: dynamoDbDataSource,
-      code: Code.fromAsset(path.join(__dirname, '/graphql/Query.getAppointments.js')),
+      code: Code.fromAsset(path.join(__dirname, '/graphql/build/Query.getAppointments.js')),
       runtime: FunctionRuntime.JS_1_0_0,
     });
     const getBookingFunction = new AppsyncFunction(this, 'getBookingFunction', {
       name: 'getBookingFunction',
       api: api,
       dataSource: dynamoDbDataSource,
-      code: Code.fromAsset(path.join(__dirname, '/graphql/Query.getBooking.js')),
+      code: Code.fromAsset(path.join(__dirname, '/graphql/build/Query.getBooking.js')),
       runtime: FunctionRuntime.JS_1_0_0,
     });
     const getBookingsFunction = new AppsyncFunction(this, 'getBookingsFunction', {
       name: 'getBookingsFunction',
       api: api,
       dataSource: dynamoDbDataSource,
-      code: Code.fromAsset(path.join(__dirname, '/graphql/Query.getBookings.js')),
+      code: Code.fromAsset(path.join(__dirname, '/graphql/build/Query.getBookings.js')),
       runtime: FunctionRuntime.JS_1_0_0,
     });
     const getUserBookingsFunction = new AppsyncFunction(this, 'getUserBookingsFunction', {
       name: 'getUserBookingsFunction',
       api: api,
       dataSource: dynamoDbDataSource,
-      code: Code.fromAsset(path.join(__dirname, '/graphql/Query.getUserBookings.js')),
+      code: Code.fromAsset(path.join(__dirname, '/graphql/build/Query.getUserBookings.js')),
       runtime: FunctionRuntime.JS_1_0_0,
     });
     const createBookingFunction = new AppsyncFunction(this, 'createBookingFunction', {
       name: 'createBookingFunction',
       api: api,
       dataSource: dynamoDbDataSource,
-      code: Code.fromAsset(path.join(__dirname, '/graphql/Mutation.createBooking.js')),
+      code: Code.fromAsset(path.join(__dirname, '/graphql/build/Mutation.createBooking.js')),
       runtime: FunctionRuntime.JS_1_0_0,
     });
     const cancelBookingFunction = new AppsyncFunction(this, 'cancelBookingFunction', {
       name: 'cancelBookingFunction',
       api: api,
       dataSource: dynamoDbDataSource,
-      code: Code.fromAsset(path.join(__dirname, '/graphql/Mutation.cancelBooking.js')),
+      code: Code.fromAsset(path.join(__dirname, '/graphql/build/Mutation.cancelBooking.js')),
       runtime: FunctionRuntime.JS_1_0_0,
     });
     const upsertAppointmentsFunction = new AppsyncFunction(this, 'upsertAppointmentsFunction', {
       name: 'upsertAppointmentsFunction',
       api: api,
       dataSource: dynamoDbDataSource,
-      code: Code.fromAsset(path.join(__dirname, '/graphql/Mutation.createAppointments.js')),
+      code: Code.fromAsset(path.join(__dirname, '/graphql/build/Mutation.createAppointments.js')),
       runtime: FunctionRuntime.JS_1_0_0,
     });
     const deleteAppointmentsFunction = new AppsyncFunction(this, 'deleteAppointmentsFunction', {
       name: 'deleteAppointmentsFunction',
       api: api,
       dataSource: dynamoDbDataSource,
-      code: Code.fromAsset(path.join(__dirname, '/graphql/Mutation.deleteAppointments.js')),
+      code: Code.fromAsset(path.join(__dirname, '/graphql/build/Mutation.deleteAppointments.js')),
       runtime: FunctionRuntime.JS_1_0_0,
     });
     const getAppointmentCountsFunction = new AppsyncFunction(this, 'getAppointmentCountsFunction', {
       name: 'getAppointmentCountsFunction',
       api: api,
       dataSource: dynamoDbDataSource,
-      code: Code.fromAsset(path.join(__dirname, '/graphql/Query.getAppointmentCounts.js')),
+      code: Code.fromAsset(path.join(__dirname, '/graphql/build/Query.getAppointmentCounts.js')),
       runtime: FunctionRuntime.JS_1_0_0,
     });
     userServiceLambdaDataSource.createResolver(`${props.appName}-${props.envName}-listUsersInGroupResolver`, {

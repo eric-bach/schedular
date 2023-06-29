@@ -1,10 +1,10 @@
-import { util } from '@aws-appsync/utils';
+import { Context, DynamoDBQueryRequest, util } from '@aws-appsync/utils';
+import { GetAppointmentsResponse, QueryGetAppointmentsArgs } from './types/appsync';
 
-export function request(ctx) {
-  console.log('🔔 GetAvailableAppointments Request: ', ctx);
+export function request(ctx: Context<QueryGetAppointmentsArgs>): DynamoDBQueryRequest {
+  console.log('🔔 GetAppointments Request: ', ctx);
 
   return {
-    version: '2017-02-28',
     operation: 'Query',
     index: 'type-gsi',
     query: {
@@ -18,20 +18,12 @@ export function request(ctx) {
         ':toDate': util.dynamodb.toDynamoDB(ctx.args.to),
       },
     },
-    filter: {
-      expression: '#status = :s',
-      expressionNames: {
-        '#status': 'status',
-      },
-      expressionValues: {
-        ':s': util.dynamodb.toDynamoDB('available'),
-      },
-    },
+    scanIndexForward: true,
   };
 }
 
-export function response(ctx) {
-  console.log('🔔 GetAvailableAppointments Response: ', ctx);
+export function response(ctx: Context<QueryGetAppointmentsArgs>): GetAppointmentsResponse {
+  console.log('🔔 GetAppointments Response: ', ctx);
 
   if (ctx.error) {
     util.error(ctx.error.message, ctx.error.type, ctx.result);
