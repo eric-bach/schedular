@@ -19,7 +19,7 @@
     "clean-all": "npm run cdk-clear-context && ts-node ./helpers/commands.ts \"rm -fR node_modules\"",
     "codegen": "graphql-codegen",
     "deploy": "npm run build && npm run build-all && npm run codegen && npm run build-appsync && ts-node ./helpers/deploy.ts",
-    "deploy-backend": "npm run codegen && npm run build-apsync && npm run quick-deploy -- -s backend",
+    "deploy-backend": "npm run codegen && npm run build-appsync && npm run quick-deploy -- -s backend",
     "deploy-frontend": "npm run quick-deploy -- -s frontend",
     "install-all": "npm i && npm run cdk-clear-context && ts-node ./helpers/commands.ts \"npm install\"",
     "quick-deploy": "ts-node ./helpers/deploy.ts",
