@@ -2,7 +2,7 @@ import { AppSyncClient, EvaluateCodeCommand, EvaluateCodeCommandInput } from '@a
 import { unmarshall } from '@aws-sdk/util-dynamodb';
 import { readFile } from 'fs/promises';
 const appsync = new AppSyncClient({ region: 'us-east-1' });
-const file = './lib/graphql/Mutation.cancelBooking.js';
+const file = './lib/graphql/build/Mutation.cancelBooking.js';
 
 describe('cancelBooking', () => {
   it('should cancel a valid booking request', async () => {
