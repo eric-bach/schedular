@@ -2,7 +2,7 @@ import { AppSyncClient, EvaluateCodeCommand, EvaluateCodeCommandInput } from '@a
 import { unmarshall } from '@aws-sdk/util-dynamodb';
 import { readFile } from 'fs/promises';
 const appsync = new AppSyncClient({ region: 'us-east-1' });
-const file = './lib/graphql/Mutation.deleteAppointments.js';
+const file = './lib/graphql/build/Mutation.deleteAppointments.js';
 
 describe('deleteAppointments', () => {
   it('should delete a valid appointment', async () => {

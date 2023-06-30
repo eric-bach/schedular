@@ -1,7 +1,12 @@
-import { util } from '@aws-appsync/utils';
+import { Context, DynamoDBTransactWriteItemsRequest, util } from '@aws-appsync/utils';
+import { BookingResponse, MutationCreateBookingArgs } from './types/appsync';
 
-export function request(ctx) {
+export function request(ctx: Context<MutationCreateBookingArgs>): DynamoDBTransactWriteItemsRequest {
   console.log('🔔 CreateBooking Request: ', ctx);
+
+  if (!ctx.args.input) {
+    runtime.earlyReturn({});
+  }
 
   const bookingId = util.autoId();
   const { pk, sk, administratorDetails, appointmentDetails, customer } = ctx.args.input;
@@ -70,13 +75,14 @@ export function request(ctx) {
           expressionValues: {
             ':available': util.dynamodb.toDynamoDB('available'),
           },
+          returnValuesOnConditionCheckFailure: true,
         },
       },
     ],
   };
 }
 
-export function response(ctx) {
+export function response(ctx: Context<MutationCreateBookingArgs>): BookingResponse {
   console.log('🔔 CreateBooking Response: ', ctx);
 
   if (ctx.error) {

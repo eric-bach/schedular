@@ -1,12 +1,12 @@
-import { util } from '@aws-appsync/utils';
+import { Context, DynamoDBQueryRequest, util } from '@aws-appsync/utils';
+import { AppointmentViewModel, GetBookingResponse, QueryGetBookingArgs } from './types/appsync';
 
-export function request(ctx) {
+export function request(ctx: Context<QueryGetBookingArgs>): DynamoDBQueryRequest {
   console.log('🔔 GetBooking Request: ', ctx);
 
-  const appointment = ctx.prev.result.keys.find((k) => k.pk.startsWith('booking#'));
+  const appointment = ctx.prev.result.keys.find((k: AppointmentViewModel) => k.pk.startsWith('booking#'));
 
   return {
-    version: '2017-02-28',
     operation: 'Query',
     query: {
       expression: 'pk = :pk AND sk = :sk',
@@ -18,7 +18,7 @@ export function request(ctx) {
   };
 }
 
-export function response(ctx) {
+export function response(ctx: Context<QueryGetBookingArgs>): GetBookingResponse {
   console.log('🔔 GetBooking Response: ', ctx);
 
   if (ctx.error) {

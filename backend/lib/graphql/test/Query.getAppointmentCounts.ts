@@ -2,7 +2,7 @@ import { AppSyncClient, EvaluateCodeCommand, EvaluateCodeCommandInput } from '@a
 import { unmarshall } from '@aws-sdk/util-dynamodb';
 import { readFile } from 'fs/promises';
 const appsync = new AppSyncClient({ region: 'us-east-1' });
-const file = './lib/graphql/Query.getAppointmentCounts.js';
+const file = './lib/graphql/build/Query.getAppointmentCounts.js';
 
 describe('getAppointmentCounts', () => {
   it('should get all available appointment counts for a date range', async () => {

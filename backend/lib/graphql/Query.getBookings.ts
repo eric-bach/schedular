@@ -1,10 +1,10 @@
-import { util } from '@aws-appsync/utils';
+import { Context, DynamoDBQueryRequest, util } from '@aws-appsync/utils';
+import { GetBookingResponse, QueryGetBookingsArgs } from './types/appsync';
 
-export function request(ctx) {
+export function request(ctx: Context<QueryGetBookingsArgs>): DynamoDBQueryRequest {
   console.log('🔔 GetBookings Request: ', ctx);
 
   return {
-    version: '2017-02-28',
     operation: 'Query',
     index: 'type-gsi',
     query: {
@@ -29,7 +29,7 @@ export function request(ctx) {
   };
 }
 
-export function response(ctx) {
+export function response(ctx: Context<QueryGetBookingsArgs>): GetBookingResponse {
   console.log('🔔 GetBooking Response: ', ctx);
 
   if (ctx.error) {

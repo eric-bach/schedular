@@ -17,31 +17,43 @@ jobs:
       contents: read
 
     steps:
-      - name: Checkout Code
+      - name: 🚫 Cancel Previous Runs
+        uses: styfle/cancel-workflow-action@0.11.0
+
+      - name: ⬇️ Checkout Code
         uses: actions/checkout@v3
 
-      - name: Configure Node
+      - name: ⚒️ Setup Node
         uses: actions/setup-node@v3
         with:
           node-version: 18.x
 
-      - name: Install Backend and Sources
+      - name: 🔑 Configure AWS credentials
+        uses: aws-actions/configure-aws-credentials@v2
+        with:
+          role-to-assume: ${{ secrets.AWS_SERVICE_ROLE_PROD }}
+          aws-region: ${{ secrets.CDK_DEFAULT_REGION }}
+
+      - name: 👀 Env
+        run: |
+          echo "Event name: ${{ github.event_name }}"
+          echo "Git ref:    ${{ github.ref }}"
+          echo "GH actor:   ${{ github.actor }}"
+          echo "SHA:        ${{ github.sha }}"
+          VER=`node --version`; echo "Node ver:   $VER"
+          VER=`npm --version`; echo "npm ver:    $VER"
+
+      - name: 📥  Install Backend and Sources
         uses: ./.github/actions/backend
 
-      - name: Create backend/.env file
+      - name: 🏗  Create backend/.env file
         run: |
           touch .env
           echo SENDER_EMAIL=${{ secrets.SENDER_EMAIL }} >> .env
           echo CERTIFICATE_ARN=${{ secrets.CERTIFICATE_ARN_PROD }} >> .env
         working-directory: backend
 
-      - name: Configure AWS credentials
-        uses: aws-actions/configure-aws-credentials@v2
-        with:
-          role-to-assume: ${{ secrets.AWS_SERVICE_ROLE_PROD }}
-          aws-region: ${{ secrets.CDK_DEFAULT_REGION }}
-
-      - name: CDK Deploy Backend
+      - name: 🚀 Deploy Backend
         run: npm run deploy-backend prod
         env:
           CERTIFICATE_ARN: ${{secrets.CERTIFICATE_ARN_PROD}}
@@ -59,37 +71,54 @@ jobs:
       id-token: write
 
     steps:
-      - name: Checkout Code
+      - name: 🚫 Cancel Previous Runs
+        uses: styfle/cancel-workflow-action@0.11.0
+
+      - name: ⬇️ Checkout Code
         uses: actions/checkout@v3
 
-      - name: Configure Node
+      - name: ⚒️ Setup Node
         uses: actions/setup-node@v3
         with:
           node-version: 18.x
 
-      - name: Install Frontend
+      - name: 🔑 Configure AWS credentials
+        uses: aws-actions/configure-aws-credentials@v2
+        with:
+          role-to-assume: ${{ secrets.AWS_SERVICE_ROLE_PROD }}
+          aws-region: ${{ secrets.CDK_DEFAULT_REGION }}
+
+      - name: 👀 Env
+        run: |
+          echo "Event name: ${{ github.event_name }}"
+          echo "Git ref:    ${{ github.ref }}"
+          echo "GH actor:   ${{ github.actor }}"
+          echo "SHA:        ${{ github.sha }}"
+          VER=`node --version`; echo "Node ver:   $VER"
+          VER=`npm --version`; echo "npm ver:    $VER"
+
+      - name: 📥 Install Frontend
         uses: ./.github/actions/frontend
 
-      - name: Create frontend/src/aws-exports.js file
+      - name: 🗒️ Create aws-exports.js
         run: |
           touch aws-exports.js
           echo const awsmobile = { aws_project_region: \'${{ secrets.CDK_DEFAULT_REGION }}\', aws_cognito_region: \'${{ secrets.CDK_DEFAULT_REGION }}\', aws_user_pools_id: \'${{secrets.COGNITO_USERPOOL_ID_PROD}}\', aws_user_pools_web_client_id: \'${{ secrets.COGNITO_WEB_CLIENT_ID_PROD }}\', mandatorySignIn: true, aws_appsync_graphqlEndpoint: \'${{ secrets.GRAPHQL_ENDPOINT_PROD }}\', aws_appsync_region: \'${{ secrets.CDK_DEFAULT_REGION }}\', aws_appsync_authenticationType: \'AMAZON_COGNITO_USER_POOLS\' } >> aws-exports.js
           echo export default awsmobile >> aws-exports.js
-          cat aws-exports.js
         working-directory: frontend/src
 
-      - name: Configure AWS credentials
-        uses: aws-actions/configure-aws-credentials@v2
-        with:
-          role-to-assume: ${{ secrets.AWS_SERVICE_ROLE_PROD }}
-          aws-region: us-east-1
-
-      - name: Build Frontend
+      - name: 🏗 Build Frontend
         run: npm run build-frontend
         working-directory: backend
 
-      - name: CDK Deploy Frontend
+      - name: 🚀 Deploy Frontend
         run: npm run deploy-frontend prod
         env:
           CERTIFICATE_ARN: ${{secrets.CERTIFICATE_ARN_PROD}}
         working-directory: backend
+
+      # - name: Invalidate CloudFront
+      #   uses: chetan/invalidate-cloudfront-action@v2
+      #   env:
+      #     DISTRIBUTION: ${{ secrets.DISTRIBUTION }}
+      #     PATHS: "/*"

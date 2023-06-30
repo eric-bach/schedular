@@ -2,7 +2,7 @@ import { AppSyncClient, EvaluateCodeCommand, EvaluateCodeCommandInput } from '@a
 import { unmarshall } from '@aws-sdk/util-dynamodb';
 import { readFile } from 'fs/promises';
 const appsync = new AppSyncClient({ region: 'us-east-1' });
-const file = './lib/graphql/Query.getBookings.js';
+const file = './lib/graphql/build/Query.getBookings.js';
 
 describe('getBookings', () => {
   it('should get confirmed bookings for a date', async () => {

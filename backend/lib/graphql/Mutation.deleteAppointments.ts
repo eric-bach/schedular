@@ -1,10 +1,15 @@
-import { util, runtime } from '@aws-appsync/utils';
+import { util, runtime, Context, DynamoDBBatchDeleteItemRequest } from '@aws-appsync/utils';
+import { AppointmentViewModel, UpsertDeleteAppointmentsResponse } from './types/appsync';
 
-export function request(ctx) {
+export function request(ctx: Context): DynamoDBBatchDeleteItemRequest {
   console.log('🔔 DeleteAppointments Request: ', ctx);
 
+  if (!ctx.args.input) {
+    runtime.earlyReturn({});
+  }
+
   const { appointments } = ctx.args.input;
-  const deleteAppointments = appointments.filter((x) => x.status === 'pending*');
+  const deleteAppointments = appointments.filter((x: AppointmentViewModel) => x.status === 'pending*');
 
   // Early Return if no records to delete
   if (deleteAppointments.length === 0) {
@@ -25,7 +30,7 @@ export function request(ctx) {
   };
 }
 
-export function response(ctx) {
+export function response(ctx: Context): UpsertDeleteAppointmentsResponse {
   console.log('🔔 DeleteAppointments Response: ', ctx);
 
   if (ctx.error) {

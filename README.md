@@ -19,6 +19,22 @@
   An appointment scheduling app build with <a href="https://nodejs.org">Node.js</a>
 </p>
 
+# Features
+
+🔒 New user sign up
+
+🪪 Verify new users before granting booking access
+
+📖 Create custom appointment schedules
+
+🗓️ Make appointment bookings and cancellations
+
+📨 Receive booking confirmation and reminder notifications
+
+🪟 View upcoming appointments and bookings
+
+🧑‍🤝‍🧑 Manage client appointments and bookings
+
 # Getting Started
 
 This quick start guide describes how to get the application running. An `AWS account` is required to deploy the infrastructure required for this project.

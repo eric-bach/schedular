@@ -2,7 +2,7 @@ import { AppSyncClient, EvaluateCodeCommand, EvaluateCodeCommandInput } from '@a
 import { unmarshall } from '@aws-sdk/util-dynamodb';
 import { readFile } from 'fs/promises';
 const appsync = new AppSyncClient({ region: 'us-east-1' });
-const file = './lib/graphql/Mutation.createAppointments.js';
+const file = './lib/graphql/build/Mutation.createAppointments.js';
 
 describe('createAppointments', () => {
   it('should upsert a valid appointment', async () => {

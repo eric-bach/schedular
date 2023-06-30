@@ -1,7 +1,12 @@
-import { util } from '@aws-appsync/utils';
+import { Context, DynamoDBTransactWriteItemsRequest, util } from '@aws-appsync/utils';
+import { BookingResponse, MutationCancelBookingArgs } from './types/appsync';
 
-export function request(ctx) {
+export function request(ctx: Context<MutationCancelBookingArgs>): DynamoDBTransactWriteItemsRequest {
   console.log('🔔 CancelBooking Request: ', ctx);
+
+  if (!ctx.args.input) {
+    runtime.earlyReturn({});
+  }
 
   const { bookingId, appointmentDetails } = ctx.args.input;
 
@@ -56,7 +61,7 @@ export function request(ctx) {
   };
 }
 
-export function response(ctx) {
+export function response(ctx: Context<MutationCancelBookingArgs>): BookingResponse {
   console.log('🔔 CancelBooking Response: ', ctx);
 
   if (ctx.error) {
