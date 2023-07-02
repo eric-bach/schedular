@@ -10,7 +10,7 @@ import { EventBus, Rule, Schedule } from 'aws-cdk-lib/aws-events';
 import { CfnTemplate, EmailIdentity } from 'aws-cdk-lib/aws-ses';
 import { LambdaFunction } from 'aws-cdk-lib/aws-events-targets';
 import { UserPool } from 'aws-cdk-lib/aws-cognito';
-import { Alarm, ComparisonOperator, Metric } from 'aws-cdk-lib/aws-cloudwatch';
+import { Alarm, ComparisonOperator, Metric, TreatMissingData } from 'aws-cdk-lib/aws-cloudwatch';
 import { EmailSubscription } from 'aws-cdk-lib/aws-sns-subscriptions';
 import { Topic } from 'aws-cdk-lib/aws-sns';
 import { SnsAction } from 'aws-cdk-lib/aws-cloudwatch-actions';
@@ -264,6 +264,7 @@ export class DataMessagingStack extends Stack {
         namespace: 'AWS/Lambda',
         metricName: 'Errors',
       }),
+      treatMissingData: TreatMissingData.IGNORE,
       datapointsToAlarm: 1,
       evaluationPeriods: 1,
       threshold: 1,
