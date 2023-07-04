@@ -23,17 +23,45 @@
 
 🔒 New user sign up
 
-🪪 Verify new users before granting booking access
+✔ Verified users granted booking access
 
-📖 Create custom appointment schedules
+📖 Custom appointment schedules
 
-🗓️ Make appointment bookings and cancellations
+🗓️ Book and cancel appointments
 
-📨 Receive booking confirmation and reminder notifications
+📨 Notifications for booking confirmation and upcoming bookings
 
-🪟 View upcoming appointments and bookings
+🧧 View upcoming appointments and bookings
 
 🧑‍🤝‍🧑 Manage client appointments and bookings
+
+![](/docs/img/booking1.png)
+
+# Architecture
+
+![](/docs/img/architecture.jpg)
+
+# Tech Stack
+
+<div>
+   <img src="https://github.com/aws-amplify/amplify-ui/raw/main/docs/public/svg/favicon.svg" width=30 /><a href="https://ui.docs.amplify.aws"> Amplify UI</a>
+</div>
+<div>
+   <img src="https://avatars.githubusercontent.com/u/12608521?s=280&v=4" width=30 height=30/><a href="https://www.artillery.io/"> Artillery.io</a>
+</div>
+<div>
+   <img src="https://graphql-cli.com/img/logo.png" width=30 height=30/><a href="https://the-guild.dev/graphql/codegen"> Codegen</a>
+</div>
+<div>
+   <img src="https://upload.wikimedia.org/wikipedia/commons/thumb/1/17/GraphQL_Logo.svg/1200px-GraphQL_Logo.svg.png" width=30 height=30/><a href="https://graphql.org"> GraphQL</a>
+</div>
+<div>
+   <img src="https://mui.com/static/logo.png" width=30 /><a href="https://mui.com"> Material UI</a>
+</div>
+<div>
+   <img src="https://upload.wikimedia.org/wikipedia/commons/thumb/a/a7/React-icon.svg/1200px-React-icon.svg.png" width=30 /><a href="https://react.dev"> React JS</a>
+</div>
+<br />
 
 # Getting Started
 
@@ -131,7 +159,6 @@ The Schedular application consists of the CDK backend and React frontend, each o
 ## Deployment with GitHub Actions
 
 1. Deploy the [Github Actions Open ID Connect Provider stack](https://github.com/eric-bach/github-actions-oidc)
-   https://github.com/eric-bach/github-actions-oidc
 
 2. Repeat step 1 in the Prod account
 
