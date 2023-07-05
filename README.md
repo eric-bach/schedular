@@ -19,6 +19,8 @@
   An appointment scheduling app build with <a href="https://nodejs.org">Node.js</a>
 </p>
 
+![](/docs/gif/ezgif-4-3329a24764.gif)
+
 # Features
 
 🔒 New user sign up
@@ -34,8 +36,6 @@
 🧧 View upcoming appointments and bookings
 
 🧑‍🤝‍🧑 Manage client appointments and bookings
-
-![](/docs/img/booking1.png)
 
 # Architecture
 
