@@ -19,7 +19,7 @@
   An appointment scheduling app build with <a href="https://nodejs.org">Node.js</a>
 </p>
 
-![](/docs/gif/ezgif-4-3329a24764.gif)
+![](/docs/gif/ezgif-2-379bc4343c.gif)
 
 # Features
 
