@@ -50,7 +50,9 @@ function Calendar() {
 
     try {
       setLoading(true);
-      const appointments = await API.graphql<GraphQLQuery<GetAvailableAppointmentsResponse>>(graphqlOperation(GET_AVAILABLE_APPOINTMENTS, { from, to }));
+      const appointments = await API.graphql<GraphQLQuery<GetAvailableAppointmentsResponse>>(
+        graphqlOperation(GET_AVAILABLE_APPOINTMENTS, { from, to })
+      );
       setAppointments(appointments.data?.getAvailableAppointments?.items);
       setLoading(false);
 
@@ -113,14 +115,19 @@ function Calendar() {
       },
     };
 
-    const result = await API.graphql<GraphQLQuery<CreateBookingResponse>>(graphqlOperation(CREATE_BOOKING, { input: input }));
-    //console.debug('[CALENDAR] Booking result', result.data?.createBooking);
+    try {
+      const result = await API.graphql<GraphQLQuery<CreateBookingResponse>>(graphqlOperation(CREATE_BOOKING, { input: input }));
+      console.debug('[CALENDAR] Booking result', result.data?.createBooking);
 
-    if (result.data?.createBooking.appointmentDetails.status === 'booked') {
-      navigate(`/confirmation/${result.data.createBooking.pk.slice(8)}`, {
-        state: { customer: user.attributes, appointment: selectedAppointment },
-      });
-    } else {
+      if (result.data?.createBooking.appointmentDetails.status === 'booked') {
+        navigate(`/confirmation/${result.data.createBooking.pk.slice(8)}`, {
+          state: { customer: user.attributes, appointment: selectedAppointment },
+        });
+      } else {
+        await dateSelected(selectedDate);
+        setError(true);
+      }
+    } catch (error: any) {
       await dateSelected(selectedDate);
       setError(true);
     }
@@ -131,7 +138,9 @@ function Calendar() {
     const from = formatLocalDateString(date);
     const to = formatLocalDateString(date.add(1, 'month'));
 
-    const result = await API.graphql<GraphQLQuery<GetAppointmentsCountsResponse>>(graphqlOperation(GET_APPOINTMENTS_COUNTS, { from, to, status: 'available' }));
+    const result = await API.graphql<GraphQLQuery<GetAppointmentsCountsResponse>>(
+      graphqlOperation(GET_APPOINTMENTS_COUNTS, { from, to, status: 'available' })
+    );
     const datesWithAppointments = result.data?.getAppointmentCounts;
     // console.debug('[CALENDAR] Found dates with appointments', datesWithAppointments);
 
@@ -175,17 +184,21 @@ function Calendar() {
         // }}
       >
         {isError && (
-          <Grid xs={2}>
-            <Alert
-              severity='error'
-              onClose={() => {
-                dismissError();
-              }}
-            >
-              <AlertTitle>Error</AlertTitle>
-              Could not book appointment, the time may no longer be available. Please try again.
-            </Alert>
-          </Grid>
+          <React.Fragment>
+            <Grid lg={3}></Grid>
+            <Grid xs={12} lg={6}>
+              <Alert
+                severity='error'
+                onClose={() => {
+                  dismissError();
+                }}
+              >
+                <AlertTitle>Error</AlertTitle>
+                Could not book appointment, the time may no longer be available. Please try again.
+              </Alert>
+            </Grid>
+            <Grid lg={3}></Grid>
+          </React.Fragment>
         )}
         <Grid xs={12} lg={3}>
           <LocalizationProvider dateAdapter={AdapterDayjs}>
