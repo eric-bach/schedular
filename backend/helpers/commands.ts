@@ -15,7 +15,7 @@ const execCmd = (cmd: string, dir: any, excludedDirs: string[]) => {
   const installable = existsSync(path.join(dir, 'package.json'));
 
   if (installable && dir !== root) {
-    console.log(`\n🚧🚧🚧 ${cmd} ${dir}`);
+    console.log(`\n🔔 ${cmd} ${dir}`);
 
     execSync(cmd, { cwd: dir, env: process.env, stdio: 'inherit' });
   }
