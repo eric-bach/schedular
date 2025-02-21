@@ -263,9 +263,10 @@ export class DataMessagingStack extends Stack {
       metric: new Metric({
         namespace: 'AWS/Lambda',
         metricName: 'Errors',
+        period: Duration.hours(12),
       }),
       datapointsToAlarm: 1,
-      evaluationPeriods: 12,
+      evaluationPeriods: 1,
       threshold: 1,
       treatMissingData: TreatMissingData.NOT_BREACHING,
       comparisonOperator: ComparisonOperator.GREATER_THAN_OR_EQUAL_TO_THRESHOLD,
