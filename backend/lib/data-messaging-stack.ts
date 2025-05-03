@@ -95,7 +95,7 @@ export class DataMessagingStack extends Stack {
     // Send Email
     const sendEmailFunction = new NodejsFunction(this, 'SendEmailFunction', {
       functionName: `${props.appName}-${props.envName}-SendEmail`,
-      runtime: Runtime.NODEJS_18_X,
+      runtime: Runtime.NODEJS_22_X,
       handler: 'handler',
       entry: 'src/lambda/sendEmail/main.ts',
       environment: {
@@ -121,7 +121,7 @@ export class DataMessagingStack extends Stack {
     // Send Reminders Lambda
     const sendRemindersFunction = new NodejsFunction(this, 'SendRemindersFunction', {
       functionName: `${props.appName}-${props.envName}-SendReminders`,
-      runtime: Runtime.NODEJS_18_X,
+      runtime: Runtime.NODEJS_22_X,
       handler: 'handler',
       entry: 'src/lambda/sendReminders/main.ts',
       environment: {
@@ -161,7 +161,7 @@ export class DataMessagingStack extends Stack {
     // Enrichment Lambda
     const getCognitoUserFunction = new NodejsFunction(this, 'GetCognitoUserFunction', {
       functionName: `${props.appName}-${props.envName}-GetCognitoUser`,
-      runtime: Runtime.NODEJS_18_X,
+      runtime: Runtime.NODEJS_22_X,
       handler: 'handler',
       entry: 'src/lambda/getCognitoUser/main.ts',
       environment: {

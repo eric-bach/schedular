@@ -33,7 +33,7 @@ export class ApiStack extends Stack {
     // Resolver for Cognito user service
     const userServiceFunction = new NodejsFunction(this, 'UserServiceFunction', {
       functionName: `${props.appName}-${props.envName}-UserService`,
-      runtime: Runtime.NODEJS_18_X,
+      runtime: Runtime.NODEJS_22_X,
       handler: 'handler',
       entry: path.resolve(__dirname, '../src/lambda/userService/main.ts'),
       memorySize: 512,

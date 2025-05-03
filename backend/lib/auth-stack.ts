@@ -19,7 +19,7 @@ export class AuthStack extends Stack {
 
     // AWS Cognito post-confirmation lambda function
     const cognitoAddUser = new NodejsFunction(this, 'CognitoAddUser', {
-      runtime: Runtime.NODEJS_18_X,
+      runtime: Runtime.NODEJS_22_X,
       functionName: `${props.appName}-${props.envName}-CognitoAddUser`,
       handler: 'handler',
       entry: path.resolve(__dirname, '../src/lambda/cognitoAddUser/main.ts'),

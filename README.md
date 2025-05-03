@@ -86,7 +86,7 @@ This quick start guide describes how to get the application running. An `AWS acc
 
     ```bash
     $ cd ./backend
-    $ npm recursive-install
+    $ npm run install-all
     ```
 
 4.  Copy the `./backend/.env.example` file to `./backend/.env` and fill in the parameter values (if the app has not been deployed to AWS yet, the ARN will be empty for now):
