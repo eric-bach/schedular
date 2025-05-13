@@ -114,7 +114,10 @@ export class DataMessagingStack extends Stack {
       new PolicyStatement({
         effect: Effect.ALLOW,
         actions: ['ses:SendTemplatedEmail'],
-        resources: [`arn:aws:ses:${this.region}:${this.account}:identity/*`, `arn:aws:ses:${this.region}:${this.account}:template/*`],
+        resources: [
+          `arn:aws:ses:${this.region}:${this.account}:identity/*`,
+          `arn:aws:ses:${this.region}:${this.account}:template/*`,
+        ],
       })
     );
 
@@ -221,7 +224,8 @@ export class DataMessagingStack extends Stack {
         filterCriteria: {
           filters: [
             {
-              pattern: '{ "eventName": ["INSERT", "MODIFY"], "dynamodb": { "NewImage": { "type": { "S": ["booking"] } } } }',
+              pattern:
+                '{ "eventName": ["INSERT", "MODIFY"], "dynamodb": { "NewImage": { "type": { "S": ["booking"] } } } }',
             },
           ],
         },
@@ -263,6 +267,10 @@ export class DataMessagingStack extends Stack {
       metric: new Metric({
         namespace: 'AWS/Lambda',
         metricName: 'Errors',
+        statistic: 'maximum',
+        dimensionsMap: {
+          FunctionName: sendRemindersFunction.functionName,
+        },
         period: Duration.hours(12),
       }),
       datapointsToAlarm: 1,
@@ -288,7 +296,8 @@ export class DataMessagingStack extends Stack {
         htmlPart:
           '<!DOCTYPE html><html lang="en"><head><title>Appointment Confirmation</title><style>body{font-family:Arial,sans-serif;background-color:#f6f6f6;padding:20px}.container{max-width:600px;margin:0 auto;background-color:#fff;padding:20px;border-radius:5px;color:#777}h1{font-size:32px;line-height:1.2;margin-top:0;margin-bottom:20px}p{margin-bottom:10px}.heading{margin-top:40px;font-size:20px;line-height:.8}.appointment-details{margin-bottom:40px;font-size:18px;line-height:.8}.administrator-details{margin-bottom:40px;line-height:.8}.manage-account{margin-bottom:40px}.button{display:inline-block;background-color:#1976d2;color:#fff;text-align:center;padding:10px 20px;text-decoration:none;border-radius:5px}.button:hover{background-color:#0059b2}.italic{font-style:italic}.footer{margin-top:30px;line-height:.7}.signature{margin-top:20px;font-size:12px;line-height:.7;text-align:center;color:#777}</style></head><body><div class="container"><h1>Thanks for booking</h1><div class="heading"><p>Hey {{name}}, your appointment has been<span style="color:green"> confirmed</span>.</p></div><div class="appointment-details"><p>{{date}}</p><p>{{time}}</p></div><div class="administrator-details"><p>Appointment with: {{administrator}}</p><p>Address: TBD</p></div><div class="manage-account"><p class="italic" style="font-size:14px">To view or manage your appointments, please log in your account.</p><a class="button" href="https://www.google.ca">Manage Appointments</a></div><hr><div class="footer"><p style="font-size:14px">Best regards,</p><p style="font-size:14px">TBD</p></div></div><div class="signature"><p>Built by:<a href="https://ericbach.dev" style="text-decoration:none">Eric Bach</a></p></div></body></html>',
         templateName: 'AppointmentConfirmation',
-        textPart: 'Hi {{name}},\r\nThank you for booking your appointment on {{date}} at {{time}} with {{administrator}}.',
+        textPart:
+          'Hi {{name}},\r\nThank you for booking your appointment on {{date}} at {{time}} with {{administrator}}.',
       },
     });
     new CfnTemplate(this, 'CancellationEmailTemplate', {
@@ -306,7 +315,8 @@ export class DataMessagingStack extends Stack {
         htmlPart:
           '<!DOCTYPE html><html lang="en"><head><title>Appointment Reminder</title><style>body{font-family:Arial,sans-serif;background-color:#f6f6f6;padding:20px}.container{max-width:600px;margin:0 auto;background-color:#fff;padding:20px;border-radius:5px;color:#777}h1{font-size:32px;line-height:1.2;margin-top:0;margin-bottom:20px}p{margin-bottom:10px}.heading{margin-top:40px;font-size:20px;line-height:.8}.appointment-details{margin-bottom:40px;font-size:18px;line-height:.8}.administrator-details{margin-bottom:40px;line-height:.8}.manage-account{margin-bottom:40px}.button{display:inline-block;background-color:#1976d2;color:#fff;text-align:center;padding:10px 20px;text-decoration:none;border-radius:5px}.button:hover{background-color:#0059b2}.italic{font-style:italic}.footer{margin-top:30px;line-height:.7}.signature{margin-top:20px;font-size:12px;line-height:.7;text-align:center;color:#777}</style></head><body><div class="container"><h1>Get ready for your appointment</h1><div class="heading"><p>Hey {{name}}, your appointment is<span style="color:#1976d2"> coming up</span>.</p></div><div class="appointment-details"><p>{{date}}</p><p>{{time}}</p></div><div class="administrator-details"><p>Appointment with: {{administrator}}</p><p>Address: TBD</p></div><div class="manage-account"><p class="italic" style="font-size:14px">To view or manage your appointments, please log in your account.</p><a class="button" href="https://www.google.ca">Manage Appointments</a></div><hr><div class="footer"><p style="font-size:14px">Best regards,</p><p style="font-size:14px">TBD</p></div></div><div class="signature"><p>Built by:<a href="https://ericbach.dev" style="text-decoration:none">Eric Bach</a></p></div></body></html>',
         templateName: 'AppointmentReminder',
-        textPart: "Hi {{name}},\r\nIt's almost time for your appointment on {{date}} at {{time}} with {{administrator}}.",
+        textPart:
+          "Hi {{name}},\r\nIt's almost time for your appointment on {{date}} at {{time}} with {{administrator}}.",
       },
     });
     new CfnTemplate(this, 'AdminAppointmentConfirmationTemplate', {
@@ -348,7 +358,10 @@ export class DataMessagingStack extends Stack {
 
     new CfnOutput(this, 'DataTableName', { value: dataTable.tableName });
 
-    new CfnOutput(this, 'EventBusArn', { value: eventBus.eventBusArn, exportName: `${props.appName}-${props.envName}-eventBusArn` });
+    new CfnOutput(this, 'EventBusArn', {
+      value: eventBus.eventBusArn,
+      exportName: `${props.appName}-${props.envName}-eventBusArn`,
+    });
 
     new CfnOutput(this, 'SendEmailFunctionArn', { value: sendEmailFunction.functionArn });
 
